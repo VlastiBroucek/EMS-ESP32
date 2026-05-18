@@ -403,7 +403,7 @@ void TxService::send_telegram(const QueuedTxTelegram & tx_telegram) {
     }
 
     LOG_DEBUG("Sending %s Tx [#%d], telegram: %s",
-              (telegram->operation != Telegram::Operation::TX_READ) ? ("write") : ("read"),
+              (telegram->operation != Telegram::Operation::TX_READ) ? "write" : "read",
               tx_telegram.id_,
               Helpers::data_to_hex(telegram_raw, length - 1).c_str()); // exclude the last CRC byte
 
@@ -573,11 +573,10 @@ bool TxService::send_raw(const char * telegram_data) {
     }
 
     // since the telegram data is a const, make a copy. add 1 to grab the \0 EOS
-    char telegram[strlen(telegram_data) + 1];
-    strlcpy(telegram, telegram_data, sizeof(telegram));
+    char * telegram = strdup(telegram_data);
 
     uint8_t count = 0;
-    uint8_t data[2 + strlen(telegram) / 3];
+    uint8_t data[256];
 
     // get values
     char * p = strtok(telegram, " ,"); // delimiter
@@ -585,7 +584,7 @@ bool TxService::send_raw(const char * telegram_data) {
         data[count++] = (uint8_t)strtol(p, 0, 16);
         p             = strtok(nullptr, " ,");
     }
-
+    free(telegram);
     // check valid length
     if (count < 4) {
         return false;
@@ -628,7 +627,7 @@ void TxService::retry_tx(const uint8_t operation, const uint8_t * data, const ui
     }
 
     LOG_DEBUG("Last Tx %s operation failed. Retry #%d. sent message: %s, received: %s",
-              (operation == Telegram::Operation::TX_WRITE) ? ("Write") : ("Read"),
+              (operation == Telegram::Operation::TX_WRITE) ? "Write" : "Read",
               retry_count_,
               telegram_last_->to_string().c_str(),
               Helpers::data_to_hex(data, length - 1).c_str());
