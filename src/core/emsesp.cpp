@@ -1868,7 +1868,7 @@ void EMSESP::loop() {
         // start an upload from a URL, assuming the URL exists and set from a previous pass
         // Note this next call is synchronous and blocking.
         if (!system_.uploadFirmwareURL()) {
-            // upload failed, send a "reset" to return back to normal
+            // upload failed, send a "reset" to reset the OTA URL
             Shell::loop_all(); // flush log buffers so latest error message are shown in console
             system_.uploadFirmwareURL("reset");
             EMSESP::system_.systemStatus(SYSTEM_STATUS::SYSTEM_STATUS_ERROR_UPLOAD);
