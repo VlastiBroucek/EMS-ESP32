@@ -105,8 +105,12 @@ const char * EMSdevice::uom_to_string(uint8_t uom) {
 }
 
 std::string EMSdevice::brand_to_char() {
+    return std::string{brand_to_cstr()};
+}
+
+const char * EMSdevice::brand_to_cstr() const {
     if (!custom_brand().empty()) {
-        return custom_brand();
+        return custom_brand().c_str();
     }
     switch (brand_) {
     case EMSdevice::Brand::BOSCH:
@@ -2160,7 +2164,7 @@ void EMSdevice::mqtt_ha_entity_config_create() {
         if (!dv.has_state(DeviceValueState::DV_HA_CONFIG_CREATED) && dv.has_state(DeviceValueState::DV_ACTIVE)
             && !dv.has_state(DeviceValueState::DV_API_MQTT_EXCLUDE)) {
             // create_device_config is only done once for the EMS device. It can added to any entity, so we take the first
-            if (Mqtt::publish_ha_sensor_config_dv(dv, name().c_str(), brand_to_char().c_str(), to_string_version().c_str(), false, create_device_config)) {
+            if (Mqtt::publish_ha_sensor_config_dv(dv, name().c_str(), brand_to_cstr(), to_string_version().c_str(), false, create_device_config)) {
                 dv.add_state(DeviceValueState::DV_HA_CONFIG_CREATED);
                 create_device_config = false; // only create the main config once
                 count++;
@@ -2224,7 +2228,7 @@ bool EMSdevice::has_telegram_id(uint16_t id) const {
 }
 
 // return the name of the telegram type
-const char * EMSdevice::telegram_type_name(std::shared_ptr<const Telegram> telegram) {
+const char * EMSdevice::telegram_type_name(const std::shared_ptr<const Telegram> & telegram) {
     // see if it's one of the common ones, like Version
     if (telegram->type_id == EMS_TYPE_VERSION) {
         return "Version";
@@ -2243,12 +2247,12 @@ const char * EMSdevice::telegram_type_name(std::shared_ptr<const Telegram> teleg
 
 // take a telegram_type_id and call the matching handler
 // return true if match found
-bool EMSdevice::handle_telegram(std::shared_ptr<const Telegram> telegram) {
+bool EMSdevice::handle_telegram(const std::shared_ptr<const Telegram> & telegram) {
     for (auto & tf : telegram_functions_) {
         if (tf.telegram_type_id_ == telegram->type_id) {
             // for telegram destination only read telegram
             if (telegram->dest == device_id_ && telegram->message_length > 0) {
-                tf.process_function_(telegram);
+                tf.process_function_(this, telegram);
                 return true;
             }
             // if the data block is empty and we have not received data before, assume that this telegram
@@ -2266,7 +2270,7 @@ bool EMSdevice::handle_telegram(std::shared_ptr<const Telegram> telegram) {
             }
             if (telegram->message_length > 0) {
                 tf.received_ = true;
-                tf.process_function_(telegram);
+                tf.process_function_(this, telegram);
             }
 
             return true;

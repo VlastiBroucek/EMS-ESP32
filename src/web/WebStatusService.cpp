@@ -47,7 +47,7 @@ WebStatusService::WebStatusService(AsyncWebServer * server, SecurityManager * se
 void WebStatusService::systemStatus(AsyncWebServerRequest * request) {
     EMSESP::system_.refreshHeapMem(); // refresh free heap and max alloc heap
 
-    auto *     response = new AsyncJsonResponse(false);
+    auto *     response = new PsramAsyncJsonResponse(false);
     JsonObject root     = response->getRoot();
 
     //
@@ -187,7 +187,7 @@ void WebStatusService::systemStatus(AsyncWebServerRequest * request) {
 
 // generic action handler - as a POST
 void WebStatusService::action(AsyncWebServerRequest * request, JsonVariant json) {
-    auto *     response = new AsyncJsonResponse();
+    auto *     response = new PsramAsyncJsonResponse();
     JsonObject root     = response->getRoot();
 
     // param is optional - https://arduinojson.org/news/2024/09/18/arduinojson-7-2/
@@ -433,7 +433,7 @@ bool WebStatusService::refresh_versions_cache() {
         return false;
     }
 
-    JsonDocument         doc;
+    JsonDocument         doc(PSRAM_DOC);
     DeserializationError err = deserializeJson(doc, http.getStream());
     http.end();
     if (err) {
@@ -539,7 +539,7 @@ bool WebStatusService::exportData(JsonObject root, std::string & type) {
 // action = getCustomSupport
 // reads any upload customSupport.json file and sends to to Help page to be shown as Guest
 bool WebStatusService::getCustomSupport(JsonObject root) {
-    JsonDocument doc;
+    JsonDocument doc(PSRAM_DOC);
 
 #if defined(EMSESP_STANDALONE)
     // dummy test data for "test api3"

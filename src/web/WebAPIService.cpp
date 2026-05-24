@@ -25,10 +25,14 @@ uint16_t WebAPIService::api_fails_ = 0;
 
 WebAPIService::WebAPIService(AsyncWebServer * server, SecurityManager * securityManager)
     : _securityManager(securityManager) {
-    AsyncCallbackJsonWebHandler * jsonHandler = new AsyncCallbackJsonWebHandler(EMSESP_API_SERVICE_PATH);
-    jsonHandler->setMethod(HTTP_POST | HTTP_GET);
-    jsonHandler->onRequest([this](AsyncWebServerRequest * request, JsonVariant json) { webAPIService(request, json); });
-    server->addHandler(jsonHandler);
+    // parse() does its own per-request admin check (with notoken_api), so no predicate.
+    // /api also matches /api/<device>/<entity> via the route's backward-compatible URI matcher.
+    securityManager->addEndpoint(
+        server,
+        EMSESP_API_SERVICE_PATH,
+        AuthenticationPredicates::NONE_REQUIRED,
+        [this](AsyncWebServerRequest * request, JsonVariant json) { webAPIService(request, json); },
+        HTTP_POST | HTTP_GET);
 }
 
 // POST|GET api/
@@ -108,7 +112,7 @@ void WebAPIService::parse(AsyncWebServerRequest * request, JsonObject input) {
     EMSESP::system_.refreshHeapMem();
 
     // output json buffer
-    auto response = new AsyncJsonResponse();
+    auto response = new PsramAsyncJsonResponse();
 
     // add more mem if needed - won't be needed in ArduinoJson 7
     // while (!response->getSize()) {

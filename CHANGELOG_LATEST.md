@@ -6,42 +6,13 @@ For more details go to [emsesp.org](https://emsesp.org/).
 
 ## Added
 
-- comfortpoint for BC400 [#2935](https://github.com/emsesp/EMS-ESP32/issues/2935)
-- customize device brand [#2784](https://github.com/emsesp/EMS-ESP32/issues/2784)
-- set model for ems-esp devices temperature, analog, etc. [#2958](https://github.com/emsesp/EMS-ESP32/discussions/2958)
-- prometheus metrics for temperature/analog/scheduler/custom [#2962](https://github.com/emsesp/EMS-ESP32/issues/2962)
-- boiler pumpkick [#2965](https://github.com/emsesp/EMS-ESP32/discussions/2965)
-- heatpump reset [#2933](https://github.com/emsesp/EMS-ESP32/issues/2933)
-- e-mail notification using ReadyMail Client
-- 2.nd freshwater module (dhw4, dhw5) [#2991](https://github.com/emsesp/EMS-ESP32/issues/2991)
-- full system backup and restore
-- updated version check [#3047](https://github.com/emsesp/EMS-ESP32/issues/3047)
-- auto-logic to set ht3/ems+ tx-mode
-- polarity for digital_in sensors [#3070](https://github.com/emsesp/EMS-ESP32/discussions/3070)
 - user-requested LED blink [#3063](https://github.com/emsesp/EMS-ESP32/issues/3063)
+- KM300 at address 0x4A [#3084](https://github.com/emsesp/EMS-ESP32/issues/3084)
 
 ## Fixed
 
-- SRC climate creation [#2936](https://github.com/emsesp/EMS-ESP32/issues/2936) and [#2960](https://github.com/emsesp/EMS-ESP32/issues/2960)
-- missing translations [#3015](https://github.com/emsesp/EMS-ESP32/issues/3015)
-- custom entities check fetch length
-- modbus initialization [#3064](https://github.com/emsesp/EMS-ESP32/issues/3064)
+- signed value for solarInfuence [#3077](https://github.com/emsesp/EMS-ESP32/issues/3077)
 
 ## Changed
 
-- weblogbuffer up to 1000 messages with PSRAM, mentioned in [#2933](https://github.com/emsesp/EMS-ESP32/issues/2933)
-- validate custom entity writes, [#2931](https://github.com/emsesp/EMS-ESP32/issues/2931)
-- remove wrong burnMinPower [#2918](https://github.com/emsesp/EMS-ESP32/issues/2918)
-- store scheduler active state to nvs [#2946](https://github.com/emsesp/EMS-ESP32/discussions/2946)
-- translated modes `heat` and `eco` for HA-climate mode-str-tpl
-- support `minflowtemp` and `baseflowtemp` [#2969](https://github.com/emsesp/EMS-ESP32/discussions/2969)
-- update version if it is 00.00 in first read [#2981](https://github.com/emsesp/EMS-ESP32/issues/2981)
-- device class for % values [#2980](https://github.com/emsesp/EMS-ESP32/issues/2980)
-- use tasmota core 2026.03.30
-- secure mqtt uses ESP_SSLClient
-- fetch telegrams: set length to fetch [#3017](https://github.com/emsesp/EMS-ESP32/issues/3017)
-- move http client from stack to heap
-- heap optimizations [#3021](https://github.com/emsesp/EMS-ESP32/discussions/3021)
-- refactored network code into a single class [#3052](https://github.com/emsesp/EMS-ESP32/pull/3052)
-- check and read 0x470 as summer2_typeids[0] only if received [#2686](https://github.com/emsesp/EMS-ESP32/issues/2686), [#3055](https://github.com/emsesp/EMS-ESP32/issues/3055)
-- default bus-id: gateway1(0x49), tx-mode: auto
+- various memory optimizations [#3083](https://github.com/emsesp/EMS-ESP32/issues/3083)
