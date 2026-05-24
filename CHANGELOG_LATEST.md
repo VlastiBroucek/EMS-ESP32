@@ -45,3 +45,4 @@ For more details go to [emsesp.org](https://emsesp.org/).
 - refactored network code into a single class [#3052](https://github.com/emsesp/EMS-ESP32/pull/3052)
 - check and read 0x470 as summer2_typeids[0] only if received [#2686](https://github.com/emsesp/EMS-ESP32/issues/2686), [#3055](https://github.com/emsesp/EMS-ESP32/issues/3055)
 - default bus-id: gateway1(0x49), tx-mode: auto
+- network fallback to AP only after start [#3090](https://github.com/emsesp/EMS-ESP32/issues/3090)

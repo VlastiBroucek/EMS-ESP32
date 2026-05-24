@@ -82,7 +82,8 @@ void Network::begin() {
     WiFi.persistent(false);
     WiFi.setAutoReconnect(false);
     WiFi.mode(WIFI_STA);
-    WiFi.disconnect(true);                   // wipe old settings in NVS
+    WiFi.disconnect(true, true);             // wipe old settings in NVS
+    WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN);
     WiFi.setHostname(hostname_.c_str());     // updates shared default_hostname buffer
     WiFi.enableSTA(true);                    // creates the STA netif
     WiFi.STA.setHostname(hostname_.c_str()); // pushes to esp_netif_set_hostname
@@ -235,7 +236,6 @@ void Network::reconnect() {
     last_disconnect_reason_   = 0;
     connect_retry_            = 0;
     reconnect_count_          = 0;
-    phase_                    = NetPhase::ETHERNET; // begin() will refine this once settings are reloaded
 
     // reload the network settings and apply them
     begin();
@@ -304,23 +304,15 @@ void Network::checkConnection() {
     }
 
     if (!still_up) {
-        if (network_iface_ == NetIface::WIFI) {
-            uint8_t reason = last_disconnect_reason_;
-            if (reason == 0) {
-                reason = WIFI_REASON_UNSPECIFIED; // event hasn't fired yet (or was cleared); avoid logging "0"
-            }
-            LOG_INFO("WiFi connection lost (reason %u: %s)", reason, disconnectReason(reason));
-            wifi_connect_pending_ = false;
-        } else if (network_iface_ == NetIface::ETHERNET) {
-            LOG_INFO("Ethernet connection lost");
-            ethernet_connect_pending_ = false;
-        }
         juststopped_   = true;
-        network_iface_ = NetIface::NONE;
         network_ip_    = 0;
         has_ipv6_      = false;
         connect_retry_ = 0;
-        phase_         = initialPhase();
+        if (network_iface_ == NetIface::ETHERNET) {
+            LOG_WARNING("Ethernet connection lost");
+            return;
+        }
+        begin();
     }
 #endif
 }
@@ -659,7 +651,9 @@ void Network::findNetworks() {
         } else if (network_iface_ == NetIface::AP) {
             phase_ = NetPhase::AP;
         }
-
+        if (network_iface_ == NetIface::ETHERNET && network_ip_ != 0) {
+            ethernet_ever_connected_ = true;
+        }
         LOG_INFO("Network connected via %s (IP: " IPSTR ")",
                  network_iface_ == NetIface::ETHERNET ? "Ethernet"
                  : network_iface_ == NetIface::WIFI   ? "WiFi"
@@ -705,18 +699,21 @@ void Network::findNetworks() {
         if (connect_retry_ >= MAX_NETWORK_RECONNECTION_ATTEMPTS && phase_ != NetPhase::AP) {
             if (phase_ == NetPhase::ETHERNET) {
                 if (ssid_.isEmpty()) {
-                    LOG_WARNING("Ethernet failed to connect after %u attempts, falling back to AP", connect_retry_);
-                    phase_ = NetPhase::AP;
+                    if (!ethernet_ever_connected_) {
+                        LOG_WARNING("Ethernet failed to connect after %u attempts, falling back to AP", connect_retry_);
+                        phase_ = NetPhase::AP;
+                    }
                 } else {
                     LOG_WARNING("Ethernet failed to connect after %u attempts, switching to WiFi", connect_retry_);
                     phase_ = NetPhase::WIFI;
                 }
                 ethernet_connect_pending_ = false;
             } else if (phase_ == NetPhase::WIFI) {
-                LOG_WARNING("WiFi failed to connect after %u attempts, falling back to AP", connect_retry_);
-                phase_                = NetPhase::AP;
+                if (!wifi_ever_connected_) {
+                    LOG_WARNING("WiFi failed to connect after %u attempts, falling back to AP", connect_retry_);
+                    phase_ = NetPhase::AP;
+                }
                 wifi_connect_pending_ = false;
-                WiFi.disconnect(true);
             }
             connect_retry_ = 0;
         }
