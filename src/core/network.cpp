@@ -501,8 +501,6 @@ void Network::startWIFI() {
 
     wifi_connect_pending_ = true;
 
-    LOG_DEBUG("WiFi connection with %s and %s", ssid_.c_str(), password_.c_str());
-
     // attempt to connect to the wifi network
     // the event handlers handle error handling and retries
     uint8_t bssid[6];

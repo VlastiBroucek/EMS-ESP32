@@ -572,11 +572,11 @@ bool TxService::send_raw(const char * telegram_data) {
         return false;
     }
 
-    // since the telegram data is a const, make a copy. add 1 to grab the \0 EOS
+    // since the telegram data is a const, make a copy
     char * telegram = strdup(telegram_data);
 
     uint8_t count = 0;
-    uint8_t data[256];
+    uint8_t data[256]; // max raw telegram length
 
     // get values
     char * p = strtok(telegram, " ,"); // delimiter

@@ -48,7 +48,7 @@ void UploadFileService::handleUpload(AsyncWebServerRequest * request, const Stri
             // LittleFS filesystem image
             _is_filesystem = true;
             _md5[0]        = '\0'; // clear any stale md5 so Update.end() doesn't compare against it
-        } else if ((extension == "bin") && (filesize > 1900000)) {
+        } else if ((extension == "bin") && (filesize > 1000000)) {
             _is_firmware = true;
         } else if (extension == "json") {
             _md5[0] = '\0'; // clear md5
@@ -189,7 +189,7 @@ void UploadFileService::uploadComplete(AsyncWebServerRequest * request) {
 
     // add MD5 to the response
     if (strlen(_md5.data()) == _md5.size() - 1) {
-        auto *     response = new AsyncJsonResponse(false);
+        auto *     response = new emsesp::PsramAsyncJsonResponse(false);
         JsonObject root     = response->getRoot();
         root["md5"]         = _md5.data();
         response->setLength();
