@@ -567,8 +567,6 @@ void Mqtt::ha_status() {
 #endif
 
     publish_system_ha_sensor_config(DeviceValueType::STRING, "EMS Bus", "bus_status", DeviceValueUOM::NONE);
-    publish_system_ha_sensor_config(DeviceValueType::STRING, "Uptime", "uptime", DeviceValueUOM::NONE);
-    publish_system_ha_sensor_config(DeviceValueType::INT8, "Uptime (sec)", "uptime_sec", DeviceValueUOM::SECONDS);
     publish_system_ha_sensor_config(DeviceValueType::INT8, "Free memory", "freemem", DeviceValueUOM::KB);
     publish_system_ha_sensor_config(DeviceValueType::INT8, "Max alloc", "max_alloc", DeviceValueUOM::KB);
     publish_system_ha_sensor_config(DeviceValueType::INT8, "MQTT fails", "mqttfails", DeviceValueUOM::NONE);
@@ -585,8 +583,10 @@ void Mqtt::ha_status() {
     if (!EMSESP::network_.ethernet_connected()) {
         publish_system_ha_sensor_config(DeviceValueType::INT16, "WiFi reconnects", "wifireconnects", DeviceValueUOM::NONE);
     }
-    // This one comes from the info MQTT topic - and handled in the publish_ha_sensor_config function
+
+    // These come from the info MQTT topic - and handled in the publish_ha_sensor_config function
     publish_system_ha_sensor_config(DeviceValueType::STRING, "Version", "version", DeviceValueUOM::NONE);
+    publish_system_ha_sensor_config(DeviceValueType::STRING, "Uptime", "bootTime", DeviceValueUOM::TIMESTAMP);
 }
 
 // add sub or pub task to the queue.
@@ -1065,11 +1065,17 @@ bool Mqtt::publish_ha_sensor_config(uint8_t               type,        // EMSdev
         char stat_t[MQTT_TOPIC_MAX_SIZE];
 
         // This is where we determine which MQTT topic to pull the data from
-        // There is one exception for DeviceType::SYSTEM, which uses the heartbeat topic, and when fetching the version we want to take this from the info topic instead
-        if ((device_type == EMSdevice::DeviceType::SYSTEM) && (strncmp(entity, "version", 7) == 0)) {
-            snprintf(stat_t, sizeof(stat_t), "~/%s", F_(info));
-        } else {
-            snprintf(stat_t, sizeof(stat_t), "~/%s", tag_to_topic(device_type, tag).c_str());
+        // There are exceptions for DeviceType::SYSTEM, which uses the heartbeat topic
+        // and when fetching the version we want to take this from the info topic instead
+        if (device_type == EMSdevice::DeviceType::SYSTEM) {
+            // handle the exceptions
+            if (strncmp(entity, "version", 7) == 0) {
+                snprintf(stat_t, sizeof(stat_t), "~/%s", F_(info));
+            } else if (strncmp(entity, "bootTime", 8) == 0) {
+                snprintf(stat_t, sizeof(stat_t), "~/%s", F_(info));
+            } else {
+                snprintf(stat_t, sizeof(stat_t), "~/%s", tag_to_topic(device_type, tag).c_str());
+            }
         }
         doc["stat_t"] = stat_t;
 
@@ -1095,7 +1101,14 @@ bool Mqtt::publish_ha_sensor_config(uint8_t               type,        // EMSdev
 
         // don't bother with value template conditions if using Domoticz which doesn't fully support MQTT Discovery
         if (discovery_type() == discoveryType::HOMEASSISTANT) {
-            doc["val_tpl"] = (std::string) "{{" + val_obj + " if " + val_cond + " else " + sample_val + "}}";
+            if (uom == DeviceValueUOM::TIMESTAMP) {
+                // special case for timestamp, using "value_template": "{{ (value_json.bootTime | as_datetime).isoformat() }}",
+                char val_tpl[100];
+                snprintf(val_tpl, sizeof(val_tpl), "{{ (value_json.%s | as_datetime).isoformat() }}", entity);
+                doc["val_tpl"] = val_tpl;
+            } else {
+                doc["val_tpl"] = (std::string) "{{" + val_obj + " if " + val_cond + " else " + sample_val + "}}";
+            }
             add_ha_avty_section(doc.as<JsonObject>(), stat_t, val_cond); // adds availability section
         } else {
             // Domoticz doesn't support value templates, so we just use the value directly
@@ -1166,8 +1179,13 @@ void Mqtt::add_ha_classes(JsonObject doc, const uint8_t device_type, const uint8
         doc[uom_ha] = "L/h";
     } else if (uom == DeviceValueUOM::L) {
         doc[uom_ha] = "L";
+    } else if (uom == DeviceValueUOM::TIMESTAMP) {
+        // do nothing
     } else if (uom != DeviceValueUOM::NONE) {
-        doc[uom_ha] = EMSdevice::uom_to_string(uom); // use default
+        auto uom_str = EMSdevice::uom_to_string(uom);
+        if (strlen(uom_str)) {
+            doc[uom_ha] = uom_str;
+        }
     } else if (discovery_type() != discoveryType::HOMEASSISTANT) {
         doc[uom_ha] = " "; // Domoticz uses " " for a no-uom
     }
@@ -1258,6 +1276,10 @@ void Mqtt::add_ha_classes(JsonObject doc, const uint8_t device_type, const uint8
     case DeviceValueUOM::CONNECTIVITY:
         doc[sc_ha] = sc_ha_measurement;
         doc[dc_ha] = "connectivity";
+        break;
+    case DeviceValueUOM::TIMESTAMP:
+        doc[sc_ha] = sc_ha_measurement;
+        doc[dc_ha] = "timestamp";
         break;
     case DeviceValueUOM::MV:
     case DeviceValueUOM::VOLTS:
