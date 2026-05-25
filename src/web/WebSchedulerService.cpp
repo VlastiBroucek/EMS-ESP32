@@ -82,7 +82,8 @@ StateUpdateResult WebScheduler::update(JsonObject root, WebScheduler & webSchedu
     EMSESP::webSchedulerService.ha_reset();
 
     // build up the list of schedule items
-    auto scheduleItems = root["schedule"].as<JsonArray>();
+    uint8_t i             = 0;
+    auto    scheduleItems = root["schedule"].as<JsonArray>();
     for (const JsonObject schedule : scheduleItems) {
         // create each schedule item, overwriting any previous settings
         // ignore the id (as this is only used in the web for table rendering)
@@ -93,6 +94,10 @@ StateUpdateResult WebScheduler::update(JsonObject root, WebScheduler & webSchedu
         si.cmd    = schedule["cmd"].as<std::string>();
         si.value  = schedule["value"].as<std::string>();
         strlcpy(si.name, schedule["name"].as<const char *>(), sizeof(si.name));
+
+        if (si.name[0] == '\0') {
+            snprintf(si.name, sizeof(si.name), "schedule_%d", i++); // set a default name. Before v3.9.0 we allowed empty schedule names.
+        }
 
         // calculated elapsed minutes
         si.elapsed_min = Helpers::string2minutes(si.time.c_str());
