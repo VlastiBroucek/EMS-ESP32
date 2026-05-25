@@ -535,12 +535,6 @@ void Network::startEthernet() {
         return;
     }
 
-    // disabled Ethernet for boards with only 4MB flash and no PSRAM
-    if (ESP.getFlashChipSize() < 4194304 && !ESP.getPsramSize()) { // 4MB
-        LOG_NOTICE("Ethernet disabled for boards with only 4MB flash");
-        return;
-    }
-
     // reset power and add a delay as ETH doesn't not always start up correctly after a warm boot
     if (eth_power_ != -1) {
         pinMode(eth_power_, OUTPUT);
@@ -649,7 +643,7 @@ void Network::findNetworks() {
         } else if (network_iface_ == NetIface::AP) {
             phase_ = NetPhase::AP;
         }
-        if (network_iface_ == NetIface::ETHERNET && network_ip_ != 0) {
+        if (!ethernet_ever_connected && ethernet_connected()) {
             ethernet_ever_connected_ = true;
         }
         LOG_INFO("Network connected via %s (IP: " IPSTR ")",
