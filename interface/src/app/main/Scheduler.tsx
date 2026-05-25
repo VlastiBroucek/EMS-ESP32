@@ -297,10 +297,12 @@ const Scheduler = () => {
               {tableList.map((si: ScheduleItem) => (
                 <Row key={si.id} item={si} onClick={() => editScheduleItem(si)}>
                   <Cell stiff>
-                    <CircleIcon
-                      color={si.active ? 'success' : 'error'}
-                      sx={{ fontSize: ICON_SIZE, verticalAlign: 'middle' }}
-                    />
+                    {si.flags !== ScheduleFlag.SCHEDULE_IMMEDIATE && (
+                      <CircleIcon
+                        color={si.active ? 'success' : 'error'}
+                        sx={{ fontSize: ICON_SIZE, verticalAlign: 'middle' }}
+                      />
+                    )}
                   </Cell>
                   <Cell stiff>
                     <Stack spacing={0.5} direction="row">

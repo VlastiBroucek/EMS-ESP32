@@ -227,6 +227,8 @@ void WebStatusService::action(AsyncWebServerRequest * request, JsonVariant json)
         EMSESP::mqtt_.reset_mqtt();
     } else if (action == "upgradeImportantMessages") {
         root["upgradeImportantMessageType"] = upgradeImportantMessages(param);
+    } else if (action == "executeSchedule") {
+        ok = EMSESP::webSchedulerService.executeSchedule(param.c_str());
     }
 
 #if defined(EMSESP_STANDALONE) && !defined(EMSESP_UNITY)
