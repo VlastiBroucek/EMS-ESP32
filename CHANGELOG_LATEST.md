@@ -16,3 +16,4 @@ For more details go to [emsesp.org](https://emsesp.org/).
 ## Changed
 
 - various memory optimizations [#3083](https://github.com/emsesp/EMS-ESP32/issues/3083)
+- network fallback to AP only after start [#3090](https://github.com/emsesp/EMS-ESP32/issues/3090)

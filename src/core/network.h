@@ -204,8 +204,9 @@ class Network {
 
     NetPhase phase_ = NetPhase::ETHERNET;
 
-    bool wifi_events_registered_ = false; // ensure WiFi.onEvent() handlers are registered only once across begin()/reconnect() cycles
-    bool wifi_ever_connected_    = false; // set true once we've successfully obtained an IP
+    bool wifi_events_registered_  = false; // ensure WiFi.onEvent() handlers are registered only once across begin()/reconnect() cycles
+    bool wifi_ever_connected_     = false; // set true once we've successfully obtained an IP
+    bool ethernet_ever_connected_ = false; // set true once we've successfully obtained an IP
 
     // Network and AP settings
     bool      enableMDNS_;
