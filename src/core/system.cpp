@@ -1523,9 +1523,10 @@ bool System::check_upgrade() {
         // changes going to v3.9 from an earlier version
         if (settings_version.major() == 3 && settings_version.minor() < 9) {
 #ifndef EMSESP_STANDALONE
+            // AP_MODE_ALWAYS has been removed
             EMSESP::esp32React.getAPSettingsService()->update([&](APSettings & apSettings) {
                 if (apSettings.provisionMode == 0) {
-                    apSettings.provisionMode = AP_MODE_DISCONNECTED; // AP_MODE_ALWAYS has been removed
+                    apSettings.provisionMode = AP_MODE_DISCONNECTED; // AP_MODE_DISCONNECTED is the new default
                     LOG_INFO("Upgrade: Setting AP provision mode to auto");
                     return StateUpdateResult::CHANGED;
                 }
@@ -2980,8 +2981,8 @@ bool System::uploadFirmwareURL(const char * url) {
         // record the CDN actually sends in practice.
         ssl_client.setBufferSizes(16384, 1024);
         ssl_client.setSessionTimeout(120);
-        basic_client.setTimeout(15000);                           // socket-level read timeout
-        ssl_client.setTimeout(15000);                             // Stream::readBytes timeout used by Update
+        basic_client.setTimeout(15000); // socket-level read timeout
+        ssl_client.setTimeout(15000);   // Stream::readBytes timeout used by Update
         ssl_client.setClient(&basic_client);
 
         String url_remain     = saved_url.substring(8); // strip "https://"
@@ -3138,12 +3139,12 @@ bool System::uploadFirmwareURL(const char * url) {
     EMSESP::system_.systemStatus(SYSTEM_STATUS::SYSTEM_STATUS_UPLOADING);
 
     // explicit chunked read loop instead of Update.writeStream():
-    constexpr size_t CHUNK_SIZE        = 1024;
+    constexpr size_t   CHUNK_SIZE      = 1024;
     constexpr uint32_t READ_TIMEOUT_MS = 30000; // overall stall timeout per chunk
-    uint8_t  buf[CHUNK_SIZE];
-    size_t   total_read = 0;
-    bool     magic_ok   = false;
-    int      last_pct   = -1;
+    uint8_t            buf[CHUNK_SIZE];
+    size_t             total_read = 0;
+    bool               magic_ok   = false;
+    int                last_pct   = -1;
 
     while (total_read < (size_t)firmware_size) {
         // wait for some data or for the connection to drop
@@ -3189,10 +3190,7 @@ bool System::uploadFirmwareURL(const char * url) {
         }
 
         if (Update.write(buf, n) != n) {
-            LOG_ERROR("Firmware upload failed - flash write error at %u of %d bytes: %s",
-                      (unsigned)total_read,
-                      firmware_size,
-                      Update.errorString());
+            LOG_ERROR("Firmware upload failed - flash write error at %u of %d bytes: %s", (unsigned)total_read, firmware_size, Update.errorString());
             EMSESP::system_.systemStatus(SYSTEM_STATUS::SYSTEM_STATUS_ERROR_UPLOAD);
             return false;
         }
