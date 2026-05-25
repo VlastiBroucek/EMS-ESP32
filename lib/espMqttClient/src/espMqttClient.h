@@ -65,11 +65,7 @@ class espMqttClientSecure : public MqttClientSetup<espMqttClientSecure> {
     espMqttClientSecure & setPreSharedKey(const char * pskIdent, const char * psKey);
 
   protected:
-#ifndef NO_TLS_SUPPORT
     espMqttClientInternals::ClientSecureSync _client;
-#else
-    espMqttClientInternals::ClientSync _client;
-#endif
 };
 
 #endif

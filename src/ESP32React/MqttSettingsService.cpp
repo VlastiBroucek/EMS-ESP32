@@ -41,7 +41,6 @@ void MqttSettingsService::startClient() {
         delete _mqttClient;
         _mqttClient = nullptr;
     }
-#ifndef NO_TLS_SUPPORT
     if (_state.enableTLS) {
         isSecure = true;
         if (emsesp::EMSESP::system_.PSram() == 0) {
@@ -62,7 +61,6 @@ void MqttSettingsService::startClient() {
                 });
         return;
     }
-#endif
     isSecure = false;
     if (emsesp::EMSESP::system_.PSram() == 0) {
         _mqttClient = new espMqttClient(espMqttClientTypes::UseInternalTask::NO);
@@ -164,12 +162,10 @@ bool MqttSettingsService::configureMqtt() {
         }
 
         _reconfigureMqtt = false;
-#ifndef NO_TLS_SUPPORT
         if (_state.enableTLS) {
             if (_state.rootCA == "insecure") {
 #if defined(EMSESP_DEBUG)
                 emsesp::EMSESP::logger().debug("Start insecure MQTT");
-#endif
                 static_cast<espMqttClientSecure *>(_mqttClient)->setInsecure();
             } else {
 #if defined(EMSESP_DEBUG)
@@ -205,10 +201,8 @@ bool MqttSettingsService::configureMqtt() {
 }
 
 void MqttSettings::read(MqttSettings & settings, JsonObject root) {
-#ifndef NO_TLS_SUPPORT
-    root["enableTLS"] = settings.enableTLS;
-    root["rootCA"]    = settings.rootCA;
-#endif
+    root["enableTLS"]     = settings.enableTLS;
+    root["rootCA"]        = settings.rootCA;
     root["enabled"]       = settings.enabled;
     root["host"]          = settings.host;
     root["port"]          = settings.port;
@@ -244,12 +238,8 @@ StateUpdateResult MqttSettings::update(JsonObject root, MqttSettings & settings)
     MqttSettings newSettings;
     bool         changed = false;
 
-#ifndef NO_TLS_SUPPORT
-    newSettings.enableTLS = root["enableTLS"];
-    newSettings.rootCA    = root["rootCA"] | "";
-#else
-    newSettings.enableTLS = false;
-#endif
+    newSettings.enableTLS    = root["enableTLS"];
+    newSettings.rootCA       = root["rootCA"] | "";
     newSettings.enabled      = root["enabled"] | FACTORY_MQTT_ENABLED;
     newSettings.host         = root["host"] | FACTORY_MQTT_HOST;
     newSettings.port         = static_cast<uint16_t>(root["port"] | FACTORY_MQTT_PORT);
@@ -375,7 +365,6 @@ StateUpdateResult MqttSettings::update(JsonObject root, MqttSettings & settings)
         emsesp::EMSESP::mqtt_.set_publish_time_heartbeat(newSettings.publish_time_heartbeat);
     }
 
-#ifndef NO_TLS_SUPPORT
     // strip down to certificate only
     newSettings.rootCA.replace("\r", "");
     newSettings.rootCA.replace("\n", "");
@@ -388,7 +377,6 @@ StateUpdateResult MqttSettings::update(JsonObject root, MqttSettings & settings)
     if (newSettings.enableTLS != settings.enableTLS || newSettings.rootCA != settings.rootCA) {
         changed = true;
     }
-#endif
     // save the new settings
     settings = newSettings;
 

@@ -83,19 +83,15 @@ void WebSettings::read(WebSettings & settings, JsonObject root) {
     root["modbus_max_clients"]    = settings.modbus_max_clients;
     root["modbus_timeout"]        = settings.modbus_timeout;
     root["developer_mode"]        = settings.developer_mode;
-#ifndef NO_TLS_SUPPORT
-    root["email_enabled"] = settings.email_enabled;
-#else
-    root["email_enabled"] = false;
-#endif
-    root["email_security"] = settings.email_security;
-    root["email_server"]   = settings.email_server;
-    root["email_port"]     = settings.email_port;
-    root["email_login"]    = settings.email_login;
-    root["email_pass"]     = settings.email_pass;
-    root["email_sender"]   = settings.email_sender;
-    root["email_recp"]     = settings.email_recp;
-    root["email_subject"]  = settings.email_subject;
+    root["email_enabled"]         = settings.email_enabled;
+    root["email_security"]        = settings.email_security;
+    root["email_server"]          = settings.email_server;
+    root["email_port"]            = settings.email_port;
+    root["email_login"]           = settings.email_login;
+    root["email_pass"]            = settings.email_pass;
+    root["email_sender"]          = settings.email_sender;
+    root["email_recp"]            = settings.email_recp;
+    root["email_subject"]         = settings.email_subject;
 }
 
 // call on initialization and also when settings are updated/saved via web or console

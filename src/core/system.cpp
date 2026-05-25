@@ -38,7 +38,7 @@
 #include "../test/test.h"
 #endif
 
-#ifndef NO_TLS_SUPPORT
+#ifndef EMSESP_STANDALONE
 #define ENABLE_SMTP
 #define USE_ESP_SSLCLIENT
 #define READYCLIENT_SSL_CLIENT ESP_SSLClient
@@ -138,7 +138,7 @@ bool System::command_sendmail(const char * value, const int8_t id) {
 
     bool success = false;
 
-#ifndef NO_TLS_SUPPORT
+#ifndef EMSESP_STANDALONE
     WiFiClient *    basic_client = new WiFiClient;
     ESP_SSLClient * ssl_client   = new ESP_SSLClient;
     ReadyClient *   r_client     = new ReadyClient(*ssl_client);
@@ -2956,65 +2956,265 @@ bool System::uploadFirmwareURL(const char * url) {
 
     Shell::loop_all(); // flush log buffers so latest messages are shown in console
 
-    // Configure temporary client
-    HTTPClient http;
-    http.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS); // important for GitHub 302's
-    http.setTimeout(8000);
-    http.useHTTP10(true); // use HTTP/1.0 for update since the update handler does not support any transfer Encoding
-    http.begin(saved_url);
+    // detect scheme (case-insensitive)
+    String scheme = saved_url.substring(0, 8);
+    scheme.toLowerCase();
+    const bool is_https = scheme.startsWith("https://");
 
-    // start a connection, returns -1 if fails
-    int httpCode = http.GET();
-    if (httpCode != HTTP_CODE_OK) {
-        LOG_ERROR("Firmware upload failed - HTTP code %d", httpCode);
-        http.end();
-        return false; // error
+    HTTPClient    http;
+    WiFiClient    basic_client;
+    ESP_SSLClient ssl_client;
+
+    Stream * stream        = nullptr;
+    int      firmware_size = 0;
+
+    if (is_https) {
+        ssl_client.setInsecure(); // no CA validation, matches the rest of the project
+        // BearSSL needs a receive buffer large enough to hold one full TLS record.
+        // GitHub's release-assets CDN sends standard up-to-16 KB records and does NOT
+        // negotiate max_fragment_length, so a small (e.g. 1 KB) RX buffer makes the
+        // body unreadable (headers still fit one small record, hence Content-Length
+        // looks fine, but the first body record cannot be decoded). 16384 + overhead
+        // is the safe value the library itself uses by default; we go a bit smaller
+        // to be friendlier to 4 MB / no-PSRAM boards while still big enough for any
+        // record the CDN actually sends in practice.
+        ssl_client.setBufferSizes(16384, 1024);
+        ssl_client.setSessionTimeout(120);
+        basic_client.setTimeout(15000);                           // socket-level read timeout
+        ssl_client.setTimeout(15000);                             // Stream::readBytes timeout used by Update
+        ssl_client.setClient(&basic_client);
+
+        String url_remain     = saved_url.substring(8); // strip "https://"
+        int    redirect_count = 0;
+
+        while (true) {
+            // split url_remain into host and path
+            String host;
+            String path;
+            int    s = url_remain.indexOf('/');
+            if (s < 0) {
+                host = url_remain;
+                path = "/";
+            } else {
+                host = url_remain.substring(0, s);
+                path = url_remain.substring(s);
+            }
+
+            LOG_DEBUG("Connecting to %s", host.c_str());
+            if (!ssl_client.connect(host.c_str(), 443)) {
+                LOG_ERROR("Firmware upload failed - HTTPS connection failed");
+                return false;
+            }
+
+            // send a minimal HTTP/1.0 GET so we don't have to deal with chunked encoding
+            ssl_client.print("GET ");
+            ssl_client.print(path);
+            ssl_client.println(" HTTP/1.0");
+            ssl_client.print("Host: ");
+            ssl_client.println(host);
+            ssl_client.println("User-Agent: EMS-ESP");
+            ssl_client.println("Connection: close");
+            ssl_client.print("\r\n");
+
+            // wait for the first byte (up to 8s, matching the previous HTTP timeout)
+            uint32_t ms = millis();
+            while (ssl_client.connected() && !ssl_client.available() && millis() - ms < 8000) {
+                delay(1);
+            }
+
+            // parse status line: "HTTP/1.x CODE TEXT"
+            String status_line = ssl_client.readStringUntil('\n');
+            int    sp          = status_line.indexOf(' ');
+            int    http_code   = (sp >= 0) ? status_line.substring(sp + 1, sp + 4).toInt() : 0;
+
+            // parse response headers, looking for Content-Length and Location
+            int    content_length = -1;
+            String location;
+            while (ssl_client.connected() || ssl_client.available()) {
+                String line = ssl_client.readStringUntil('\n');
+                line.trim();
+                if (line.isEmpty()) {
+                    break; // end of headers
+                }
+                int colon = line.indexOf(':');
+                if (colon < 0) {
+                    continue;
+                }
+                String name = line.substring(0, colon);
+                name.toLowerCase();
+                String val = line.substring(colon + 1);
+                val.trim();
+                if (name == "content-length") {
+                    content_length = val.toInt();
+                } else if (name == "location") {
+                    location = val;
+                }
+            }
+
+            // follow redirects manually (GitHub releases redirect to objects.githubusercontent.com)
+            if (http_code == 301 || http_code == 302 || http_code == 303 || http_code == 307 || http_code == 308) {
+                ssl_client.stop();
+                if (location.isEmpty() || ++redirect_count > 5) {
+                    LOG_ERROR("Firmware upload failed - too many redirects");
+                    return false;
+                }
+                String lower_loc = location;
+                lower_loc.toLowerCase();
+                if (lower_loc.startsWith("https://")) {
+                    url_remain = location.substring(8);
+                } else if (location.startsWith("/")) {
+                    url_remain = host + location; // relative redirect, same host
+                } else {
+                    LOG_ERROR("Firmware upload failed - non-HTTPS redirect to %s", location.c_str());
+                    return false;
+                }
+                LOG_DEBUG("Following redirect to %s", url_remain.c_str());
+                continue;
+            }
+
+            if (http_code != HTTP_CODE_OK) {
+                ssl_client.stop();
+                LOG_ERROR("Firmware upload failed - HTTP code %d", http_code);
+                return false;
+            }
+
+            if (content_length <= 0) {
+                ssl_client.stop();
+                LOG_ERROR("Firmware upload failed - missing Content-Length");
+                return false;
+            }
+
+            // wait for the first byte of the body so Update.writeStream's peek() sees real data
+            // (headers and body may arrive in separate TLS records)
+            uint32_t body_wait = millis();
+            while (ssl_client.connected() && !ssl_client.available() && millis() - body_wait < 8000) {
+                delay(1);
+            }
+            if (!ssl_client.available()) {
+                ssl_client.stop();
+                LOG_ERROR("Firmware upload failed - no body received");
+                return false;
+            }
+
+            stream        = &ssl_client;
+            firmware_size = content_length;
+            break;
+        }
+    } else {
+        // HTTP path
+        http.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS); // important for GitHub 302's
+        http.setTimeout(8000);
+        http.useHTTP10(true); // use HTTP/1.0 for update since the update handler does not support any transfer Encoding
+        http.begin(saved_url);
+
+        int httpCode = http.GET();
+        if (httpCode != HTTP_CODE_OK) {
+            LOG_ERROR("Firmware upload failed - HTTP code %d", httpCode);
+            http.end();
+            return false;
+        }
+
+        firmware_size = http.getSize();
+        stream        = http.getStreamPtr();
     }
 
-    int firmware_size = http.getSize();
-
     // check we have a valid size
-    if (firmware_size < 2097152) { // 2MB or greater is required
+    if (firmware_size < 1677721) { // 1.6MB or greater is required
         LOG_ERROR("Firmware upload failed - invalid size");
-        http.end();
         return false; // error
     }
 
     // check we have enough space for the upload in the ota partition
     if (!Update.begin(firmware_size)) {
         LOG_ERROR("Firmware upload failed - no space");
-        http.end();
         return false; // error
     }
 
-    LOG_INFO("Firmware uploading (size: %d KB). Please wait...", firmware_size / 1024);
+    LOG_INFO("Firmware uploading (size: %d KB) over %s. Please wait...", firmware_size / 1024, is_https ? "HTTPS" : "HTTP");
 
     Shell::loop_all(); // flush log buffers so latest messages are shown in console
 
     // we're about to start the upload, set the status so the Web System Monitor spots it
     EMSESP::system_.systemStatus(SYSTEM_STATUS::SYSTEM_STATUS_UPLOADING);
 
-    // set a callback so we can monitor progress in the WebUI
-    Update.onProgress([](size_t progress, size_t total) { EMSESP::system_.systemStatus(SYSTEM_STATUS::SYSTEM_STATUS_UPLOADING + (progress * 100 / total)); });
+    // explicit chunked read loop instead of Update.writeStream():
+    constexpr size_t CHUNK_SIZE        = 1024;
+    constexpr uint32_t READ_TIMEOUT_MS = 30000; // overall stall timeout per chunk
+    uint8_t  buf[CHUNK_SIZE];
+    size_t   total_read = 0;
+    bool     magic_ok   = false;
+    int      last_pct   = -1;
 
-    // get tcp stream and send it to Updater
-    WiFiClient * stream = http.getStreamPtr();
-    if (Update.writeStream(*stream) != firmware_size) {
-        LOG_ERROR("Firmware upload failed - size differences");
-        http.end();
-        EMSESP::system_.systemStatus(SYSTEM_STATUS::SYSTEM_STATUS_ERROR_UPLOAD);
-        return false; // error
+    while (total_read < (size_t)firmware_size) {
+        // wait for some data or for the connection to drop
+        uint32_t wait_start = millis();
+        while (!stream->available()) {
+            const bool still_connected = is_https ? ssl_client.connected() : http.connected();
+            if (!still_connected) {
+                break;
+            }
+            if (millis() - wait_start > READ_TIMEOUT_MS) {
+                break;
+            }
+            delay(1);
+        }
+
+        if (!stream->available()) {
+            LOG_ERROR("Firmware upload failed - read stalled at %u of %d bytes", (unsigned)total_read, firmware_size);
+            EMSESP::system_.systemStatus(SYSTEM_STATUS::SYSTEM_STATUS_ERROR_UPLOAD);
+            return false;
+        }
+
+        size_t want = (size_t)firmware_size - total_read;
+        if (want > CHUNK_SIZE) {
+            want = CHUNK_SIZE;
+        }
+
+        size_t n = stream->readBytes(buf, want);
+        if (n == 0) {
+            LOG_ERROR("Firmware upload failed - read returned 0 at %u of %d bytes", (unsigned)total_read, firmware_size);
+            EMSESP::system_.systemStatus(SYSTEM_STATUS::SYSTEM_STATUS_ERROR_UPLOAD);
+            return false;
+        }
+
+        // verify the ESP image magic byte the very first time so we fail fast with a
+        // clear message if the URL points at the wrong asset (HTML, archive, ...)
+        if (!magic_ok) {
+            if (buf[0] != 0xE9) {
+                LOG_ERROR("Firmware upload failed - bad magic byte 0x%02X (expected 0xE9, not an ESP32 firmware image?)", buf[0]);
+                EMSESP::system_.systemStatus(SYSTEM_STATUS::SYSTEM_STATUS_ERROR_UPLOAD);
+                return false;
+            }
+            magic_ok = true;
+        }
+
+        if (Update.write(buf, n) != n) {
+            LOG_ERROR("Firmware upload failed - flash write error at %u of %d bytes: %s",
+                      (unsigned)total_read,
+                      firmware_size,
+                      Update.errorString());
+            EMSESP::system_.systemStatus(SYSTEM_STATUS::SYSTEM_STATUS_ERROR_UPLOAD);
+            return false;
+        }
+
+        total_read += n;
+
+        // update the WebUI status, but only when the percentage actually changes
+        int pct = (int)(total_read * 100 / (size_t)firmware_size);
+        if (pct != last_pct) {
+            EMSESP::system_.systemStatus(SYSTEM_STATUS::SYSTEM_STATUS_UPLOADING + pct);
+            last_pct = pct;
+        }
+
+        yield();
     }
 
     if (!Update.end(true)) {
-        LOG_ERROR("Firmware upload failed - general error");
-        http.end();
+        LOG_ERROR("Firmware upload failed - %s", Update.errorString());
         EMSESP::system_.systemStatus(SYSTEM_STATUS::SYSTEM_STATUS_ERROR_UPLOAD);
         return false; // error
     }
 
-    // finished with upload
-    http.end();
     saved_url.clear(); // prevent from downloading again
     LOG_INFO("Firmware uploaded successfully. Restarting...");
     EMSESP::system_.systemStatus(SYSTEM_STATUS::SYSTEM_STATUS_PENDING_RESTART);
