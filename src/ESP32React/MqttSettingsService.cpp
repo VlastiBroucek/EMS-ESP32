@@ -166,6 +166,7 @@ bool MqttSettingsService::configureMqtt() {
             if (_state.rootCA == "insecure") {
 #if defined(EMSESP_DEBUG)
                 emsesp::EMSESP::logger().debug("Start insecure MQTT");
+#endif
                 static_cast<espMqttClientSecure *>(_mqttClient)->setInsecure();
             } else {
 #if defined(EMSESP_DEBUG)
@@ -185,7 +186,6 @@ bool MqttSettingsService::configureMqtt() {
             static_cast<espMqttClientSecure *>(_mqttClient)->setWill(will_topic, 1, true, "offline"); // QOS 1, retain
             return _mqttClient->connect();
         }
-#endif
         static_cast<espMqttClient *>(_mqttClient)->setServer(_state.host.c_str(), _state.port);
         if (_state.username.length() > 0) {
             static_cast<espMqttClient *>(_mqttClient)->setCredentials(_state.username.c_str(), _state.password.length() > 0 ? _state.password.c_str() : nullptr);

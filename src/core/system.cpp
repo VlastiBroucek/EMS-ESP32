@@ -29,7 +29,6 @@
 #include <nvs.h>
 #endif
 
-#include <HTTPClient.h>
 #include <map>
 
 #include "firmwareVersion.h"
@@ -2957,12 +2956,14 @@ bool System::uploadFirmwareURL(const char * url) {
 
     Shell::loop_all(); // flush log buffers so latest messages are shown in console
 
-    // detect scheme (case-insensitive)
+    // detect scheme (case-insensitive). Everything below uses the same code path
+    // for HTTP and HTTPS - ESP_SSLClient is configured as a plain TCP passthrough
+    // when SSL is disabled, so we don't need HTTPClient at all.
     String scheme = saved_url.substring(0, 8);
     scheme.toLowerCase();
     const bool is_https = scheme.startsWith("https://");
+    const int  scheme_len = is_https ? 8 : 7; // "https://" vs "http://"
 
-    HTTPClient    http;
     WiFiClient    basic_client;
     ESP_SSLClient ssl_client;
 
@@ -2981,142 +2982,134 @@ bool System::uploadFirmwareURL(const char * url) {
         // record the CDN actually sends in practice.
         ssl_client.setBufferSizes(16384, 1024);
         ssl_client.setSessionTimeout(120);
-        basic_client.setTimeout(15000); // socket-level read timeout
-        ssl_client.setTimeout(15000);   // Stream::readBytes timeout used by Update
-        ssl_client.setClient(&basic_client);
+    }
+    basic_client.setTimeout(15000);             // socket-level read timeout
+    ssl_client.setTimeout(15000);               // Stream::readBytes timeout used by Update
+    ssl_client.setClient(&basic_client, is_https); // enableSSL = false for plain HTTP
 
-        String url_remain     = saved_url.substring(8); // strip "https://"
-        int    redirect_count = 0;
+    const uint16_t port = is_https ? 443 : 80;
+    String         url_remain     = saved_url.substring(scheme_len);
+    int            redirect_count = 0;
 
-        while (true) {
-            // split url_remain into host and path
-            String host;
-            String path;
-            int    s = url_remain.indexOf('/');
-            if (s < 0) {
-                host = url_remain;
-                path = "/";
-            } else {
-                host = url_remain.substring(0, s);
-                path = url_remain.substring(s);
-            }
-
-            LOG_DEBUG("Connecting to %s", host.c_str());
-            if (!ssl_client.connect(host.c_str(), 443)) {
-                LOG_ERROR("Firmware upload failed - HTTPS connection failed");
-                return false;
-            }
-
-            // send a minimal HTTP/1.0 GET so we don't have to deal with chunked encoding
-            ssl_client.print("GET ");
-            ssl_client.print(path);
-            ssl_client.println(" HTTP/1.0");
-            ssl_client.print("Host: ");
-            ssl_client.println(host);
-            ssl_client.println("User-Agent: EMS-ESP");
-            ssl_client.println("Connection: close");
-            ssl_client.print("\r\n");
-
-            // wait for the first byte (up to 8s, matching the previous HTTP timeout)
-            uint32_t ms = millis();
-            while (ssl_client.connected() && !ssl_client.available() && millis() - ms < 8000) {
-                delay(1);
-            }
-
-            // parse status line: "HTTP/1.x CODE TEXT"
-            String status_line = ssl_client.readStringUntil('\n');
-            int    sp          = status_line.indexOf(' ');
-            int    http_code   = (sp >= 0) ? status_line.substring(sp + 1, sp + 4).toInt() : 0;
-
-            // parse response headers, looking for Content-Length and Location
-            int    content_length = -1;
-            String location;
-            while (ssl_client.connected() || ssl_client.available()) {
-                String line = ssl_client.readStringUntil('\n');
-                line.trim();
-                if (line.isEmpty()) {
-                    break; // end of headers
-                }
-                int colon = line.indexOf(':');
-                if (colon < 0) {
-                    continue;
-                }
-                String name = line.substring(0, colon);
-                name.toLowerCase();
-                String val = line.substring(colon + 1);
-                val.trim();
-                if (name == "content-length") {
-                    content_length = val.toInt();
-                } else if (name == "location") {
-                    location = val;
-                }
-            }
-
-            // follow redirects manually (GitHub releases redirect to objects.githubusercontent.com)
-            if (http_code == 301 || http_code == 302 || http_code == 303 || http_code == 307 || http_code == 308) {
-                ssl_client.stop();
-                if (location.isEmpty() || ++redirect_count > 5) {
-                    LOG_ERROR("Firmware upload failed - too many redirects");
-                    return false;
-                }
-                String lower_loc = location;
-                lower_loc.toLowerCase();
-                if (lower_loc.startsWith("https://")) {
-                    url_remain = location.substring(8);
-                } else if (location.startsWith("/")) {
-                    url_remain = host + location; // relative redirect, same host
-                } else {
-                    LOG_ERROR("Firmware upload failed - non-HTTPS redirect to %s", location.c_str());
-                    return false;
-                }
-                LOG_DEBUG("Following redirect to %s", url_remain.c_str());
-                continue;
-            }
-
-            if (http_code != HTTP_CODE_OK) {
-                ssl_client.stop();
-                LOG_ERROR("Firmware upload failed - HTTP code %d", http_code);
-                return false;
-            }
-
-            if (content_length <= 0) {
-                ssl_client.stop();
-                LOG_ERROR("Firmware upload failed - missing Content-Length");
-                return false;
-            }
-
-            // wait for the first byte of the body so Update.writeStream's peek() sees real data
-            // (headers and body may arrive in separate TLS records)
-            uint32_t body_wait = millis();
-            while (ssl_client.connected() && !ssl_client.available() && millis() - body_wait < 8000) {
-                delay(1);
-            }
-            if (!ssl_client.available()) {
-                ssl_client.stop();
-                LOG_ERROR("Firmware upload failed - no body received");
-                return false;
-            }
-
-            stream        = &ssl_client;
-            firmware_size = content_length;
-            break;
+    while (true) {
+        // split url_remain into host and path
+        String host;
+        String path;
+        int    s = url_remain.indexOf('/');
+        if (s < 0) {
+            host = url_remain;
+            path = "/";
+        } else {
+            host = url_remain.substring(0, s);
+            path = url_remain.substring(s);
         }
-    } else {
-        // HTTP path
-        http.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS); // important for GitHub 302's
-        http.setTimeout(8000);
-        http.useHTTP10(true); // use HTTP/1.0 for update since the update handler does not support any transfer Encoding
-        http.begin(saved_url);
 
-        int httpCode = http.GET();
-        if (httpCode != HTTP_CODE_OK) {
-            LOG_ERROR("Firmware upload failed - HTTP code %d", httpCode);
-            http.end();
+        LOG_DEBUG("Connecting to %s", host.c_str());
+        if (!ssl_client.connect(host.c_str(), port)) {
+            LOG_ERROR("Firmware upload failed - connection failed");
             return false;
         }
 
-        firmware_size = http.getSize();
-        stream        = http.getStreamPtr();
+        // send a minimal HTTP/1.0 GET so we don't have to deal with chunked encoding
+        ssl_client.print("GET ");
+        ssl_client.print(path);
+        ssl_client.println(" HTTP/1.0");
+        ssl_client.print("Host: ");
+        ssl_client.println(host);
+        ssl_client.println("User-Agent: EMS-ESP");
+        ssl_client.println("Connection: close");
+        ssl_client.print("\r\n");
+
+        // wait for the first byte (up to 8s, matching the previous HTTP timeout)
+        uint32_t ms = millis();
+        while (ssl_client.connected() && !ssl_client.available() && millis() - ms < 8000) {
+            delay(1);
+        }
+
+        // parse status line: "HTTP/1.x CODE TEXT"
+        String status_line = ssl_client.readStringUntil('\n');
+        int    sp          = status_line.indexOf(' ');
+        int    http_code   = (sp >= 0) ? status_line.substring(sp + 1, sp + 4).toInt() : 0;
+
+        // parse response headers, looking for Content-Length and Location
+        int    content_length = -1;
+        String location;
+        while (ssl_client.connected() || ssl_client.available()) {
+            String line = ssl_client.readStringUntil('\n');
+            line.trim();
+            if (line.isEmpty()) {
+                break; // end of headers
+            }
+            int colon = line.indexOf(':');
+            if (colon < 0) {
+                continue;
+            }
+            String name = line.substring(0, colon);
+            name.toLowerCase();
+            String val = line.substring(colon + 1);
+            val.trim();
+            if (name == "content-length") {
+                content_length = val.toInt();
+            } else if (name == "location") {
+                location = val;
+            }
+        }
+
+        // follow redirects manually (GitHub releases redirect to objects.githubusercontent.com)
+        if (http_code == 301 || http_code == 302 || http_code == 303 || http_code == 307 || http_code == 308) {
+            ssl_client.stop();
+            if (location.isEmpty() || ++redirect_count > 5) {
+                LOG_ERROR("Firmware upload failed - too many redirects");
+                return false;
+            }
+            String lower_loc = location;
+            lower_loc.toLowerCase();
+            if (lower_loc.startsWith("https://") || lower_loc.startsWith("http://")) {
+                // scheme-changing redirect is not supported - the SSL state is
+                // baked in at setClient() time and we don't want to re-init mid-flight
+                const bool new_is_https = lower_loc.startsWith("https://");
+                if (new_is_https != is_https) {
+                    LOG_ERROR("Firmware upload failed - cross-scheme redirect to %s", location.c_str());
+                    return false;
+                }
+                url_remain = location.substring(new_is_https ? 8 : 7);
+            } else if (location.startsWith("/")) {
+                url_remain = host + location; // relative redirect, same host
+            } else {
+                LOG_ERROR("Firmware upload failed - unsupported redirect to %s", location.c_str());
+                return false;
+            }
+            LOG_DEBUG("Following redirect to %s", url_remain.c_str());
+            continue;
+        }
+
+        if (http_code != 200) {
+            ssl_client.stop();
+            LOG_ERROR("Firmware upload failed - HTTP code %d", http_code);
+            return false;
+        }
+
+        if (content_length <= 0) {
+            ssl_client.stop();
+            LOG_ERROR("Firmware upload failed - missing Content-Length");
+            return false;
+        }
+
+        // wait for the first byte of the body so the read loop sees real data
+        // (headers and body may arrive in separate TLS records)
+        uint32_t body_wait = millis();
+        while (ssl_client.connected() && !ssl_client.available() && millis() - body_wait < 8000) {
+            delay(1);
+        }
+        if (!ssl_client.available()) {
+            ssl_client.stop();
+            LOG_ERROR("Firmware upload failed - no body received");
+            return false;
+        }
+
+        stream        = &ssl_client;
+        firmware_size = content_length;
+        break;
     }
 
     // check we have a valid size
@@ -3150,8 +3143,7 @@ bool System::uploadFirmwareURL(const char * url) {
         // wait for some data or for the connection to drop
         uint32_t wait_start = millis();
         while (!stream->available()) {
-            const bool still_connected = is_https ? ssl_client.connected() : http.connected();
-            if (!still_connected) {
+            if (!ssl_client.connected()) {
                 break;
             }
             if (millis() - wait_start > READ_TIMEOUT_MS) {

@@ -20,7 +20,8 @@
 
 #ifndef EMSESP_STANDALONE
 #include <esp_ota_ops.h>
-#include <HTTPClient.h>
+#include <WiFiClient.h>
+#include <ESP_SSLClient.h>
 #endif
 
 namespace emsesp {
@@ -414,30 +415,91 @@ bool WebStatusService::refresh_versions_cache() {
 #ifdef EMSESP_STANDALONE
     return false;
 #else
-    HTTPClient http;
-    http.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
-    http.setTimeout(5000);
-    http.useHTTP10(true);
-
-    if (!http.begin(EMSESP_VERSIONS_URL)) {
+    // detect scheme from EMSESP_VERSIONS_URL (case-insensitive). One code path for HTTP and HTTPS,
+    // using ESP_SSLClient as a plain TCP passthrough when SSL is disabled.
+    String url     = EMSESP_VERSIONS_URL;
+    String lower   = url;
+    lower.toLowerCase();
+    const bool is_https = lower.startsWith("https://");
+    if (!is_https && !lower.startsWith("http://")) {
 #if defined(EMSESP_DEBUG)
-        EMSESP::logger().debug("versions.json: failed to start HTTPS request");
+        EMSESP::logger().debug("versions.json: unsupported scheme");
+#endif
+        return false;
+    }
+    const int scheme_len = is_https ? 8 : 7;
+
+    WiFiClient    basic_client;
+    ESP_SSLClient ssl_client;
+    if (is_https) {
+        ssl_client.setInsecure();
+        ssl_client.setBufferSizes(16384, 1024); // versions.json fits easily but TLS records may be full-size
+        ssl_client.setSessionTimeout(120);
+    }
+    basic_client.setTimeout(5000);
+    ssl_client.setTimeout(5000);
+    ssl_client.setClient(&basic_client, is_https);
+
+    // split into host and path
+    String rest = url.substring(scheme_len);
+    String host;
+    String path;
+    int    s = rest.indexOf('/');
+    if (s < 0) {
+        host = rest;
+        path = "/";
+    } else {
+        host = rest.substring(0, s);
+        path = rest.substring(s);
+    }
+
+    if (!ssl_client.connect(host.c_str(), is_https ? 443 : 80)) {
+#if defined(EMSESP_DEBUG)
+        EMSESP::logger().debug("versions.json: connection failed");
 #endif
         return false;
     }
 
-    int httpCode = http.GET();
-    if (httpCode != HTTP_CODE_OK) {
+    // minimal HTTP/1.0 GET so we don't have to handle chunked encoding
+    ssl_client.print("GET ");
+    ssl_client.print(path);
+    ssl_client.println(" HTTP/1.0");
+    ssl_client.print("Host: ");
+    ssl_client.println(host);
+    ssl_client.println("User-Agent: EMS-ESP");
+    ssl_client.println("Connection: close");
+    ssl_client.print("\r\n");
+
+    // wait for the first byte
+    uint32_t ms = millis();
+    while (ssl_client.connected() && !ssl_client.available() && millis() - ms < 5000) {
+        delay(1);
+    }
+
+    // parse status line
+    String status_line = ssl_client.readStringUntil('\n');
+    int    sp          = status_line.indexOf(' ');
+    int    http_code   = (sp >= 0) ? status_line.substring(sp + 1, sp + 4).toInt() : 0;
+    if (http_code != 200) {
+        ssl_client.stop();
 #if defined(EMSESP_DEBUG)
-        EMSESP::logger().debug("versions.json: HTTP error code %d", httpCode);
+        EMSESP::logger().debug("versions.json: HTTP error code %d", http_code);
 #endif
-        http.end();
         return false;
+    }
+
+    // skip headers
+    while (ssl_client.connected() || ssl_client.available()) {
+        String line = ssl_client.readStringUntil('\n');
+        line.trim();
+        if (line.isEmpty()) {
+            break;
+        }
     }
 
     JsonDocument         doc(PSRAM_DOC);
-    DeserializationError err = deserializeJson(doc, http.getStream());
-    http.end();
+    DeserializationError err = deserializeJson(doc, ssl_client);
+    ssl_client.stop();
     if (err) {
 #if defined(EMSESP_DEBUG)
         EMSESP::logger().debug("versions.json: parse error");

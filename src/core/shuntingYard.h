@@ -21,7 +21,6 @@
 #ifndef EMSESP_SHUNTING_YARD_H_
 #define EMSESP_SHUNTING_YARD_H_
 
-#include <HTTPClient.h>
 #include <ArduinoJson.h>
 
 #include <string>

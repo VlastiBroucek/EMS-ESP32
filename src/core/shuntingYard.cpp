@@ -687,15 +687,21 @@ std::string calculate(const std::string & expr) {
 }
 
 // perform an HTTP/HTTPS request; returns the HTTP status code (0 on failure or unsupported scheme)
-// for HTTPS the response headers are stripped, so `result` always contains only the body
+// the response headers are always stripped, so `result` contains only the body
+// uses ESP_SSLClient for both schemes (SSL is disabled for plain HTTP), avoiding the HTTPClient dependency
 int http_request(std::string url, const std::string & method, const std::string & value, JsonObjectConst headers, std::string & result) {
     int        httpResult = 0;
     const bool is_post    = value.length() || Helpers::toLower(method) == "post";
     const auto lower_url  = Helpers::toLower(url.c_str());
 
-    if (lower_url.starts_with("https://")) {
-        WiFiClient *    basic_client = new WiFiClient;
-        ESP_SSLClient * ssl_client   = new ESP_SSLClient;
+    const bool is_https = lower_url.starts_with("https://");
+    if (!is_https && !lower_url.starts_with("http://")) {
+        return 0; // unsupported scheme
+    }
+
+    WiFiClient *    basic_client = new WiFiClient;
+    ESP_SSLClient * ssl_client   = new ESP_SSLClient;
+    if (is_https) {
         ssl_client->setInsecure(); // with root CA we should set here: ssl_client->setCACert(rootCACert);
         // NOTE: 1 KB RX buffer is fine for small JSON-style endpoints used by the scheduler/shunting-yard,
         // but it is NOT enough for servers that send full-size TLS records (>1 KB), e.g. GitHub release
@@ -704,84 +710,67 @@ int http_request(std::string url, const std::string & method, const std::string 
         // payloads, bump the RX buffer to 16384 (see uploadFirmwareURL in core/system.cpp for reference).
         ssl_client->setBufferSizes(1024, 1024);
         ssl_client->setSessionTimeout(120); // Set the timeout in seconds (>=120 seconds)
-        url.replace(0, 8, "");
-        std::string host  = url;
-        auto        index = url.find_first_of('/');
-        if (index != std::string::npos) {
-            host = url.substr(0, index);
-            url.replace(0, index, "");
-        }
-        ssl_client->setClient(basic_client);
-        if (ssl_client->connect(host.c_str(), 443)) {
-            bool content_set = false;
-            ssl_client->print(is_post ? "POST " : "GET ");
-            ssl_client->print(url.c_str());
-            ssl_client->println(" HTTP/1.1");
-            ssl_client->print("Host: ");
-            ssl_client->println(host.c_str());
-            for (JsonPairConst p : headers) {
-                content_set |= (Helpers::toLower(p.key().c_str()) == "content-type");
-                ssl_client->print(p.key().c_str());
-                ssl_client->print(": ");
-                ssl_client->println(p.value().as<std::string>().c_str());
-            }
-            if (is_post) {
-                if (!content_set) {
-                    ssl_client->print("Content-Type: ");
-                    ssl_client->println(value.starts_with('{') ? asyncsrv::T_application_json : asyncsrv::T_text_plain);
-                }
-                ssl_client->print("Content-Length: ");
-                ssl_client->println(value.length());
-                ssl_client->println("Connection: close");
-                ssl_client->print("\r\n");
-                ssl_client->print(value.c_str());
-            } else {
-                ssl_client->println("Connection: close");
-            }
-            auto ms = millis();
-            while (ssl_client->connected() && !ssl_client->available() && millis() - ms < 3000) {
-                delay(0);
-            }
-            while (ssl_client->available()) {
-                result += (char)ssl_client->read();
-            }
-            ssl_client->stop();
-            index = result.find_first_of(' ');
-            if (index != std::string::npos) {
-                httpResult = stoi(result.substr(index + 1, 3));
-            }
-            index = result.find("\r\n\r\n");
-            if (index != std::string::npos) {
-                result.replace(0, index + 4, "");
-            }
-        } else {
-            EMSESP::logger().warning("HTTPS connection failed");
-        }
-        delete ssl_client;
-        delete basic_client;
-    } else if (lower_url.starts_with("http://")) {
-        HTTPClient * http = new HTTPClient;
-        if (http->begin(url.c_str())) {
-            bool content_set = false;
-            for (JsonPairConst p : headers) {
-                http->addHeader(p.key().c_str(), p.value().as<std::string>().c_str());
-                content_set |= (Helpers::toLower(p.key().c_str()) == "content-type");
-            }
-            if (is_post) {
-                if (!content_set) {
-                    http->addHeader(asyncsrv::T_Content_Type, value.starts_with('{') ? asyncsrv::T_application_json : asyncsrv::T_text_plain);
-                }
-                httpResult = http->POST(value.c_str());
-            } else {
-                httpResult = http->GET();
-            }
-            if (httpResult > 0) {
-                result = http->getString().c_str();
-            }
-        }
-        http->end();
-        delete http;
     }
+    ssl_client->setClient(basic_client, is_https); // enableSSL = false for plain HTTP
+
+    url.replace(0, is_https ? 8 : 7, "");
+    std::string host  = url;
+    auto        index = url.find_first_of('/');
+    if (index != std::string::npos) {
+        host = url.substr(0, index);
+        url.replace(0, index, "");
+    } else {
+        url = "/";
+    }
+
+    const uint16_t port = is_https ? 443 : 80;
+    if (ssl_client->connect(host.c_str(), port)) {
+        bool content_set = false;
+        ssl_client->print(is_post ? "POST " : "GET ");
+        ssl_client->print(url.c_str());
+        ssl_client->println(" HTTP/1.1");
+        ssl_client->print("Host: ");
+        ssl_client->println(host.c_str());
+        for (JsonPairConst p : headers) {
+            content_set |= (Helpers::toLower(p.key().c_str()) == "content-type");
+            ssl_client->print(p.key().c_str());
+            ssl_client->print(": ");
+            ssl_client->println(p.value().as<std::string>().c_str());
+        }
+        if (is_post) {
+            if (!content_set) {
+                ssl_client->print("Content-Type: ");
+                ssl_client->println(value.starts_with('{') ? asyncsrv::T_application_json : asyncsrv::T_text_plain);
+            }
+            ssl_client->print("Content-Length: ");
+            ssl_client->println(value.length());
+            ssl_client->println("Connection: close");
+            ssl_client->print("\r\n");
+            ssl_client->print(value.c_str());
+        } else {
+            ssl_client->println("Connection: close");
+        }
+        auto ms = millis();
+        while (ssl_client->connected() && !ssl_client->available() && millis() - ms < 3000) {
+            delay(0);
+        }
+        while (ssl_client->available()) {
+            result += (char)ssl_client->read();
+        }
+        ssl_client->stop();
+        index = result.find_first_of(' ');
+        if (index != std::string::npos) {
+            httpResult = stoi(result.substr(index + 1, 3));
+        }
+        index = result.find("\r\n\r\n");
+        if (index != std::string::npos) {
+            result.replace(0, index + 4, "");
+        }
+    } else {
+        EMSESP::logger().warning("%s connection failed", is_https ? "HTTPS" : "HTTP");
+    }
+    delete ssl_client;
+    delete basic_client;
 
     return httpResult;
 }
