@@ -2956,9 +2956,6 @@ bool System::uploadFirmwareURL(const char * url) {
 
     Shell::loop_all(); // flush log buffers so latest messages are shown in console
 
-    // detect scheme (case-insensitive). Everything below uses the same code path
-    // for HTTP and HTTPS - ESP_SSLClient is configured as a plain TCP passthrough
-    // when SSL is disabled, so we don't need HTTPClient at all.
     String scheme = saved_url.substring(0, 8);
     scheme.toLowerCase();
     const bool is_https = scheme.startsWith("https://");

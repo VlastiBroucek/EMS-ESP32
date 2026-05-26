@@ -688,7 +688,6 @@ std::string calculate(const std::string & expr) {
 
 // perform an HTTP/HTTPS request; returns the HTTP status code (0 on failure or unsupported scheme)
 // the response headers are always stripped, so `result` contains only the body
-// uses ESP_SSLClient for both schemes (SSL is disabled for plain HTTP), avoiding the HTTPClient dependency
 int http_request(std::string url, const std::string & method, const std::string & value, JsonObjectConst headers, std::string & result) {
     int        httpResult = 0;
     const bool is_post    = value.length() || Helpers::toLower(method) == "post";
