@@ -586,7 +586,7 @@ void Mqtt::ha_status() {
 
     // These come from the info MQTT topic - and handled in the publish_ha_sensor_config function
     publish_system_ha_sensor_config(DeviceValueType::STRING, "Version", "version", DeviceValueUOM::NONE);
-    publish_system_ha_sensor_config(DeviceValueType::STRING, "Uptime", "bootTime", DeviceValueUOM::TIMESTAMP);
+    publish_system_ha_sensor_config(DeviceValueType::STRING, "Boot time", "bootTime", DeviceValueUOM::TIMESTAMP);
 }
 
 // add sub or pub task to the queue.
@@ -1061,20 +1061,18 @@ bool Mqtt::publish_ha_sensor_config(uint8_t               type,        // EMSdev
 
     // add state_topic and it's value_template. This is not needed for commands, only sensors
     if (type != DeviceValueType::CMD || is_sensor) {
-        // state topic, except for commands
-        char stat_t[MQTT_TOPIC_MAX_SIZE];
-
         // This is where we determine which MQTT topic to pull the data from
-        // There are exceptions for DeviceType::SYSTEM, which uses the heartbeat topic
-        // and when fetching the version we want to take this from the info topic instead
+        char stat_t[MQTT_TOPIC_MAX_SIZE]; // state topic, except for commands
+        snprintf(stat_t, sizeof(stat_t), "~/%s", tag_to_topic(device_type, tag).c_str());
+
+        // Override - there are exceptions for DeviceType::SYSTEM, which uses the heartbeat topic
+        // and when fetching the version and bootTime we want to take this from the info topic instead
         if (device_type == EMSdevice::DeviceType::SYSTEM) {
             // handle the exceptions
             if (strncmp(entity, "version", 7) == 0) {
                 snprintf(stat_t, sizeof(stat_t), "~/%s", F_(info));
             } else if (strncmp(entity, "bootTime", 8) == 0) {
                 snprintf(stat_t, sizeof(stat_t), "~/%s", F_(info));
-            } else {
-                snprintf(stat_t, sizeof(stat_t), "~/%s", tag_to_topic(device_type, tag).c_str());
             }
         }
         doc["stat_t"] = stat_t;
