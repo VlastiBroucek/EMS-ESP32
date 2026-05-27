@@ -1276,7 +1276,7 @@ void Thermostat::process_RC300Summer(const std::shared_ptr<const Telegram> & tel
 
 // type 0x470, only BC400/UI800
 // (0x470), data: 01 0E 01 01 02 17 04 48
-void Thermostat::process_RC300Summer3(std::shared_ptr<const Telegram> telegram) {
+void Thermostat::process_RC300Summer3(const std::shared_ptr<const Telegram> & telegram) {
     has_update(telegram, hpoperatingmode, 0);
     has_update(telegram, summertemp, 1);
     has_update(telegram, heatondelay, 2);

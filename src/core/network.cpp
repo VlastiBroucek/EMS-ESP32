@@ -643,7 +643,7 @@ void Network::findNetworks() {
         } else if (network_iface_ == NetIface::AP) {
             phase_ = NetPhase::AP;
         }
-        if (!ethernet_ever_connected && ethernet_connected()) {
+        if (!ethernet_ever_connected_ && ethernet_connected()) {
             ethernet_ever_connected_ = true;
         }
         LOG_INFO("Network connected via %s (IP: " IPSTR ")",
