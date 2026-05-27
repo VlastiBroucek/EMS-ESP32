@@ -4044,17 +4044,19 @@ device name,device type,product id,shortname,fullname,type [options...] \| (min/
 "UI800, BC400",thermostat,4,hc1.dewoffset,dew point offset,uint8 (>=2<=10),K,true,number.thermostat_hc1_dew_point_offset,number.thermostat_hc1_dewoffset,6,1,1,41,1
 "UI800, BC400",thermostat,4,hc1.roomtempdiff,room temp difference,uint8 (>=0<=0),K,true,number.thermostat_hc1_room_temp_difference,number.thermostat_hc1_roomtempdiff,6,1,1,42,1
 "UI800, BC400",thermostat,4,hc1.hpminflowtemp,HP min. flow temp.,uint8 (>=0<=0),C,true,number.thermostat_hc1_HP_min._flow_temp.,number.thermostat_hc1_hpminflowtemp,6,1,1,43,1
-"UI800, BC400",thermostat,4,hc1.control,control device,enum [off\|-\|RC100\|RC100H\|-\|RC120RF\|RC220/RT800\|single] (>=0<=0), ,true,select.thermostat_hc1_control_device,select.thermostat_hc1_control,6,1,1,44,1
+"UI800, BC400",thermostat,4,hc1.control,control device,enum [off\|-\|RC100\|RC100H\|-\|RC120RF\|RC220\|single] (>=0<=0), ,true,select.thermostat_hc1_control_device,select.thermostat_hc1_control,6,1,1,44,1
 "UI800, BC400",thermostat,4,hc1.remotetemp,room temperature from remote,cmd [] (>=-1<=101),C,true,sensor.thermostat_hc1_room_temperature_from_remote,sensor.thermostat_hc1_remotetemp,6,1,1/10,45,1
 "UI800, BC400",thermostat,4,hc1.remotehum,room humidity from remote,cmd [] (>=-1<=101),%,true,sensor.thermostat_hc1_room_humidity_from_remote,sensor.thermostat_hc1_remotehum,6,1,1,46,1
 "UI800, BC400",thermostat,4,hc1.heatondelay,heat-on delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_heat-on_delay,number.thermostat_hc1_heatondelay,6,1,1,47,1
 "UI800, BC400",thermostat,4,hc1.heatoffdelay,heat-off delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_heat-off_delay,number.thermostat_hc1_heatoffdelay,6,1,1,48,1
-"UI800, BC400",thermostat,4,hc1.instantstart,instant start,uint8 (>=1<=10),K,true,number.thermostat_hc1_instant_start,number.thermostat_hc1_instantstart,6,1,1,49,1
-"UI800, BC400",thermostat,4,hc1.boost,boost mode,boolean (>=0<=0), ,true,switch.thermostat_hc1_boost_mode,switch.thermostat_hc1_boost,6,1,1,50,1
-"UI800, BC400",thermostat,4,hc1.boosttime,boost time,uint8 (>=0<=0),hours,true,number.thermostat_hc1_boost_time,number.thermostat_hc1_boosttime,6,1,1,51,1
-"UI800, BC400",thermostat,4,hc1.coolstart,cooling starttemp,uint8 (>=20<=35),C,true,number.thermostat_hc1_cooling_starttemp,number.thermostat_hc1_coolstart,6,1,1,52,1
-"UI800, BC400",thermostat,4,hc1.coolondelay,cooling on delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_cooling_on_delay,number.thermostat_hc1_coolondelay,6,1,1,53,1
-"UI800, BC400",thermostat,4,hc1.cooloffdelay,cooling off delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_cooling_off_delay,number.thermostat_hc1_cooloffdelay,6,1,1,54,1
+"UI800, BC400",thermostat,4,hc1.coolondelay,cooling on delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_cooling_on_delay,number.thermostat_hc1_coolondelay,6,1,1,49,1
+"UI800, BC400",thermostat,4,hc1.cooloffdelay,cooling off delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_cooling_off_delay,number.thermostat_hc1_cooloffdelay,6,1,1,50,1
+"UI800, BC400",thermostat,4,hc1.instantstart,instant start,uint8 (>=1<=10),K,true,number.thermostat_hc1_instant_start,number.thermostat_hc1_instantstart,6,1,1,51,1
+"UI800, BC400",thermostat,4,hc1.boost,boost mode,boolean (>=0<=0), ,true,switch.thermostat_hc1_boost_mode,switch.thermostat_hc1_boost,6,1,1,52,1
+"UI800, BC400",thermostat,4,hc1.boosttime,boost time,uint8 (>=0<=0),hours,true,number.thermostat_hc1_boost_time,number.thermostat_hc1_boosttime,6,1,1,53,1
+"UI800, BC400",thermostat,4,hc1.coolstart,cooling starttemp,uint8 (>=20<=35),C,true,number.thermostat_hc1_cooling_starttemp,number.thermostat_hc1_coolstart,6,1,1,54,1
+"UI800, BC400",thermostat,4,hc1.coolondelay,cooling on delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_cooling_on_delay,number.thermostat_hc1_coolondelay,6,1,1/4,49,1
+"UI800, BC400",thermostat,4,hc1.cooloffdelay,cooling off delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_cooling_off_delay,number.thermostat_hc1_cooloffdelay,6,1,1/4,50,1
 "UI800, BC400",thermostat,4,hc1.switchprogmode,switch program mode,enum [level\|absolute] (>=0<=0), ,true,select.thermostat_hc1_switch_program_mode,select.thermostat_hc1_switchprogmode,6,1,1,55,1
 "UI800, BC400",thermostat,4,hc1.redthreshold,reduction threshold,int8 (>=12<=22),C,true,number.thermostat_hc1_reduction_threshold,number.thermostat_hc1_redthreshold,6,1,1/2,56,1
 "UI800, BC400",thermostat,4,hc1.solarinfl,solar influence,int8 (>=-5<=0),C,true,number.thermostat_hc1_solar_influence,number.thermostat_hc1_solarinfl,6,1,1,57,1
@@ -4439,12 +4441,14 @@ device name,device type,product id,shortname,fullname,type [options...] \| (min/
 "RC200, CW100, CR120, CR50",thermostat,157,hc1.control,control device,enum [RC310\|RC200\|RC100\|RC100H\|TC100] (>=0<=0), ,true,select.thermostat_hc1_control_device,select.thermostat_hc1_control,6,1,1,44,1
 "RC200, CW100, CR120, CR50",thermostat,157,hc1.heatondelay,heat-on delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_heat-on_delay,number.thermostat_hc1_heatondelay,6,1,1,47,1
 "RC200, CW100, CR120, CR50",thermostat,157,hc1.heatoffdelay,heat-off delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_heat-off_delay,number.thermostat_hc1_heatoffdelay,6,1,1,48,1
-"RC200, CW100, CR120, CR50",thermostat,157,hc1.instantstart,instant start,uint8 (>=1<=10),K,true,number.thermostat_hc1_instant_start,number.thermostat_hc1_instantstart,6,1,1,49,1
-"RC200, CW100, CR120, CR50",thermostat,157,hc1.boost,boost mode,boolean (>=0<=0), ,true,switch.thermostat_hc1_boost_mode,switch.thermostat_hc1_boost,6,1,1,50,1
-"RC200, CW100, CR120, CR50",thermostat,157,hc1.boosttime,boost time,uint8 (>=0<=0),hours,true,number.thermostat_hc1_boost_time,number.thermostat_hc1_boosttime,6,1,1,51,1
-"RC200, CW100, CR120, CR50",thermostat,157,hc1.coolstart,cooling starttemp,uint8 (>=20<=35),C,true,number.thermostat_hc1_cooling_starttemp,number.thermostat_hc1_coolstart,6,1,1,52,1
-"RC200, CW100, CR120, CR50",thermostat,157,hc1.coolondelay,cooling on delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_cooling_on_delay,number.thermostat_hc1_coolondelay,6,1,1,53,1
-"RC200, CW100, CR120, CR50",thermostat,157,hc1.cooloffdelay,cooling off delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_cooling_off_delay,number.thermostat_hc1_cooloffdelay,6,1,1,54,1
+"RC200, CW100, CR120, CR50",thermostat,157,hc1.coolondelay,cooling on delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_cooling_on_delay,number.thermostat_hc1_coolondelay,6,1,1,49,1
+"RC200, CW100, CR120, CR50",thermostat,157,hc1.cooloffdelay,cooling off delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_cooling_off_delay,number.thermostat_hc1_cooloffdelay,6,1,1,50,1
+"RC200, CW100, CR120, CR50",thermostat,157,hc1.instantstart,instant start,uint8 (>=1<=10),K,true,number.thermostat_hc1_instant_start,number.thermostat_hc1_instantstart,6,1,1,51,1
+"RC200, CW100, CR120, CR50",thermostat,157,hc1.boost,boost mode,boolean (>=0<=0), ,true,switch.thermostat_hc1_boost_mode,switch.thermostat_hc1_boost,6,1,1,52,1
+"RC200, CW100, CR120, CR50",thermostat,157,hc1.boosttime,boost time,uint8 (>=0<=0),hours,true,number.thermostat_hc1_boost_time,number.thermostat_hc1_boosttime,6,1,1,53,1
+"RC200, CW100, CR120, CR50",thermostat,157,hc1.coolstart,cooling starttemp,uint8 (>=20<=35),C,true,number.thermostat_hc1_cooling_starttemp,number.thermostat_hc1_coolstart,6,1,1,54,1
+"RC200, CW100, CR120, CR50",thermostat,157,hc1.coolondelay,cooling on delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_cooling_on_delay,number.thermostat_hc1_coolondelay,6,1,1/4,49,1
+"RC200, CW100, CR120, CR50",thermostat,157,hc1.cooloffdelay,cooling off delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_cooling_off_delay,number.thermostat_hc1_cooloffdelay,6,1,1/4,50,1
 "RC200, CW100, CR120, CR50",thermostat,157,hc1.switchprogmode,switch program mode,enum [level\|absolute] (>=0<=0), ,true,select.thermostat_hc1_switch_program_mode,select.thermostat_hc1_switchprogmode,6,1,1,55,1
 "RC200, CW100, CR120, CR50",thermostat,157,hc1.redthreshold,reduction threshold,int8 (>=12<=22),C,true,number.thermostat_hc1_reduction_threshold,number.thermostat_hc1_redthreshold,6,1,1/2,56,1
 "RC200, CW100, CR120, CR50",thermostat,157,hc1.solarinfl,solar influence,int8 (>=-5<=0),C,true,number.thermostat_hc1_solar_influence,number.thermostat_hc1_solarinfl,6,1,1,57,1
@@ -4537,12 +4541,14 @@ device name,device type,product id,shortname,fullname,type [options...] \| (min/
 "RC3*0, Moduline 3000/1010H, CW400, Sense II, HPC410",thermostat,158,hc1.remotehum,room humidity from remote,cmd [] (>=-1<=101),%,true,sensor.thermostat_hc1_room_humidity_from_remote,sensor.thermostat_hc1_remotehum,6,1,1,46,1
 "RC3*0, Moduline 3000/1010H, CW400, Sense II, HPC410",thermostat,158,hc1.heatondelay,heat-on delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_heat-on_delay,number.thermostat_hc1_heatondelay,6,1,1,47,1
 "RC3*0, Moduline 3000/1010H, CW400, Sense II, HPC410",thermostat,158,hc1.heatoffdelay,heat-off delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_heat-off_delay,number.thermostat_hc1_heatoffdelay,6,1,1,48,1
-"RC3*0, Moduline 3000/1010H, CW400, Sense II, HPC410",thermostat,158,hc1.instantstart,instant start,uint8 (>=1<=10),K,true,number.thermostat_hc1_instant_start,number.thermostat_hc1_instantstart,6,1,1,49,1
-"RC3*0, Moduline 3000/1010H, CW400, Sense II, HPC410",thermostat,158,hc1.boost,boost mode,boolean (>=0<=0), ,true,switch.thermostat_hc1_boost_mode,switch.thermostat_hc1_boost,6,1,1,50,1
-"RC3*0, Moduline 3000/1010H, CW400, Sense II, HPC410",thermostat,158,hc1.boosttime,boost time,uint8 (>=0<=0),hours,true,number.thermostat_hc1_boost_time,number.thermostat_hc1_boosttime,6,1,1,51,1
-"RC3*0, Moduline 3000/1010H, CW400, Sense II, HPC410",thermostat,158,hc1.coolstart,cooling starttemp,uint8 (>=20<=35),C,true,number.thermostat_hc1_cooling_starttemp,number.thermostat_hc1_coolstart,6,1,1,52,1
-"RC3*0, Moduline 3000/1010H, CW400, Sense II, HPC410",thermostat,158,hc1.coolondelay,cooling on delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_cooling_on_delay,number.thermostat_hc1_coolondelay,6,1,1,53,1
-"RC3*0, Moduline 3000/1010H, CW400, Sense II, HPC410",thermostat,158,hc1.cooloffdelay,cooling off delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_cooling_off_delay,number.thermostat_hc1_cooloffdelay,6,1,1,54,1
+"RC3*0, Moduline 3000/1010H, CW400, Sense II, HPC410",thermostat,158,hc1.coolondelay,cooling on delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_cooling_on_delay,number.thermostat_hc1_coolondelay,6,1,1,49,1
+"RC3*0, Moduline 3000/1010H, CW400, Sense II, HPC410",thermostat,158,hc1.cooloffdelay,cooling off delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_cooling_off_delay,number.thermostat_hc1_cooloffdelay,6,1,1,50,1
+"RC3*0, Moduline 3000/1010H, CW400, Sense II, HPC410",thermostat,158,hc1.instantstart,instant start,uint8 (>=1<=10),K,true,number.thermostat_hc1_instant_start,number.thermostat_hc1_instantstart,6,1,1,51,1
+"RC3*0, Moduline 3000/1010H, CW400, Sense II, HPC410",thermostat,158,hc1.boost,boost mode,boolean (>=0<=0), ,true,switch.thermostat_hc1_boost_mode,switch.thermostat_hc1_boost,6,1,1,52,1
+"RC3*0, Moduline 3000/1010H, CW400, Sense II, HPC410",thermostat,158,hc1.boosttime,boost time,uint8 (>=0<=0),hours,true,number.thermostat_hc1_boost_time,number.thermostat_hc1_boosttime,6,1,1,53,1
+"RC3*0, Moduline 3000/1010H, CW400, Sense II, HPC410",thermostat,158,hc1.coolstart,cooling starttemp,uint8 (>=20<=35),C,true,number.thermostat_hc1_cooling_starttemp,number.thermostat_hc1_coolstart,6,1,1,54,1
+"RC3*0, Moduline 3000/1010H, CW400, Sense II, HPC410",thermostat,158,hc1.coolondelay,cooling on delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_cooling_on_delay,number.thermostat_hc1_coolondelay,6,1,1/4,49,1
+"RC3*0, Moduline 3000/1010H, CW400, Sense II, HPC410",thermostat,158,hc1.cooloffdelay,cooling off delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_cooling_off_delay,number.thermostat_hc1_cooloffdelay,6,1,1/4,50,1
 "RC3*0, Moduline 3000/1010H, CW400, Sense II, HPC410",thermostat,158,hc1.switchprogmode,switch program mode,enum [level\|absolute] (>=0<=0), ,true,select.thermostat_hc1_switch_program_mode,select.thermostat_hc1_switchprogmode,6,1,1,55,1
 "RC3*0, Moduline 3000/1010H, CW400, Sense II, HPC410",thermostat,158,hc1.redthreshold,reduction threshold,int8 (>=12<=22),C,true,number.thermostat_hc1_reduction_threshold,number.thermostat_hc1_redthreshold,6,1,1/2,56,1
 "RC3*0, Moduline 3000/1010H, CW400, Sense II, HPC410",thermostat,158,hc1.solarinfl,solar influence,int8 (>=-5<=0),C,true,number.thermostat_hc1_solar_influence,number.thermostat_hc1_solarinfl,6,1,1,57,1
@@ -4644,12 +4650,14 @@ device name,device type,product id,shortname,fullname,type [options...] \| (min/
 "Rego 2000/3000",thermostat,172,hc1.remotehum,room humidity from remote,cmd [] (>=-1<=101),%,true,sensor.thermostat_hc1_room_humidity_from_remote,sensor.thermostat_hc1_remotehum,6,1,1,46,1
 "Rego 2000/3000",thermostat,172,hc1.heatondelay,heat-on delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_heat-on_delay,number.thermostat_hc1_heatondelay,6,1,1,47,1
 "Rego 2000/3000",thermostat,172,hc1.heatoffdelay,heat-off delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_heat-off_delay,number.thermostat_hc1_heatoffdelay,6,1,1,48,1
-"Rego 2000/3000",thermostat,172,hc1.instantstart,instant start,uint8 (>=1<=10),K,true,number.thermostat_hc1_instant_start,number.thermostat_hc1_instantstart,6,1,1,49,1
-"Rego 2000/3000",thermostat,172,hc1.boost,boost mode,boolean (>=0<=0), ,true,switch.thermostat_hc1_boost_mode,switch.thermostat_hc1_boost,6,1,1,50,1
-"Rego 2000/3000",thermostat,172,hc1.boosttime,boost time,uint8 (>=0<=0),hours,true,number.thermostat_hc1_boost_time,number.thermostat_hc1_boosttime,6,1,1,51,1
-"Rego 2000/3000",thermostat,172,hc1.coolstart,cooling starttemp,uint8 (>=20<=35),C,true,number.thermostat_hc1_cooling_starttemp,number.thermostat_hc1_coolstart,6,1,1,52,1
-"Rego 2000/3000",thermostat,172,hc1.coolondelay,cooling on delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_cooling_on_delay,number.thermostat_hc1_coolondelay,6,1,1,53,1
-"Rego 2000/3000",thermostat,172,hc1.cooloffdelay,cooling off delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_cooling_off_delay,number.thermostat_hc1_cooloffdelay,6,1,1,54,1
+"Rego 2000/3000",thermostat,172,hc1.coolondelay,cooling on delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_cooling_on_delay,number.thermostat_hc1_coolondelay,6,1,1,49,1
+"Rego 2000/3000",thermostat,172,hc1.cooloffdelay,cooling off delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_cooling_off_delay,number.thermostat_hc1_cooloffdelay,6,1,1,50,1
+"Rego 2000/3000",thermostat,172,hc1.instantstart,instant start,uint8 (>=1<=10),K,true,number.thermostat_hc1_instant_start,number.thermostat_hc1_instantstart,6,1,1,51,1
+"Rego 2000/3000",thermostat,172,hc1.boost,boost mode,boolean (>=0<=0), ,true,switch.thermostat_hc1_boost_mode,switch.thermostat_hc1_boost,6,1,1,52,1
+"Rego 2000/3000",thermostat,172,hc1.boosttime,boost time,uint8 (>=0<=0),hours,true,number.thermostat_hc1_boost_time,number.thermostat_hc1_boosttime,6,1,1,53,1
+"Rego 2000/3000",thermostat,172,hc1.coolstart,cooling starttemp,uint8 (>=20<=35),C,true,number.thermostat_hc1_cooling_starttemp,number.thermostat_hc1_coolstart,6,1,1,54,1
+"Rego 2000/3000",thermostat,172,hc1.coolondelay,cooling on delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_cooling_on_delay,number.thermostat_hc1_coolondelay,6,1,1/4,49,1
+"Rego 2000/3000",thermostat,172,hc1.cooloffdelay,cooling off delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_cooling_off_delay,number.thermostat_hc1_cooloffdelay,6,1,1/4,50,1
 "Rego 2000/3000",thermostat,172,hc1.switchprogmode,switch program mode,enum [level\|absolute] (>=0<=0), ,true,select.thermostat_hc1_switch_program_mode,select.thermostat_hc1_switchprogmode,6,1,1,55,1
 "Rego 2000/3000",thermostat,172,hc1.redthreshold,reduction threshold,int8 (>=12<=22),C,true,number.thermostat_hc1_reduction_threshold,number.thermostat_hc1_redthreshold,6,1,1/2,56,1
 "Rego 2000/3000",thermostat,172,hc1.solarinfl,solar influence,int8 (>=-5<=0),C,true,number.thermostat_hc1_solar_influence,number.thermostat_hc1_solarinfl,6,1,1,57,1
@@ -4764,17 +4772,19 @@ device name,device type,product id,shortname,fullname,type [options...] \| (min/
 "Rego 3000, UI800, Logamatic BC400",thermostat,253,hc1.dewoffset,dew point offset,uint8 (>=2<=10),K,true,number.thermostat_hc1_dew_point_offset,number.thermostat_hc1_dewoffset,6,1,1,41,1
 "Rego 3000, UI800, Logamatic BC400",thermostat,253,hc1.roomtempdiff,room temp difference,uint8 (>=0<=0),K,true,number.thermostat_hc1_room_temp_difference,number.thermostat_hc1_roomtempdiff,6,1,1,42,1
 "Rego 3000, UI800, Logamatic BC400",thermostat,253,hc1.hpminflowtemp,HP min. flow temp.,uint8 (>=0<=0),C,true,number.thermostat_hc1_HP_min._flow_temp.,number.thermostat_hc1_hpminflowtemp,6,1,1,43,1
-"Rego 3000, UI800, Logamatic BC400",thermostat,253,hc1.control,control device,enum [off\|-\|RC100\|RC100H\|-\|RC120RF\|RC220/RT800\|single] (>=0<=0), ,true,select.thermostat_hc1_control_device,select.thermostat_hc1_control,6,1,1,44,1
+"Rego 3000, UI800, Logamatic BC400",thermostat,253,hc1.control,control device,enum [off\|-\|CR10\|CR10H\|-\|CR20RF\|RT800\|single] (>=0<=0), ,true,select.thermostat_hc1_control_device,select.thermostat_hc1_control,6,1,1,44,1
 "Rego 3000, UI800, Logamatic BC400",thermostat,253,hc1.remotetemp,room temperature from remote,cmd [] (>=-1<=101),C,true,sensor.thermostat_hc1_room_temperature_from_remote,sensor.thermostat_hc1_remotetemp,6,1,1/10,45,1
 "Rego 3000, UI800, Logamatic BC400",thermostat,253,hc1.remotehum,room humidity from remote,cmd [] (>=-1<=101),%,true,sensor.thermostat_hc1_room_humidity_from_remote,sensor.thermostat_hc1_remotehum,6,1,1,46,1
-"Rego 3000, UI800, Logamatic BC400",thermostat,253,hc1.heatondelay,heat-on delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_heat-on_delay,number.thermostat_hc1_heatondelay,6,1,1,47,1
-"Rego 3000, UI800, Logamatic BC400",thermostat,253,hc1.heatoffdelay,heat-off delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_heat-off_delay,number.thermostat_hc1_heatoffdelay,6,1,1,48,1
-"Rego 3000, UI800, Logamatic BC400",thermostat,253,hc1.instantstart,instant start,uint8 (>=1<=10),K,true,number.thermostat_hc1_instant_start,number.thermostat_hc1_instantstart,6,1,1,49,1
-"Rego 3000, UI800, Logamatic BC400",thermostat,253,hc1.boost,boost mode,boolean (>=0<=0), ,true,switch.thermostat_hc1_boost_mode,switch.thermostat_hc1_boost,6,1,1,50,1
-"Rego 3000, UI800, Logamatic BC400",thermostat,253,hc1.boosttime,boost time,uint8 (>=0<=0),hours,true,number.thermostat_hc1_boost_time,number.thermostat_hc1_boosttime,6,1,1,51,1
-"Rego 3000, UI800, Logamatic BC400",thermostat,253,hc1.coolstart,cooling starttemp,uint8 (>=20<=35),C,true,number.thermostat_hc1_cooling_starttemp,number.thermostat_hc1_coolstart,6,1,1,52,1
-"Rego 3000, UI800, Logamatic BC400",thermostat,253,hc1.coolondelay,cooling on delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_cooling_on_delay,number.thermostat_hc1_coolondelay,6,1,1,53,1
-"Rego 3000, UI800, Logamatic BC400",thermostat,253,hc1.cooloffdelay,cooling off delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_cooling_off_delay,number.thermostat_hc1_cooloffdelay,6,1,1,54,1
+"Rego 3000, UI800, Logamatic BC400",thermostat,253,hc1.heatondelay,heat-on delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_heat-on_delay,number.thermostat_hc1_heatondelay,6,1,1/4,47,1
+"Rego 3000, UI800, Logamatic BC400",thermostat,253,hc1.heatoffdelay,heat-off delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_heat-off_delay,number.thermostat_hc1_heatoffdelay,6,1,1/4,48,1
+"Rego 3000, UI800, Logamatic BC400",thermostat,253,hc1.coolondelay,cooling on delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_cooling_on_delay,number.thermostat_hc1_coolondelay,6,1,1/4,49,1
+"Rego 3000, UI800, Logamatic BC400",thermostat,253,hc1.cooloffdelay,cooling off delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_cooling_off_delay,number.thermostat_hc1_cooloffdelay,6,1,1/4,50,1
+"Rego 3000, UI800, Logamatic BC400",thermostat,253,hc1.instantstart,instant start,uint8 (>=1<=10),K,true,number.thermostat_hc1_instant_start,number.thermostat_hc1_instantstart,6,1,1,51,1
+"Rego 3000, UI800, Logamatic BC400",thermostat,253,hc1.boost,boost mode,boolean (>=0<=0), ,true,switch.thermostat_hc1_boost_mode,switch.thermostat_hc1_boost,6,1,1,52,1
+"Rego 3000, UI800, Logamatic BC400",thermostat,253,hc1.boosttime,boost time,uint8 (>=0<=0),hours,true,number.thermostat_hc1_boost_time,number.thermostat_hc1_boosttime,6,1,1,53,1
+"Rego 3000, UI800, Logamatic BC400",thermostat,253,hc1.coolstart,cooling starttemp,uint8 (>=20<=35),C,true,number.thermostat_hc1_cooling_starttemp,number.thermostat_hc1_coolstart,6,1,1,54,1
+"Rego 3000, UI800, Logamatic BC400",thermostat,253,hc1.coolondelay,cooling on delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_cooling_on_delay,number.thermostat_hc1_coolondelay,6,1,1/4,49,1
+"Rego 3000, UI800, Logamatic BC400",thermostat,253,hc1.cooloffdelay,cooling off delay,uint8 (>=1<=48),hours,true,number.thermostat_hc1_cooling_off_delay,number.thermostat_hc1_cooloffdelay,6,1,1/4,50,1
 "Rego 3000, UI800, Logamatic BC400",thermostat,253,hc1.switchprogmode,switch program mode,enum [level\|absolute] (>=0<=0), ,true,select.thermostat_hc1_switch_program_mode,select.thermostat_hc1_switchprogmode,6,1,1,55,1
 "Rego 3000, UI800, Logamatic BC400",thermostat,253,hc1.redthreshold,reduction threshold,int8 (>=12<=22),C,true,number.thermostat_hc1_reduction_threshold,number.thermostat_hc1_redthreshold,6,1,1/2,56,1
 "Rego 3000, UI800, Logamatic BC400",thermostat,253,hc1.solarinfl,solar influence,int8 (>=-5<=0),C,true,number.thermostat_hc1_solar_influence,number.thermostat_hc1_solarinfl,6,1,1,57,1

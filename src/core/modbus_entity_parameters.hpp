@@ -349,12 +349,12 @@ const std::initializer_list<Modbus::EntityModbusInfo> Modbus::modbus_register_ma
     REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_HC, FL_(remotehum), 46, 1), // remotehum
     REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_HC, FL_(heatondelay), 47, 1), // heatondelay
     REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_HC, FL_(heatoffdelay), 48, 1), // heatoffdelay
-    REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_HC, FL_(instantstart), 49, 1), // instantstart
-    REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_HC, FL_(boost), 50, 1), // boost
-    REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_HC, FL_(boosttime), 51, 1), // boosttime
-    REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_HC, FL_(coolstart), 52, 1), // coolstart
-    REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_HC, FL_(coolondelay), 53, 1), // coolondelay
-    REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_HC, FL_(cooloffdelay), 54, 1), // cooloffdelay
+    REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_HC, FL_(coolondelay), 49, 1), // coolondelay
+    REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_HC, FL_(cooloffdelay), 50, 1), // cooloffdelay
+    REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_HC, FL_(instantstart), 51, 1), // instantstart
+    REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_HC, FL_(boost), 52, 1), // boost
+    REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_HC, FL_(boosttime), 53, 1), // boosttime
+    REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_HC, FL_(coolstart), 54, 1), // coolstart
     REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_HC, FL_(switchProgMode), 55, 1), // switchprogmode
     REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_HC, FL_(redthreshold), 56, 1), // redthreshold
     REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_HC, FL_(solarinfl), 57, 1), // solarinfl
