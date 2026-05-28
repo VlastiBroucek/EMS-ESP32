@@ -38,7 +38,7 @@
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-icons": "^5.6.0",
-    "react-router": "^7.15.1",
+    "react-router": "^7.16.0",
     "react-toastify": "^11.1.0",
     "typesafe-i18n": "^5.27.1",
     "typescript": "^6.0.3"
@@ -50,7 +50,7 @@
     "@types/node": "^25.9.1",
     "@types/react": "^19.2.15",
     "@types/react-dom": "^19.2.3",
-    "concurrently": "^9.2.1",
+    "concurrently": "^10.0.0",
     "eslint": "^10.4.0",
     "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.8.3",
@@ -60,5 +60,5 @@
     "vite": "^8.0.14",
     "vite-plugin-imagemin": "^0.6.1"
   },
-  "packageManager": "pnpm@10.33.4+sha512.1c67b3b359b2d408119ba1ed289f34b8fc3c6873412bec6fd264fbdc82489e510fcbecb9ce9d22dae7f3b76269d8441046014bdca53b9979cd7a561ad631b800"
+  "packageManager": "pnpm@10.34.1+sha512.b58fbde6dca66a929538021581f648b4570b6ca19b18e7cbd7f2c07a7b24454155388dacdf08f2af3678e88a6d1fe04f9d609df24bf51735a060ea041b374ab7"
 }
