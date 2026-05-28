@@ -393,6 +393,12 @@ function custom_support() {
   };
 }
 
+// run a schedule
+function executeSchedule(name: string) {
+  console.log('executing schedule', name);
+  return status(200);
+}
+
 // called by Action endpoint upgradeImportantMessages
 function upgradeImportantMessages(version: string) {
   // 0 is do nothing
@@ -5220,6 +5226,9 @@ router
       } else if (action === 'upgradeImportantMessages') {
         // check upgrade important messages
         return upgradeImportantMessages(content.param);
+      } else if (action === 'executeSchedule') {
+        // execute schedule
+        return executeSchedule(content.param);
       }
     }
     return status(404); // cmd not found

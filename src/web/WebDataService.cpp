@@ -478,7 +478,7 @@ void WebDataService::dashboard_data(AsyncWebServerRequest * request) {
         }
     }
 
-    // show scheduler, with name, on/off
+    // show scheduler, with name, on/off, unless it's of type SCHEDULE_IMMEDIATE
     if (EMSESP::webSchedulerService.count_entities(true)) {
         JsonObject obj  = nodes.add<JsonObject>();
         obj["id"]       = EMSdevice::DeviceTypeUniqueID::SCHEDULER_UID; // it's unique id
@@ -488,8 +488,8 @@ void WebDataService::dashboard_data(AsyncWebServerRequest * request) {
 
         EMSESP::webSchedulerService.read([&](const WebScheduler & webScheduler) {
             for (const ScheduleItem & scheduleItem : webScheduler.scheduleItems) {
-                // only add if we have a name - we don't need a u (UOM) for this
-                if (scheduleItem.name[0] != '\0') {
+                // only add if we have a name and it's not of type SCHEDULE_IMMEDIATE - we don't need a u (UOM) for this
+                if (scheduleItem.name[0] != '\0' && scheduleItem.flags != SCHEDULEFLAG_SCHEDULE_IMMEDIATE) {
                     JsonObject node = nodes.add<JsonObject>();
                     node["id"]      = (EMSdevice::DeviceTypeUniqueID::SCHEDULER_UID * 100) + count++;
 

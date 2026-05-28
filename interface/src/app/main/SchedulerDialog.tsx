@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 
 import AddIcon from '@mui/icons-material/Add';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -20,7 +21,9 @@ import {
   Typography
 } from '@mui/material';
 
+import { callAction } from '@/api/app';
 import { dialogStyle } from 'CustomTheme';
+import { useRequest } from 'alova/client';
 import type Schema from 'async-validator';
 import type { ValidateFieldsError } from 'async-validator';
 import { BlockFormControlLabel, ValidatedTextField } from 'components';
@@ -128,8 +131,15 @@ const SchedulerDialog = ({
     await handleSave(editItem);
   };
 
-  const saveandactivate = async () => {
-    await handleSave({ ...editItem, active: true });
+  const { send: executeSchedule } = useRequest(
+    (id: string) => callAction({ action: 'executeSchedule', param: id }),
+    { immediate: false }
+  ).onError((error) => {
+    toast.error(String(error.error?.message || 'An error occurred'));
+  });
+
+  const execute = async () => {
+    await executeSchedule(editItem.name);
   };
 
   const remove = () => {
@@ -351,7 +361,7 @@ const SchedulerDialog = ({
         <ValidatedTextField
           fieldErrors={fieldErrors || {}}
           name="name"
-          label={LL.NAME(0) + ' (' + LL.OPTIONAL() + ')'}
+          label={LL.NAME(0)}
           value={editItem.name}
           fullWidth
           margin="normal"
@@ -388,11 +398,11 @@ const SchedulerDialog = ({
         >
           {creating ? LL.ADD(0) : LL.UPDATE()}
         </Button>
-        {isImmediateSchedule && editItem.cmd !== '' && (
+        {isImmediateSchedule && !creating && editItem.cmd !== '' && (
           <Button
             startIcon={<PlayArrowIcon />}
             variant="outlined"
-            onClick={saveandactivate}
+            onClick={execute}
             color="success"
           >
             {LL.EXECUTE()}

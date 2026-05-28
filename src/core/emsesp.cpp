@@ -1757,6 +1757,12 @@ void EMSESP::start() {
     // start network services. This will initialise WiFi or Ethernet depending on the settings.
     network_.begin();
 
+    // start the core web services, as this loads the settings from the filesystem
+    // this will also handle any MQTT subscriptions
+    webCustomizationService.begin(); // load the customizations
+    webSchedulerService.begin();     // load the scheduler events
+    webCustomEntityService.begin();  // load the custom telegram reads
+
     // perform any system upgrades
     if (!factory_settings) {
         if (system_.check_upgrade()) {
@@ -1770,10 +1776,6 @@ void EMSESP::start() {
 #include "device_library.h"
     };
     LOG_INFO("Library loaded: %d EMS devices, %d device entities, %s", device_library_.size(), EMSESP_TRANSLATION_COUNT, system_.languages_string().c_str());
-
-    webCustomizationService.begin(); // load the customizations
-    webSchedulerService.begin();     // load the scheduler events
-    webCustomEntityService.begin();  // load the custom telegram reads
 
     // start telnet service if it's enabled
     // default idle is 10 minutes, default write timeout is 0 (automatic)

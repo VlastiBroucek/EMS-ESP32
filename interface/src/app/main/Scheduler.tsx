@@ -240,7 +240,7 @@ const Scheduler = () => {
     .filter((si: ScheduleItem) => !si.deleted)
     .sort((a: ScheduleItem, b: ScheduleItem) => a.flags - b.flags);
 
-  const dayBox = (si: ScheduleItem, flag: number) => {
+  const dayBox = (si: ScheduleItem, flag: number, isLast = false) => {
     const dayIndex = Math.log(flag) / LOG_2;
     const isActive = (si.flags & flag) === flag;
 
@@ -251,7 +251,7 @@ const Scheduler = () => {
             {dow[dayIndex]}
           </Typography>
         </Box>
-        <Divider orientation="vertical" flexItem />
+        {!isLast && <Divider orientation="vertical" flexItem />}
       </>
     );
   };
@@ -297,14 +297,15 @@ const Scheduler = () => {
               {tableList.map((si: ScheduleItem) => (
                 <Row key={si.id} item={si} onClick={() => editScheduleItem(si)}>
                   <Cell stiff>
-                    <CircleIcon
-                      color={si.active ? 'success' : 'error'}
-                      sx={{ fontSize: ICON_SIZE, verticalAlign: 'middle' }}
-                    />
+                    {si.flags !== ScheduleFlag.SCHEDULE_IMMEDIATE && (
+                      <CircleIcon
+                        color={si.active ? 'success' : 'error'}
+                        sx={{ fontSize: ICON_SIZE, verticalAlign: 'middle' }}
+                      />
+                    )}
                   </Cell>
                   <Cell stiff>
                     <Stack spacing={0.5} direction="row">
-                      <Divider orientation="vertical" flexItem />
                       {si.flags > SCHEDULE_FLAG_THRESHOLD ? (
                         scheduleType(si)
                       ) : (
@@ -315,7 +316,7 @@ const Scheduler = () => {
                           {dayBox(si, ScheduleFlag.SCHEDULE_THU)}
                           {dayBox(si, ScheduleFlag.SCHEDULE_FRI)}
                           {dayBox(si, ScheduleFlag.SCHEDULE_SAT)}
-                          {dayBox(si, ScheduleFlag.SCHEDULE_SUN)}
+                          {dayBox(si, ScheduleFlag.SCHEDULE_SUN, true)}
                         </>
                       )}
                     </Stack>

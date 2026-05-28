@@ -8,7 +8,6 @@ the LICENSE file.
 
 #pragma once
 
-#ifndef NO_TLS_SUPPORT
 
 // #include "esp_tls.h"
 #include <WiFiClient.h>
@@ -34,5 +33,3 @@ class ClientSecureSync : public Transport {
 };
 
 } // namespace espMqttClientInternals
-
-#endif
