@@ -82,7 +82,6 @@ StateUpdateResult WebScheduler::update(JsonObject root, WebScheduler & webSchedu
     EMSESP::webSchedulerService.ha_reset();
 
     // build up the list of schedule items
-    uint8_t i             = 0;
     auto    scheduleItems = root["schedule"].as<JsonArray>();
     for (const JsonObject schedule : scheduleItems) {
         // create each schedule item, overwriting any previous settings
@@ -94,10 +93,6 @@ StateUpdateResult WebScheduler::update(JsonObject root, WebScheduler & webSchedu
         si.cmd    = schedule["cmd"].as<std::string>();
         si.value  = schedule["value"].as<std::string>();
         strlcpy(si.name, schedule["name"].as<const char *>(), sizeof(si.name));
-
-        if (si.name[0] == '\0') {
-            snprintf(si.name, sizeof(si.name), "schedule_%d", i++); // set a default name. Before v3.9.0 we allowed empty schedule names.
-        }
 
         // calculated elapsed minutes
         si.elapsed_min = Helpers::string2minutes(si.time.c_str());
@@ -580,11 +575,11 @@ void WebSchedulerService::load_test_data() {
         // test 1
         auto si   = ScheduleItem();
         si.active = true;
-        si.flags  = 1;
+        si.flags  = 1; // day schedule
         si.time   = "12:00";
         si.cmd    = "system/fetch";
         si.value  = "10";
-        strcpy(si.name, "test_scheduler");
+        strcpy(si.name, "test_scheduler1");
         si.elapsed_min = 0;
         si.retry_cnt   = 0xFF; // no startup retries
 
@@ -593,11 +588,11 @@ void WebSchedulerService::load_test_data() {
         // test 2
         si        = ScheduleItem();
         si.active = false;
-        si.flags  = 1;
+        si.flags  = SCHEDULEFLAG_SCHEDULE_IMMEDIATE; // immediate
         si.time   = "13:00";
         si.cmd    = "system/message";
         si.value  = "20";
-        strcpy(si.name, ""); // to make sure its excluded from Dashboard
+        strcpy(si.name, "test_scheduler2"); // to make sure its excluded from Dashboard
         si.elapsed_min = 0;
         si.retry_cnt   = 0xFF; // no startup retries
 

@@ -1531,6 +1531,18 @@ bool System::check_upgrade() {
                 }
                 return StateUpdateResult::UNCHANGED;
             });
+            // Scheduler name is now mandatory, update FS
+            uint8_t i             = 0;
+            bool schedule_changed = false;
+            EMSESP::webSchedulerService.update([&](WebScheduler & scheduler) {
+                for (ScheduleItem & scheduleItem : scheduler.scheduleItems) {
+                    if (scheduleItem.name[0] == '\0') {
+                        snprintf(scheduleItem.name, sizeof(scheduleItem.name), "schedule_%d", i++);
+                        schedule_changed = true;
+                    }
+                }
+                return schedule_changed ? StateUpdateResult::CHANGED : StateUpdateResult::UNCHANGED;
+            });
 #endif
         }
 
