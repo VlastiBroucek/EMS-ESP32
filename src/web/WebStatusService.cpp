@@ -470,7 +470,7 @@ bool WebStatusService::refresh_versions_cache() {
     ssl_client.println("Connection: close");
     ssl_client.print("\r\n");
 
-    // wait for the first byte
+    // wait for the first byte. The 5 seconds is GitHub's SLO
     uint32_t ms = millis();
     while (ssl_client.connected() && !ssl_client.available() && millis() - ms < 5000) {
         delay(1);
