@@ -161,9 +161,9 @@ void RxService::add(uint8_t * data, uint8_t length) {
         }
         if (data[0] != EMSuart::last_tx_src()) { // do not count echos as errors
             telegram_error_count_++;
-            LOG_WARNING("Incomplete Rx: %s", Helpers::data_to_hex(data, length).c_str()); // include CRC
+            LOG_WARNING("Incomplete Rx: %s (crc: %02X)", Helpers::data_to_hex(data, length).c_str(), crc); // include CRC
         } else {
-            LOG_TRACE("Incomplete Rx: %s", Helpers::data_to_hex(data, length).c_str()); // include CRC
+            LOG_TRACE("Incomplete Rx: %s (crc: %02X)", Helpers::data_to_hex(data, length).c_str(), crc); // include CRC
         }
         return;
     }
@@ -276,6 +276,7 @@ void TxService::start() {
 // sends a 1 byte poll which is our own deviceID
 void TxService::send_poll() const {
     // LOG_DEBUG("Ack %02X",ems_bus_id() ^ ems_mask());
+    // if (tx_mode() != EMS_TXMODE_OFF && ems_bus_id() != 0x0D) { // use 0x0D for tests without poll-Ack
     if (tx_mode() != EMS_TXMODE_OFF) {
         EMSuart::send_poll(ems_bus_id() ^ ems_mask());
     }
