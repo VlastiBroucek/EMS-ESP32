@@ -5368,15 +5368,11 @@ uint8
 | hc1.cooloffdelay | cooling off delay | uint8 (&gt;=1&lt;=48) | hours | true | HC | 50 | 1 | 1 |
 uint8
 | hc1.instantstart | instant start | uint8 (&gt;=1&lt;=10) | K | true | HC | 51 | 1 | 1 |
-| hc1.boost | boost mode | boolean |   | true | HC | 52 | 1 | 1 |
 uint8
-| hc1.boosttime | boost time | uint8 (&gt;=0&lt;=0) | hours | true | HC | 53 | 1 | 1 |
+| hc1.coolstart | cooling starttemp | uint8 (&gt;=20&lt;=35) | C | true | HC | 52 | 1 | 1 |
+| hc1.boost | boost mode | boolean |   | true | HC | 53 | 1 | 1 |
 uint8
-| hc1.coolstart | cooling starttemp | uint8 (&gt;=20&lt;=35) | C | true | HC | 54 | 1 | 1 |
-uint8
-| hc1.coolondelay | cooling on delay | uint8 (&gt;=1&lt;=48) | hours | true | HC | 49 | 1 | 1/4 |
-uint8
-| hc1.cooloffdelay | cooling off delay | uint8 (&gt;=1&lt;=48) | hours | true | HC | 50 | 1 | 1/4 |
+| hc1.boosttime | boost time | uint8 (&gt;=0&lt;=0) | hours | true | HC | 54 | 1 | 1 |
 | hc1.switchprogmode | switch program mode | enum |   | true | HC | 55 | 1 | 1 |
 int8
 | hc1.redthreshold | reduction threshold | int8 (&gt;=12&lt;=22) | C | true | HC | 56 | 1 | 1/2 |
@@ -5981,15 +5977,11 @@ uint8
 | hc1.cooloffdelay | cooling off delay | uint8 (&gt;=1&lt;=48) | hours | true | HC | 50 | 1 | 1 |
 uint8
 | hc1.instantstart | instant start | uint8 (&gt;=1&lt;=10) | K | true | HC | 51 | 1 | 1 |
-| hc1.boost | boost mode | boolean |   | true | HC | 52 | 1 | 1 |
 uint8
-| hc1.boosttime | boost time | uint8 (&gt;=0&lt;=0) | hours | true | HC | 53 | 1 | 1 |
+| hc1.coolstart | cooling starttemp | uint8 (&gt;=20&lt;=35) | C | true | HC | 52 | 1 | 1 |
+| hc1.boost | boost mode | boolean |   | true | HC | 53 | 1 | 1 |
 uint8
-| hc1.coolstart | cooling starttemp | uint8 (&gt;=20&lt;=35) | C | true | HC | 54 | 1 | 1 |
-uint8
-| hc1.coolondelay | cooling on delay | uint8 (&gt;=1&lt;=48) | hours | true | HC | 49 | 1 | 1/4 |
-uint8
-| hc1.cooloffdelay | cooling off delay | uint8 (&gt;=1&lt;=48) | hours | true | HC | 50 | 1 | 1/4 |
+| hc1.boosttime | boost time | uint8 (&gt;=0&lt;=0) | hours | true | HC | 54 | 1 | 1 |
 | hc1.switchprogmode | switch program mode | enum |   | true | HC | 55 | 1 | 1 |
 int8
 | hc1.redthreshold | reduction threshold | int8 (&gt;=12&lt;=22) | C | true | HC | 56 | 1 | 1/2 |
@@ -6137,15 +6129,11 @@ uint8
 | hc1.cooloffdelay | cooling off delay | uint8 (&gt;=1&lt;=48) | hours | true | HC | 50 | 1 | 1 |
 uint8
 | hc1.instantstart | instant start | uint8 (&gt;=1&lt;=10) | K | true | HC | 51 | 1 | 1 |
-| hc1.boost | boost mode | boolean |   | true | HC | 52 | 1 | 1 |
 uint8
-| hc1.boosttime | boost time | uint8 (&gt;=0&lt;=0) | hours | true | HC | 53 | 1 | 1 |
+| hc1.coolstart | cooling starttemp | uint8 (&gt;=20&lt;=35) | C | true | HC | 52 | 1 | 1 |
+| hc1.boost | boost mode | boolean |   | true | HC | 53 | 1 | 1 |
 uint8
-| hc1.coolstart | cooling starttemp | uint8 (&gt;=20&lt;=35) | C | true | HC | 54 | 1 | 1 |
-uint8
-| hc1.coolondelay | cooling on delay | uint8 (&gt;=1&lt;=48) | hours | true | HC | 49 | 1 | 1/4 |
-uint8
-| hc1.cooloffdelay | cooling off delay | uint8 (&gt;=1&lt;=48) | hours | true | HC | 50 | 1 | 1/4 |
+| hc1.boosttime | boost time | uint8 (&gt;=0&lt;=0) | hours | true | HC | 54 | 1 | 1 |
 | hc1.switchprogmode | switch program mode | enum |   | true | HC | 55 | 1 | 1 |
 int8
 | hc1.redthreshold | reduction threshold | int8 (&gt;=12&lt;=22) | C | true | HC | 56 | 1 | 1/2 |
@@ -6308,15 +6296,11 @@ uint8
 | hc1.cooloffdelay | cooling off delay | uint8 (&gt;=1&lt;=48) | hours | true | HC | 50 | 1 | 1 |
 uint8
 | hc1.instantstart | instant start | uint8 (&gt;=1&lt;=10) | K | true | HC | 51 | 1 | 1 |
-| hc1.boost | boost mode | boolean |   | true | HC | 52 | 1 | 1 |
 uint8
-| hc1.boosttime | boost time | uint8 (&gt;=0&lt;=0) | hours | true | HC | 53 | 1 | 1 |
+| hc1.coolstart | cooling starttemp | uint8 (&gt;=20&lt;=35) | C | true | HC | 52 | 1 | 1 |
+| hc1.boost | boost mode | boolean |   | true | HC | 53 | 1 | 1 |
 uint8
-| hc1.coolstart | cooling starttemp | uint8 (&gt;=20&lt;=35) | C | true | HC | 54 | 1 | 1 |
-uint8
-| hc1.coolondelay | cooling on delay | uint8 (&gt;=1&lt;=48) | hours | true | HC | 49 | 1 | 1/4 |
-uint8
-| hc1.cooloffdelay | cooling off delay | uint8 (&gt;=1&lt;=48) | hours | true | HC | 50 | 1 | 1/4 |
+| hc1.boosttime | boost time | uint8 (&gt;=0&lt;=0) | hours | true | HC | 54 | 1 | 1 |
 | hc1.switchprogmode | switch program mode | enum |   | true | HC | 55 | 1 | 1 |
 int8
 | hc1.redthreshold | reduction threshold | int8 (&gt;=12&lt;=22) | C | true | HC | 56 | 1 | 1/2 |
@@ -6426,6 +6410,21 @@ int8
 int8
 | pvlowercool | lower cooling with PV | int8 (&gt;=-5&lt;=0) | K | true | DEVICE_DATA | 63 | 1 | 1 |
 | absent | absent | boolean |   | true | DEVICE_DATA | 64 | 1 | 1 |
+| hpoperatingmode | heatpump operating mode | enum |   | true | DEVICE_DATA | 89 | 1 | 1 |
+uint8
+| summertemp | summer temperature | uint8 (&gt;=10&lt;=30) | C | true | DEVICE_DATA | 90 | 1 | 1 |
+uint8
+| instantstart | instant start | uint8 (&gt;=1&lt;=10) | K | true | DEVICE_DATA | 91 | 1 | 1 |
+uint8
+| coolstart | cooling starttemp | uint8 (&gt;=20&lt;=35) | C | true | DEVICE_DATA | 92 | 1 | 1 |
+uint8
+| heatondelay | heat-on delay | uint8 (&gt;=1&lt;=48) | hours | true | DEVICE_DATA | 93 | 1 | 1/4 |
+uint8
+| heatoffdelay | heat-off delay | uint8 (&gt;=1&lt;=48) | hours | true | DEVICE_DATA | 94 | 1 | 1/4 |
+uint8
+| coolondelay | cooling on delay | uint8 (&gt;=1&lt;=48) | hours | true | DEVICE_DATA | 95 | 1 | 1/4 |
+uint8
+| cooloffdelay | cooling off delay | uint8 (&gt;=1&lt;=48) | hours | true | DEVICE_DATA | 96 | 1 | 1/4 |
 int16
 | hc1.seltemp | selected room temperature | int16 (&gt;=0&lt;=30) | C | true | HC | 0 | 1 | 1/2 |
 | hc1.currtemp | current room temperature | int16 | C | false | HC | 1 | 1 | 1/10 |
@@ -6496,25 +6495,9 @@ uint8
 | hc1.control | control device | enum |   | true | HC | 44 | 1 | 1 |
 | hc1.remotetemp | room temperature from remote | cmd | C | true | HC | 45 | 1 | 1/10 |
 | hc1.remotehum | room humidity from remote | cmd | % | true | HC | 46 | 1 | 1 |
+| hc1.boost | boost mode | boolean |   | true | HC | 53 | 1 | 1 |
 uint8
-| hc1.heatondelay | heat-on delay | uint8 (&gt;=1&lt;=48) | hours | true | HC | 47 | 1 | 1/4 |
-uint8
-| hc1.heatoffdelay | heat-off delay | uint8 (&gt;=1&lt;=48) | hours | true | HC | 48 | 1 | 1/4 |
-uint8
-| hc1.coolondelay | cooling on delay | uint8 (&gt;=1&lt;=48) | hours | true | HC | 49 | 1 | 1/4 |
-uint8
-| hc1.cooloffdelay | cooling off delay | uint8 (&gt;=1&lt;=48) | hours | true | HC | 50 | 1 | 1/4 |
-uint8
-| hc1.instantstart | instant start | uint8 (&gt;=1&lt;=10) | K | true | HC | 51 | 1 | 1 |
-| hc1.boost | boost mode | boolean |   | true | HC | 52 | 1 | 1 |
-uint8
-| hc1.boosttime | boost time | uint8 (&gt;=0&lt;=0) | hours | true | HC | 53 | 1 | 1 |
-uint8
-| hc1.coolstart | cooling starttemp | uint8 (&gt;=20&lt;=35) | C | true | HC | 54 | 1 | 1 |
-uint8
-| hc1.coolondelay | cooling on delay | uint8 (&gt;=1&lt;=48) | hours | true | HC | 49 | 1 | 1/4 |
-uint8
-| hc1.cooloffdelay | cooling off delay | uint8 (&gt;=1&lt;=48) | hours | true | HC | 50 | 1 | 1/4 |
+| hc1.boosttime | boost time | uint8 (&gt;=0&lt;=0) | hours | true | HC | 54 | 1 | 1 |
 | hc1.switchprogmode | switch program mode | enum |   | true | HC | 55 | 1 | 1 |
 int8
 | hc1.redthreshold | reduction threshold | int8 (&gt;=12&lt;=22) | C | true | HC | 56 | 1 | 1/2 |

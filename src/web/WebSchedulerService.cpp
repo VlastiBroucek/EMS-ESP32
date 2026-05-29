@@ -423,8 +423,7 @@ bool WebSchedulerService::command(const char * name, const std::string & command
 // queue schedules to be handled executed in scheduler-loop
 bool WebSchedulerService::onChange(const char * cmd) {
     for (ScheduleItem & scheduleItem : *scheduleItems_) {
-        if (scheduleItem.active && scheduleItem.flags == SCHEDULEFLAG_SCHEDULE_ONCHANGE
-            && Helpers::toLower(scheduleItem.time.c_str()).find(Helpers::toLower(cmd)) != std::string::npos) {
+        if (scheduleItem.active && scheduleItem.flags == SCHEDULEFLAG_SCHEDULE_ONCHANGE && Helpers::toLower(scheduleItem.time.c_str()) == Helpers::toLower(cmd)) {
             cmd_changed_.push_back(&scheduleItem);
             return true;
         }

@@ -300,6 +300,14 @@ const std::initializer_list<Modbus::EntityModbusInfo> Modbus::modbus_register_ma
     REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_DEVICE_DATA, FL_(heatingPID), 74, 1), // heatingpid
     REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_DEVICE_DATA, FL_(preheating), 75, 1), // preheating
     REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_DEVICE_DATA, FL_(vacations), 76, 13), // vacations
+    REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_DEVICE_DATA, FL_(hpoperatingmode), 89, 1), // hpoperatingmode
+    REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_DEVICE_DATA, FL_(summertemp), 90, 1), // summertemp
+    REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_DEVICE_DATA, FL_(instantstart), 91, 1), // instantstart
+    REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_DEVICE_DATA, FL_(coolstart), 92, 1), // coolstart
+    REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_DEVICE_DATA, FL_(heatondelay), 93, 1), // heatondelay
+    REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_DEVICE_DATA, FL_(heatoffdelay), 94, 1), // heatoffdelay
+    REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_DEVICE_DATA, FL_(coolondelay), 95, 1), // coolondelay
+    REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_DEVICE_DATA, FL_(cooloffdelay), 96, 1), // cooloffdelay
     REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_HC, FL_(selRoomTemp), 0, 1), // seltemp
     REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_HC, FL_(roomTemp), 1, 1), // currtemp
     REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_HC, FL_(haclimate), 2, 1), // haclimate
@@ -352,9 +360,9 @@ const std::initializer_list<Modbus::EntityModbusInfo> Modbus::modbus_register_ma
     REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_HC, FL_(coolondelay), 49, 1), // coolondelay
     REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_HC, FL_(cooloffdelay), 50, 1), // cooloffdelay
     REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_HC, FL_(instantstart), 51, 1), // instantstart
-    REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_HC, FL_(boost), 52, 1), // boost
-    REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_HC, FL_(boosttime), 53, 1), // boosttime
-    REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_HC, FL_(coolstart), 54, 1), // coolstart
+    REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_HC, FL_(coolstart), 52, 1), // coolstart
+    REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_HC, FL_(boost), 53, 1), // boost
+    REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_HC, FL_(boosttime), 54, 1), // boosttime
     REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_HC, FL_(switchProgMode), 55, 1), // switchprogmode
     REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_HC, FL_(redthreshold), 56, 1), // redthreshold
     REGISTER_MAPPING(dt::THERMOSTAT, TAG_TYPE_HC, FL_(solarinfl), 57, 1), // solarinfl
