@@ -748,15 +748,19 @@ int http_request(std::string url, const std::string & method, const std::string 
             ssl_client->print(value.c_str());
         } else {
             ssl_client->println("Connection: close");
+            ssl_client->print("\r\n"); // terminate headers - without this the server never responds
         }
+
         auto ms = millis();
         while (ssl_client->connected() && !ssl_client->available() && millis() - ms < 3000) {
-            delay(0);
+            delay(1);
         }
+
         while (ssl_client->available()) {
             result += (char)ssl_client->read();
         }
         ssl_client->stop();
+
         index = result.find_first_of(' ');
         if (index != std::string::npos) {
             httpResult = stoi(result.substr(index + 1, 3));
@@ -817,7 +821,8 @@ std::string compute(const std::string & expr) {
             std::string value  = doc[value_s] | "";
             std::string method = doc[method_s] | "GET";
             std::string result;
-            int         httpResult = http_request(url, method, value, doc[header_s].as<JsonObjectConst>(), result);
+
+            int httpResult = http_request(url, method, value, doc[header_s].as<JsonObjectConst>(), result);
             if (httpResult == 200) {
                 std::string  key = doc[key_s] | "";
                 JsonDocument keys_doc; // JsonDocument to hold "keys" after doc is parsed with HTTP body
@@ -847,6 +852,7 @@ std::string compute(const std::string & expr) {
                 }
                 expr_new.replace(f, e - f, result);
             } else if (httpResult != 0) {
+                // httpResult of 0 means no url
                 EMSESP::logger().warning("URL command failed with https code: %d, response: %s", httpResult, result.c_str());
             }
         }
