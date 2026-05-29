@@ -431,6 +431,18 @@ bool WebSchedulerService::onChange(const char * cmd) {
     return false;
 }
 
+// system/message evaluates its own argument later (deferred via raw_value, computed in loop()),
+// so pre-computing it here would make any {url} or expression inside it run twice. Pass
+// system/message its value raw; compute() everything else as before.
+// templated because ScheduleItem's strings use a PSRAM allocator, not std::string.
+template <typename C, typename V>
+static std::string compute_cmd_value(const C & cmd, const V & value) {
+    if (Helpers::toLower(cmd.c_str()) == "system/message") {
+        return std::string(value.c_str());
+    }
+    return compute(value.c_str());
+}
+
 // handle condition schedules, parse string stored in schedule.time field
 void WebSchedulerService::condition() {
     for (ScheduleItem & scheduleItem : *scheduleItems_) {
@@ -440,7 +452,7 @@ void WebSchedulerService::condition() {
             // EMSESP::logger().debug("condition match: %s", match.c_str());
 #endif
             if (match.length() == 1 && match[0] == '1' && scheduleItem.retry_cnt == 0xFF) {
-                scheduleItem.retry_cnt = command(scheduleItem.name, scheduleItem.cmd.c_str(), compute(scheduleItem.value.c_str())) ? 1 : 0xFF;
+                scheduleItem.retry_cnt = command(scheduleItem.name, scheduleItem.cmd.c_str(), compute_cmd_value(scheduleItem.cmd, scheduleItem.value)) ? 1 : 0xFF;
             } else if (match.length() == 1 && match[0] == '0' && scheduleItem.retry_cnt == 1) {
                 scheduleItem.retry_cnt = 0xFF;
             } else if (match.length() != 1) { // the match is not boolean
@@ -472,13 +484,13 @@ void WebSchedulerService::loop() {
     // check if we have onChange events
     while (!cmd_changed_.empty()) {
         ScheduleItem si = *cmd_changed_.front();
-        command(si.name, si.cmd.c_str(), compute(si.value.c_str()));
+        command(si.name, si.cmd.c_str(), compute_cmd_value(si.cmd, si.value));
         cmd_changed_.pop_front();
     }
 
     for (ScheduleItem & scheduleItem : *scheduleItems_) {
         if (scheduleItem.active && scheduleItem.flags == SCHEDULEFLAG_SCHEDULE_IMMEDIATE) {
-            command(scheduleItem.name, scheduleItem.cmd.c_str(), compute(scheduleItem.value.c_str()));
+            command(scheduleItem.name, scheduleItem.cmd.c_str(), compute_cmd_value(scheduleItem.cmd, scheduleItem.value));
             // scheduleItem.active = false;
             publish_single(scheduleItem.name, false);
             if (EMSESP::mqtt_.get_publish_onchange(0)) {
@@ -498,7 +510,7 @@ void WebSchedulerService::loop() {
     if (last_tm_min == -2) {
         for (ScheduleItem & scheduleItem : *scheduleItems_) {
             if (scheduleItem.active && scheduleItem.flags == SCHEDULEFLAG_SCHEDULE_TIMER && scheduleItem.elapsed_min == 0) {
-                scheduleItem.retry_cnt = command(scheduleItem.name, scheduleItem.cmd.c_str(), compute(scheduleItem.value.c_str())) ? 0xFF : 0;
+                scheduleItem.retry_cnt = command(scheduleItem.name, scheduleItem.cmd.c_str(), compute_cmd_value(scheduleItem.cmd, scheduleItem.value)) ? 0xFF : 0;
             }
         }
         last_tm_min = -1; // startup done, now use for RTC
@@ -516,7 +528,7 @@ void WebSchedulerService::loop() {
             // scheduled timer commands
             if (scheduleItem.active && scheduleItem.flags == SCHEDULEFLAG_SCHEDULE_TIMER && scheduleItem.elapsed_min > 0
                 && (uptime_min % scheduleItem.elapsed_min == 0)) {
-                command(scheduleItem.name, scheduleItem.cmd.c_str(), compute(scheduleItem.value.c_str()));
+                command(scheduleItem.name, scheduleItem.cmd.c_str(), compute_cmd_value(scheduleItem.cmd, scheduleItem.value));
             }
         }
         last_uptime_min = uptime_min;
@@ -533,7 +545,7 @@ void WebSchedulerService::loop() {
         for (const ScheduleItem & scheduleItem : *scheduleItems_) {
             uint8_t dow = scheduleItem.flags & SCHEDULEFLAG_SCHEDULE_TIMER ? 0 : scheduleItem.flags;
             if (scheduleItem.active && (real_dow & dow) && real_min == scheduleItem.elapsed_min) {
-                command(scheduleItem.name, scheduleItem.cmd.c_str(), compute(scheduleItem.value.c_str()));
+                command(scheduleItem.name, scheduleItem.cmd.c_str(), compute_cmd_value(scheduleItem.cmd, scheduleItem.value));
             }
         }
         last_tm_min = tm->tm_min;
@@ -545,7 +557,7 @@ bool WebSchedulerService::executeSchedule(const char * name) {
     for (ScheduleItem & scheduleItem : *scheduleItems_) {
         if (scheduleItem.flags == SCHEDULEFLAG_SCHEDULE_IMMEDIATE && strcmp(scheduleItem.name, name) == 0) {
             EMSESP::logger().info("Executing schedule '%s'", name);
-            return command(scheduleItem.name, scheduleItem.cmd.c_str(), compute(scheduleItem.value.c_str()));
+            return command(scheduleItem.name, scheduleItem.cmd.c_str(), compute_cmd_value(scheduleItem.cmd, scheduleItem.value));
         }
     }
     EMSESP::logger().warning("Schedule '%s' not found", name);
