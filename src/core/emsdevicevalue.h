@@ -77,7 +77,8 @@ class DeviceValue {
         LH,          // 25 - l/h - volume flow rate
         CTKWH,       // 26 - ct/kWh - monetary
         HERTZ,       // 27 - Hz - frequency
-        CONNECTIVITY // 28 - used in HA - connectivity
+        CONNECTIVITY, // 28 - used in HA - connectivity
+        TIMESTAMP,    // 29 - used in HA - timestamp
     };
 
     // TAG mapping - maps to DeviceValueTAG_s in emsdevicevalue.cpp

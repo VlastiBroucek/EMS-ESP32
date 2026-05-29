@@ -232,7 +232,11 @@ export const schedulerItemValidation = (
   scheduleItem: ScheduleItem
 ) =>
   new Schema({
-    name: [NAME_PATTERN, uniqueNameValidator(schedule, scheduleItem.o_name)],
+    name: [
+      { required: true, message: 'Name is required' },
+      NAME_PATTERN_REQUIRED,
+      uniqueNameValidator(schedule, scheduleItem.o_name)
+    ],
     cmd: [
       { required: true, message: 'Command is required' },
       {

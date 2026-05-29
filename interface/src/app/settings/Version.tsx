@@ -258,7 +258,6 @@ const InstallDialog = memo(
     latestVersion,
     latestDevVersion,
     upgradeImportantMessageType,
-    downloadOnly,
     platform,
     LL,
     onClose,
@@ -269,7 +268,6 @@ const InstallDialog = memo(
     latestVersion: VersionInfo | undefined;
     latestDevVersion: VersionInfo | undefined;
     upgradeImportantMessageType: number;
-    downloadOnly: boolean;
     platform: string;
     LL: TranslationFunctions;
     onClose: () => void;
@@ -292,7 +290,7 @@ const InstallDialog = memo(
         <DialogContent dividers>
           <Typography sx={{ mb: 2 }}>
             {LL.INSTALL_VERSION(
-              downloadOnly ? LL.DOWNLOAD(1) : LL.INSTALL(),
+              LL.INSTALL(),
               fetchDevVersion ? latestDevVersion?.version : latestVersion?.version
             )}
           </Typography>
@@ -342,16 +340,14 @@ const InstallDialog = memo(
               {LL.DOWNLOAD(0)}
             </Link>
           </Button>
-          {!downloadOnly && (
-            <Button
-              startIcon={<WarningIcon color="warning" />}
-              variant="outlined"
-              onClick={() => onInstall(binURL)}
-              color="primary"
-            >
-              {LL.INSTALL()}
-            </Button>
-          )}
+          <Button
+            startIcon={<WarningIcon color="warning" />}
+            variant="outlined"
+            onClick={() => onInstall(binURL)}
+            color="primary"
+          >
+            {LL.INSTALL()}
+          </Button>
         </DialogActions>
       </Dialog>
     );
@@ -430,7 +426,6 @@ const Version = () => {
     useState<boolean>(false);
 
   const [fetchDevVersion, setFetchDevVersion] = useState<boolean>(false);
-  const [downloadOnly, setDownloadOnly] = useState<boolean>(false);
   const [showVersionInfo, setShowVersionInfo] = useState<number>(0); // 1 = stable, 2 = dev, 3 = partition
   const [firmwareSize, setFirmwareSize] = useState<number>(0);
 
@@ -460,16 +455,7 @@ const Version = () => {
     toast.error(String(error.error?.message || 'An error occurred'));
   });
 
-  const {
-    data,
-    send: loadData,
-    error
-  } = useRequest(SystemApi.readSystemStatus).onSuccess((event) => {
-    const systemData = event.data as VersionData;
-    if (systemData.arduino_version.startsWith('Tasmota')) {
-      setDownloadOnly(true);
-    }
-  });
+  const { data, send: loadData, error } = useRequest(SystemApi.readSystemStatus);
 
   const { send: sendUploadURL } = useRequest(
     (url: string) => callAction({ action: 'uploadURL', param: url }),
@@ -842,7 +828,6 @@ const Version = () => {
               latestVersion={latestVersion}
               latestDevVersion={latestDevVersion}
               upgradeImportantMessageType={upgradeImportantMessageType}
-              downloadOnly={downloadOnly}
               platform={platform}
               LL={LL}
               onClose={closeInstallDialog}

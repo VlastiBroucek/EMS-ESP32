@@ -2,10 +2,6 @@
 
 #include <emsesp.h>
 
-#ifdef NO_TLS_SUPPORT
-#include "lwip/dns.h"
-#endif
-
 NetworkStatus::NetworkStatus(AsyncWebServer * server, SecurityManager * securityManager) {
     securityManager->addEndpoint(server, NETWORK_STATUS_SERVICE_PATH, AuthenticationPredicates::IS_AUTHENTICATED, [this](AsyncWebServerRequest * request) {
         networkStatus(request);

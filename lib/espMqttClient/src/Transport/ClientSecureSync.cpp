@@ -6,8 +6,6 @@ For a copy, see <https://opensource.org/licenses/MIT> or
 the LICENSE file.
 */
 
-#ifndef NO_TLS_SUPPORT
-
 #include "ClientSecureSync.h"
 #include <lwip/sockets.h>
 #include "../Config.h"
@@ -66,5 +64,3 @@ bool ClientSecureSync::disconnected() {
 }
 
 } // namespace espMqttClientInternals
-
-#endif

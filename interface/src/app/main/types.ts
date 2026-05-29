@@ -348,14 +348,14 @@ export enum DeviceEntityMask {
 }
 
 export interface ScheduleItem {
-  id: number; // unique index
+  id: number; // unique index for table
   active: boolean;
   deleted?: boolean;
   flags: number;
   time: string; // also used for Condition and On Change
   cmd: string;
   value: string;
-  name: string; // can be empty
+  name: string;
   o_id?: number;
   o_active?: boolean;
   o_deleted?: boolean;
