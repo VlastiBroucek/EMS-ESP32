@@ -210,8 +210,8 @@ class AnalogSensor {
     static void IRAM_ATTR freqIrq0();
     static void IRAM_ATTR freqIrq1();
     static void IRAM_ATTR freqIrq2();
-    static unsigned long  edge[3];
-    static unsigned long  edgecnt[3];
+    static volatile unsigned long edge[3];    // written from freqIrqN() ISRs, read from the main measure() loop (partly outside the critical section)
+    static volatile unsigned long edgecnt[3]; // written from freqIrqN() ISRs, read from the main measure() loop (partly outside the critical section)
     unsigned long         lastedge[3] = {0, 0, 0};
 #endif
 };

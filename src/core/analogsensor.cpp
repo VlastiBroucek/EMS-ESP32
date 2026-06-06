@@ -26,8 +26,8 @@ std::vector<uint8_t> AnalogSensor::exclude_types_;
 
 #ifndef EMSESP_STANDALONE
 portMUX_TYPE  mux                     = portMUX_INITIALIZER_UNLOCKED;
-unsigned long AnalogSensor::edge[]    = {0, 0, 0};
-unsigned long AnalogSensor::edgecnt[] = {0, 0, 0};
+volatile unsigned long AnalogSensor::edge[]    = {0, 0, 0};
+volatile unsigned long AnalogSensor::edgecnt[] = {0, 0, 0};
 
 void IRAM_ATTR AnalogSensor::freqIrq0() {
     portENTER_CRITICAL_ISR(&mux);
