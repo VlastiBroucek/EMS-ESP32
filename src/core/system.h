@@ -358,7 +358,7 @@ class System {
     static uint32_t heap_mem_;
     static uint32_t min_free_mem_;
 
-    uint8_t systemStatus_; // uses SYSTEM_STATUS enum
+    volatile uint8_t systemStatus_; // uses SYSTEM_STATUS enum - written from the AsyncTCP task (e.g. cancel) and read from the main loop during OTA
 
     void set_partition_install_date();
 

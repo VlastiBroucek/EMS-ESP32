@@ -3149,6 +3149,18 @@ bool System::uploadFirmwareURL(const char * url) {
     int                last_pct   = -1;
 
     while (total_read < (size_t)firmware_size) {
+        // a cancel is signalled by the WebUI dropping the status below UPLOADING (back to NORMAL)
+        // via the systemStatus action, which runs on the AsyncTCP task while we're blocked here
+        if (EMSESP::system_.systemStatus() < SYSTEM_STATUS::SYSTEM_STATUS_UPLOADING) {
+            LOG_WARNING("Firmware upload cancelled at %u of %d bytes", (unsigned)total_read, firmware_size);
+            Update.abort();    // release the OTA partition handle so a later attempt can start cleanly
+            ssl_client.stop(); // drop the connection
+            saved_url.clear(); // prevent it from downloading again
+            EMSESP::system_.systemStatus(SYSTEM_STATUS::SYSTEM_STATUS_NORMAL);
+            Shell::loop_all(); // flush log buffers so the cancel message shows in the console
+            return true;       // not an error - don't trigger the failure/reset path in emsesp.cpp
+        }
+
         // wait for some data or for the connection to drop
         uint32_t wait_start = millis();
         while (!stream->available()) {
@@ -3158,10 +3170,18 @@ bool System::uploadFirmwareURL(const char * url) {
             if (millis() - wait_start > READ_TIMEOUT_MS) {
                 break;
             }
+            // also bail out promptly if a cancel arrives mid-stall
+            if (EMSESP::system_.systemStatus() < SYSTEM_STATUS::SYSTEM_STATUS_UPLOADING) {
+                break;
+            }
             delay(1);
         }
 
         if (!stream->available()) {
+            // if the inner wait broke because of a cancel, loop back so the top-of-loop handler runs
+            if (EMSESP::system_.systemStatus() < SYSTEM_STATUS::SYSTEM_STATUS_UPLOADING) {
+                continue;
+            }
             LOG_ERROR("Firmware upload failed - read stalled at %u of %d bytes", (unsigned)total_read, firmware_size);
             EMSESP::system_.systemStatus(SYSTEM_STATUS::SYSTEM_STATUS_ERROR_UPLOAD);
             return false;
