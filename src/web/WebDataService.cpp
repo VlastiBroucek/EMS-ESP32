@@ -488,23 +488,24 @@ void WebDataService::dashboard_data(AsyncWebServerRequest * request) {
 
         EMSESP::webSchedulerService.read([&](const WebScheduler & webScheduler) {
             for (const ScheduleItem & scheduleItem : webScheduler.scheduleItems) {
-                // only add if we have a name and it's not of type SCHEDULE_IMMEDIATE - we don't need a u (UOM) for this
-                if (scheduleItem.name[0] != '\0' && scheduleItem.flags != SCHEDULEFLAG_SCHEDULE_IMMEDIATE) {
-                    JsonObject node = nodes.add<JsonObject>();
-                    node["id"]      = (EMSdevice::DeviceTypeUniqueID::SCHEDULER_UID * 100) + count++;
+                JsonObject node = nodes.add<JsonObject>();
+                node["id"]      = (EMSdevice::DeviceTypeUniqueID::SCHEDULER_UID * 100) + count++;
 
-                    JsonObject dv = node["dv"].to<JsonObject>();
-                    dv["id"]      = std::string("00") + scheduleItem.name;
-                    dv["c"]       = scheduleItem.name;
-                    char s[12];
-                    dv["v"]     = Helpers::render_boolean(s, scheduleItem.active, true);
-                    JsonArray l = dv["l"].to<JsonArray>();
-                    l.add(Helpers::render_boolean(s, false, true));
-                    l.add(Helpers::render_boolean(s, true, true));
-                }
+                JsonObject dv = node["dv"].to<JsonObject>();
+                dv["id"]      = std::string("00") + scheduleItem.name;
+                dv["c"]       = scheduleItem.name;
+                char s[12];
+                dv["v"]     = Helpers::render_boolean(s, scheduleItem.active, true);
+                JsonArray l = dv["l"].to<JsonArray>();
+                l.add(Helpers::render_boolean(s, false, true));
+                l.add(Helpers::render_boolean(s, true, true));
             }
         });
     }
+
+    Serial.println("All dashboard_data: ");
+    serializeJson(root, Serial);
+    Serial.println();
 
 #if defined(EMSESP_TEST) && defined(EMSESP_STANDALONE)
     Serial.println();

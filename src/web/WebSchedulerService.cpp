@@ -82,7 +82,7 @@ StateUpdateResult WebScheduler::update(JsonObject root, WebScheduler & webSchedu
     EMSESP::webSchedulerService.ha_reset();
 
     // build up the list of schedule items
-    auto    scheduleItems = root["schedule"].as<JsonArray>();
+    auto scheduleItems = root["schedule"].as<JsonArray>();
     for (const JsonObject schedule : scheduleItems) {
         // create each schedule item, overwriting any previous settings
         // ignore the id (as this is only used in the web for table rendering)
@@ -333,10 +333,12 @@ void WebSchedulerService::publish(const bool force) {
 }
 
 // count number of entries, default: only named items
-uint8_t WebSchedulerService::count_entities(bool cmd_only) {
+// if exclude_immediate is true, include those that are of type SCHEDULEFLAG_SCHEDULE_IMMEDIATE
+uint8_t WebSchedulerService::count_entities(bool exclude_immediate) {
     uint8_t count = 0;
     for (const ScheduleItem & scheduleItem : *scheduleItems_) {
-        if (scheduleItem.name[0] != '\0' || !cmd_only) {
+        // count all except SCHEDULE_IMMEDIATE if exclude_immediate is true, else count all
+        if (!exclude_immediate || scheduleItem.flags != SCHEDULEFLAG_SCHEDULE_IMMEDIATE) {
             count++;
         }
     }
