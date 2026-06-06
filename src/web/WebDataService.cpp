@@ -503,10 +503,6 @@ void WebDataService::dashboard_data(AsyncWebServerRequest * request) {
         });
     }
 
-    Serial.println("All dashboard_data: ");
-    serializeJson(root, Serial);
-    Serial.println();
-
 #if defined(EMSESP_TEST) && defined(EMSESP_STANDALONE)
     Serial.println();
     Serial.print("All dashboard_data: ");
