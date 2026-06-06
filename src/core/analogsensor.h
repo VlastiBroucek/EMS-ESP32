@@ -174,10 +174,10 @@ class AnalogSensor {
         return sensors_.size();
     }
 
-    bool                        update(uint8_t gpio, const char * name, double offset, double factor, uint8_t uom, int8_t type, bool deleted, bool is_system);
-    bool                        get_value_info(JsonObject output, const char * cmd, const int8_t id = -1);
-    void                        store_counters();
-    std::string                 get_metrics_prometheus();
+    bool        update(uint8_t gpio, const char * name, double offset, double factor, uint8_t uom, int8_t type, bool deleted, bool is_system);
+    bool        get_value_info(JsonObject output, const char * cmd, const int8_t id = -1);
+    void        store_counters();
+    std::string get_metrics_prometheus();
     static const std::vector<uint8_t> & exclude_types() {
         return exclude_types_;
     }

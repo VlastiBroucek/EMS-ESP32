@@ -49,34 +49,34 @@ class DeviceValue {
     // also used with HA as uom
     // shows also the HA device class being used
     enum DeviceValueUOM : uint8_t {
-        NONE = 0,    // 0
-        DEGREES,     // 1 - °C - temperature
-        DEGREES_R,   // 2 - °C (relative temperature) - temperature
-        PERCENT,     // 3 - % - power factor
-        LMIN,        // 4 - l/min - volume flow rate
-        KWH,         // 5 - kWh - energy
-        WH,          // 6 - Wh - energy
-        HOURS,       // 7 - h - duration
-        MINUTES,     // 8 - m - duration
-        UA,          // 9 - µA - current
-        BAR,         // 10 - bar - pressure
-        KW,          // 11 - kW - power
-        W,           // 12 - W - power
-        KB,          // 13 - kB - data size
-        SECONDS,     // 14 - s - duration
-        DBM,         // 15 - dBm - signal strength
-        FAHRENHEIT,  // 16 - °F - temperature
-        MV,          // 17 - mV - voltage
-        SQM,         // 18 - m² - area
-        M3,          // 19 - m³ - volume
-        L,           // 20 - L - volume
-        KMIN,        // 21 - K*min
-        K,           // 22 - K - temperature
-        VOLTS,       // 23 - V - voltage
-        MBAR,        // 24 - mbar - atmospheric pressure
-        LH,          // 25 - l/h - volume flow rate
-        CTKWH,       // 26 - ct/kWh - monetary
-        HERTZ,       // 27 - Hz - frequency
+        NONE = 0,     // 0
+        DEGREES,      // 1 - °C - temperature
+        DEGREES_R,    // 2 - °C (relative temperature) - temperature
+        PERCENT,      // 3 - % - power factor
+        LMIN,         // 4 - l/min - volume flow rate
+        KWH,          // 5 - kWh - energy
+        WH,           // 6 - Wh - energy
+        HOURS,        // 7 - h - duration
+        MINUTES,      // 8 - m - duration
+        UA,           // 9 - µA - current
+        BAR,          // 10 - bar - pressure
+        KW,           // 11 - kW - power
+        W,            // 12 - W - power
+        KB,           // 13 - kB - data size
+        SECONDS,      // 14 - s - duration
+        DBM,          // 15 - dBm - signal strength
+        FAHRENHEIT,   // 16 - °F - temperature
+        MV,           // 17 - mV - voltage
+        SQM,          // 18 - m² - area
+        M3,           // 19 - m³ - volume
+        L,            // 20 - L - volume
+        KMIN,         // 21 - K*min
+        K,            // 22 - K - temperature
+        VOLTS,        // 23 - V - voltage
+        MBAR,         // 24 - mbar - atmospheric pressure
+        LH,           // 25 - l/h - volume flow rate
+        CTKWH,        // 26 - ct/kWh - monetary
+        HERTZ,        // 27 - Hz - frequency
         CONNECTIVITY, // 28 - used in HA - connectivity
         TIMESTAMP,    // 29 - used in HA - timestamp
     };

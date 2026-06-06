@@ -1532,8 +1532,8 @@ bool System::check_upgrade() {
                 return StateUpdateResult::UNCHANGED;
             });
             // Scheduler name is now mandatory, update FS
-            uint8_t i             = 0;
-            bool schedule_changed = false;
+            uint8_t i                = 0;
+            bool    schedule_changed = false;
             EMSESP::webSchedulerService.update([&](WebScheduler & scheduler) {
                 for (ScheduleItem & scheduleItem : scheduler.scheduleItems) {
                     if (scheduleItem.name[0] == '\0') {
@@ -2970,7 +2970,7 @@ bool System::uploadFirmwareURL(const char * url) {
 
     String scheme = saved_url.substring(0, 8);
     scheme.toLowerCase();
-    const bool is_https = scheme.startsWith("https://");
+    const bool is_https   = scheme.startsWith("https://");
     const int  scheme_len = is_https ? 8 : 7; // "https://" vs "http://"
 
     WiFiClient    basic_client;
@@ -2992,11 +2992,11 @@ bool System::uploadFirmwareURL(const char * url) {
         ssl_client.setBufferSizes(16384, 1024);
         ssl_client.setSessionTimeout(120);
     }
-    basic_client.setTimeout(15000);             // socket-level read timeout
-    ssl_client.setTimeout(15000);               // Stream::readBytes timeout used by Update
+    basic_client.setTimeout(15000);                // socket-level read timeout
+    ssl_client.setTimeout(15000);                  // Stream::readBytes timeout used by Update
     ssl_client.setClient(&basic_client, is_https); // enableSSL = false for plain HTTP
 
-    const uint16_t port = is_https ? 443 : 80;
+    const uint16_t port           = is_https ? 443 : 80;
     String         url_remain     = saved_url.substring(scheme_len);
     int            redirect_count = 0;
 
