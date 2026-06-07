@@ -488,6 +488,9 @@ void WebDataService::dashboard_data(AsyncWebServerRequest * request) {
 
         EMSESP::webSchedulerService.read([&](const WebScheduler & webScheduler) {
             for (const ScheduleItem & scheduleItem : webScheduler.scheduleItems) {
+                if (scheduleItem.flags == SCHEDULEFLAG_SCHEDULE_IMMEDIATE) {
+                    continue;
+                }
                 JsonObject node = nodes.add<JsonObject>();
                 node["id"]      = (EMSdevice::DeviceTypeUniqueID::SCHEDULER_UID * 100) + count++;
 
