@@ -179,6 +179,10 @@ void WebStatusService::systemStatus(AsyncWebServerRequest * request) {
         // we're ready to do the actual restart ASAP
         EMSESP::system_.systemStatus(SYSTEM_STATUS::SYSTEM_STATUS_RESTART_REQUESTED);
     }
+    if (EMSESP::system_.systemStatus() == SYSTEM_STATUS::SYSTEM_STATUS_ERROR_UPLOAD) {
+        // error is reported, back to normal state
+        EMSESP::system_.systemStatus(SYSTEM_STATUS::SYSTEM_STATUS_NORMAL);
+    }
 
 #endif
 

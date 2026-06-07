@@ -4195,7 +4195,7 @@ bool Thermostat::set_temperature(const float temperature, const uint8_t mode, co
             if (model == EMSdevice::EMS_DEVICE_FLAG_CR120 && mode_ == HeatingCircuit::Mode::MANUAL) {
                 offset = 22; // manual offset CR120
             } else if (mode_ == HeatingCircuit::Mode::MANUAL) {
-                offset = 10; // manual offset
+                offset = hc->hpoperatingstate == 2 ? 17 : 10; // cooling or manual offset
             } else {
                 offset = 8; // auto offset
                 // special case to reactivate auto temperature, see #737, #746
