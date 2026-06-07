@@ -286,14 +286,13 @@ const nl: Translation = {
   STAY: 'Blijven',
   LEAVE: 'Verlaten',
   SCHEDULER: 'Scheduler',
-  SCHEDULER_HELP_1: 'Automatiseer opdrachten door hieronder geplande gebeurtenissen toe te voegen. Stel een unieke naam in om activering via API/MQTT in/uit te schakelen',
+  SCHEDULER_HELP_1: 'Automatiseer opdrachten door hieronder geplande gebeurtenissen toe te voegen',
   SCHEDULER_HELP_2: 'Gebruik 00:00 om eenmaal te activeren bij het opstarten',
   SCHEDULE: 'Schedule',
   TIME: 'Tijd',
   TIMER: 'Timer',
   ONCHANGE: 'Op verandering',
   CONDITION: 'Voorwaarde',
-  IMMEDIATE: 'Onmiddellijk',
   SCHEDULE_UPDATED: 'Schema bijgewerkt',
   SCHEDULE_TIMER_1: 'bij het opstarten',
   SCHEDULE_TIMER_2: 'elke minuut',
@@ -365,7 +364,10 @@ const nl: Translation = {
   WARNING_SYSTEM_BACKUP: 'Dit zal een back-up van uw volledige systeemconfiguratie en instellingen maken. Alle wachtwoorden zijn leesbaar in het back-upbestand. Wees voorzichtig bij delen! Wilt u doorgaan?',
   TEST_EMAIL_SUCCESSFUL: 'Test email verzonden succesvol',
   SYSTEM_NAME: 'Systeemnaam',
-  EXECUTE_SCHEDULE_SENT: 'Planlegger uitgevoerd succesvol'
+  COMMANDS: 'Commando\'s',
+  COMMANDS_UPDATED: 'Commando\'s bijgewerkt',
+  COMMANDS_HELP_1: 'Definieer hergebruikbare benoemde commando\'s hieronder. Deze kunnen worden uitgevoerd vanuit de console, API/MQTT, of worden aangeroepen door de Scheduler',
+  EXECUTE_COMMAND_SENT: 'Commando uitgevoerd.',
 };
 
 export default nl;

@@ -286,14 +286,13 @@ const de: Translation = {
   STAY: 'Bleiben',
   LEAVE: 'Verlassen',
   SCHEDULER: 'Planer',
-  SCHEDULER_HELP_1: 'Fügen Sie eigene geplante Befehle zur Automatisierung hinzu. Vergeben Sie einen Entitätsnamen, um die Aktivierung über API/Mqtt zu steuern',
+  SCHEDULER_HELP_1: 'Fügen Sie eigene geplante Befehle zur Automatisierung hinzu',
   SCHEDULER_HELP_2: '00:00 aktiviert einmalige Ausführung beim Start.',
   SCHEDULE: 'Zeitplan',
   TIME: 'Zeit',
   TIMER: 'Timer',
   ONCHANGE: 'Bei Änderung',
   CONDITION: 'Zustand',
-  IMMEDIATE: 'Sofort',
   SCHEDULE_UPDATED: 'Zeitplan aktualisiert',
   SCHEDULE_TIMER_1: 'beim Start',
   SCHEDULE_TIMER_2: 'jede Minute',
@@ -365,7 +364,10 @@ const de: Translation = {
   WARNING_SYSTEM_BACKUP: 'Dies wird eine Sicherung Ihrer vollständigen Systemkonfiguration und Einstellungen erstellen. Alle Passwörter werden in dieser Sicherungsdatei lesbar sein. Seien Sie vorsichtig beim Teilen! Möchten Sie fortfahren?',
   TEST_EMAIL_SUCCESSFUL: 'Test email erfolgreich gesendet',
   SYSTEM_NAME: 'Systemname',
-  EXECUTE_SCHEDULE_SENT: 'Zeitplan erfolgreich ausgeführt'
+  COMMANDS: 'Befehle',
+  COMMANDS_UPDATED: 'Befehle wurden aktualisiert',
+  COMMANDS_HELP_1: 'Definieren Sie eigene Befehle für die EMS-Magistral',
+  EXECUTE_COMMAND_SENT: 'Befehl wurde ausgeführt.',
 };
 
 export default de;

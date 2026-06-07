@@ -286,14 +286,13 @@ const pl: BaseTranslation = {
   STAY: 'Pozostań',
   LEAVE: 'Opuść',
   SCHEDULER: 'Harmonogram',
-  SCHEDULER_HELP_1: 'Zautomatyzuj wykonywanie komend, dodając poniżej harmonogram zdarzeń. Nadaj mu unikalną nazwę, aby móc go aktywować/dezaktywować przez API/MQTT',
+  SCHEDULER_HELP_1: 'Zautomatyzuj wykonywanie komend, dodając poniżej harmonogram zdarzeń',
   SCHEDULER_HELP_2: 'Wpisz 00:00 aby wykonywać jednorazowo przy starcie.',
   SCHEDULE: '{{H|h|}}armonogram{{|u|}}',
   TIME: '{{Czas|Godzina|}}',
   TIMER: '{{m|M|}}inutnik',
   ONCHANGE: 'O zmianie',
   CONDITION: 'Stan',
-  IMMEDIATE: 'Natychmiastowy',
   SCHEDULE_UPDATED: 'Harmonogram został uaktualniony.',
   SCHEDULE_TIMER_1: 'przy starcie',
   SCHEDULE_TIMER_2: 'co minutę',
@@ -365,7 +364,10 @@ const pl: BaseTranslation = {
   WARNING_SYSTEM_BACKUP: 'To spowoduje utworzenie kopii zapasowej całej konfiguracji i ustawień systemu. Wszystkie hasła będą widoczne w pliku kopii zapasowej. Bądź ostrożny przy udostępnianiu! Chcesz kontynuować?',
   TEST_EMAIL_SUCCESSFUL: 'Test email wysłany pomyślnie',
   SYSTEM_NAME: 'Nazwa systemu',
-  EXECUTE_SCHEDULE_SENT: 'Harmonogram wykonany pomyślnie'
+  COMMANDS: 'Komendy',
+  COMMANDS_UPDATED: 'Komendy zostały zaktualizowane',
+  COMMANDS_HELP_1: 'Zdefiniuj niestandardowe komendy dla magistrali EMS',
+  EXECUTE_COMMAND_SENT: 'Komenda została wysłana.'
 };
 
 export default pl;

@@ -286,14 +286,13 @@ const cz: Translation = {
   STAY: 'Zůstat',
   LEAVE: 'Odejít',
   SCHEDULER: 'Plánovač',
-  SCHEDULER_HELP_1: 'Automatizujte příkazy přidáním naplánovaných událostí níže. Nastavte jedinečný název pro povolení/zakázání aktivace přes API/MQTT',
+  SCHEDULER_HELP_1: 'Automatizujte příkazy přidáním naplánovaných událostí níže',
   SCHEDULER_HELP_2: 'Použijte 00:00 pro spuštění při startu',
   SCHEDULE: 'Harmonogram',
   TIME: 'Čas',
   TIMER: 'Časovač',
   ONCHANGE: 'Při změně',
   CONDITION: 'Podmínka',
-  IMMEDIATE: 'Ihned',
   SCHEDULE_UPDATED: 'Harmonogram aktualizován',
   SCHEDULE_TIMER_1: 'při startu',
   SCHEDULE_TIMER_2: 'každou minutu',
@@ -365,7 +364,10 @@ const cz: Translation = {
   WARNING_SYSTEM_BACKUP: 'Toto vytvoří zálohu vašich celých systémových konfigurací a nastavení. Všechna hesla budou v zálohovém souboru čitelná. Buďte opatrní při sdílení! Opravdu chcete pokračovat?',
   TEST_EMAIL_SUCCESSFUL: 'Test email byl úspěšně odeslán',
   SYSTEM_NAME: 'Název systému',
-  EXECUTE_SCHEDULE_SENT: 'Plán byl úspěšně proveden'
+  COMMANDS: 'Příkazy',
+  COMMANDS_UPDATED: 'Příkazy byly aktualizovány',
+  COMMANDS_HELP_1: 'Definujte vlastní příkazy pro magistrali EMS',
+  EXECUTE_COMMAND_SENT: 'Příkaz byl odeslán.',
 };
 
 export default cz;

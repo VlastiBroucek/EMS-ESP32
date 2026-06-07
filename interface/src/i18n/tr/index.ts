@@ -286,14 +286,13 @@ const tr: Translation = {
   STAY: 'Kal',
   LEAVE: 'Çık',
   SCHEDULER: 'Zamanlayıcı',
-  SCHEDULER_HELP_1: 'Komutları zamanlayarak otomatikleştirin. Benzersiz bir ad belirtin API/MQTT aracılığıyla etkinleştirmek/devre dışı bırakma',
+  SCHEDULER_HELP_1: 'Komutları zamanlayarak otomatikleştirin',
   SCHEDULER_HELP_2: 'Başlangıçta bir kere tetiklemek için 00:00 kullanın',
   SCHEDULE: 'Zamanlama',
   TIME: 'Zaman',
   TIMER: 'Zamanlayıcı',
   ONCHANGE: 'Değişimde',
   CONDITION: 'Durum',
-  IMMEDIATE: 'hemen',
   SCHEDULE_UPDATED: 'Zamanlama güncellendi',
   SCHEDULE_TIMER_1: 'Başlangıçta',
   SCHEDULE_TIMER_2: 'her dakikada',
@@ -365,7 +364,10 @@ const tr: Translation = {
   WARNING_SYSTEM_BACKUP: 'Bu, sistem yapılandırmanızı ve ayarlarınızın bir yedeklemesi oluşturacaktır. Tüm şifreler yedekleme dosyasında okunabilir olacaktır. Paylaşırken dikkatli olun! Devam etmek istediğinize emin misiniz?',
   TEST_EMAIL_SUCCESSFUL: 'Test email başarıyla gönderildi',
   SYSTEM_NAME: 'Sistem Adı',
-  EXECUTE_SCHEDULE_SENT: 'Zamanlama başarıyla uygulandı'
+  COMMANDS: 'Komutlar',
+  COMMANDS_UPDATED: 'Komutlar güncellendi',
+  COMMANDS_HELP_1: 'Özel komutları EMS hattına tanımlayın',
+  EXECUTE_COMMAND_SENT: 'Komut başarıyla çalıştırıldı.',
 };
 
 export default tr;

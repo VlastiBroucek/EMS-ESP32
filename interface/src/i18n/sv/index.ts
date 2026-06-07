@@ -286,14 +286,13 @@ const sv: Translation = {
   STAY: 'Stanna',
   LEAVE: 'Lämna',
   SCHEDULER: 'Schemaläggning',
-  SCHEDULER_HELP_1: 'Automatisera kommandon genom att lägga till schemahändelser nedan. Ange ett unikt namn för att aktivera/avaktivera aktivering via API/MQTT',
+  SCHEDULER_HELP_1: 'Automatisera kommandon genom att lägga till schemahändelser nedan',
   SCHEDULER_HELP_2: 'Använd 00:00 för att trigga en gång vid uppstart',
   SCHEDULE: 'schema',
   TIME: 'Tid',
   TIMER: 'Timer',
   ONCHANGE: 'Vid förändring',
   CONDITION: 'Villkor',
-  IMMEDIATE: 'Omedelbar',
   SCHEDULE_UPDATED: 'Schema uppdaterat',
   SCHEDULE_TIMER_1: 'vid uppstart',
   SCHEDULE_TIMER_2: 'varje minut',
@@ -365,7 +364,10 @@ const sv: Translation = {
   WARNING_SYSTEM_BACKUP: 'Detta kommer att skapa en säkerhetskopia av din fullständiga systemkonfiguration och inställningar. Alla lösenord kommer att vara läsbara i säkerhetskopien. Var försiktig med att dela! Vill du fortsätta?',
   TEST_EMAIL_SUCCESSFUL: 'Test email skickad lyckades',
   SYSTEM_NAME: 'Systemnamn',
-  EXECUTE_SCHEDULE_SENT: 'Schema utfört'
+  COMMANDS: 'Kommandon',
+  COMMANDS_UPDATED: 'Kommandon uppdaterade',
+  COMMANDS_HELP_1: 'Definiera egna kommandon för EMS-Magistral',
+  EXECUTE_COMMAND_SENT: 'Kommando utfört.',
 };
 
 export default sv;

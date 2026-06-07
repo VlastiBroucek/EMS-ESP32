@@ -286,14 +286,13 @@ const fr: Translation = {
   STAY: 'Rester',
   LEAVE: 'Quitter',
   SCHEDULER: 'Scheduler',
-  SCHEDULER_HELP_1: 'Automatiser les commandes en ajoutant des événements programmés ci-dessous. Définissez un nom unique pour activer/désactiver l\'activation via API/MQTT',
+  SCHEDULER_HELP_1: 'Automatiser les commandes en ajoutant des événements programmés ci-dessous',
   SCHEDULER_HELP_2: 'Utiliser 00:00 pour déclencher une fois au démarrage',
   SCHEDULE: 'Programme',
   TIME: 'Temps',
   TIMER: 'Minuteur',
   ONCHANGE: 'Sur le changement',
   CONDITION: 'Condition',
-  IMMEDIATE: 'Immédiat',
   SCHEDULE_UPDATED: 'Programme mis à jour',
   SCHEDULE_TIMER_1: 'au démarrage',
   SCHEDULE_TIMER_2: 'toutes les minutes',
@@ -365,7 +364,10 @@ const fr: Translation = {
   WARNING_SYSTEM_BACKUP: 'Cela créera une sauvegarde de votre configuration et paramètres complets. Tous les mots de passe seront lisibles dans le fichier de sauvegarde. Soyez prudent avec le partage ! Voulez-vous continuer ?',
   TEST_EMAIL_SUCCESSFUL: 'Test email envoyé avec succès',
   SYSTEM_NAME: 'Nom du système',
-  EXECUTE_SCHEDULE_SENT: 'Planlegger exécuté avec succès'
+  COMMANDS: 'Commandes',
+  COMMANDS_UPDATED: 'Commandes mises à jour',
+  COMMANDS_HELP_1: 'Définir des commandes personnalisées pour la magistral EMS',
+  EXECUTE_COMMAND_SENT: 'Commande exécutée avec succès.',
 };
 
 export default fr;

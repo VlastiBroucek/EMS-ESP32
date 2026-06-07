@@ -286,14 +286,13 @@ const it: Translation = {
   STAY: 'Stai',
   LEAVE: 'Esci',
   SCHEDULER: 'Programma eventi',
-  SCHEDULER_HELP_1: "Automatizza i comandi aggiungendo gli eventi programmati di seguito. Imposta un nome univoco per abilitare/disabilitare l'attivazione tramite API/MQTT",
+  SCHEDULER_HELP_1: "Automatizza i comandi aggiungendo gli eventi programmati di seguito",
   SCHEDULER_HELP_2: "per attivare una volta all'avvio",
   SCHEDULE: 'Programma',
   TIME: 'Ora',
   TIMER: 'Orologio',
   ONCHANGE: 'Sul cambiamento',
   CONDITION: 'Condizione',
-  IMMEDIATE: 'Immediata',
   SCHEDULE_UPDATED: 'Calendario aggiornato',
   SCHEDULE_TIMER_1: 'All avvio',
   SCHEDULE_TIMER_2: 'Ogni minuto',
@@ -365,7 +364,10 @@ const it: Translation = {
   WARNING_SYSTEM_BACKUP: 'Questo creerà un backup delle tue configurazioni e impostazioni complete. Tutte le password saranno leggibili nel file di backup. Sei sicuro di voler continuare?',
   TEST_EMAIL_SUCCESSFUL: 'Test email inviata con successo',
   SYSTEM_NAME: 'Nome del sistema',
-  EXECUTE_SCHEDULE_SENT: 'Programma eseguito con successo'
+  COMMANDS: 'Comandi',
+  COMMANDS_UPDATED: 'Comandi aggiornati',
+  COMMANDS_HELP_1: 'Definisci comandi personalizzati per la magistrali EMS',
+  EXECUTE_COMMAND_SENT: 'Comando eseguito con successo.',
 };
 
 export default it;

@@ -56,6 +56,7 @@ ESP32React              EMSESP::esp32React(&webServer, &dummyFS);
 WebSettingsService      EMSESP::webSettingsService      = WebSettingsService(&webServer, &dummyFS, EMSESP::esp32React.getSecurityManager());
 WebCustomizationService EMSESP::webCustomizationService = WebCustomizationService(&webServer, &dummyFS, EMSESP::esp32React.getSecurityManager());
 WebSchedulerService     EMSESP::webSchedulerService     = WebSchedulerService(&webServer, &dummyFS, EMSESP::esp32React.getSecurityManager());
+WebCommandService       EMSESP::webCommandService       = WebCommandService(&webServer, &dummyFS, EMSESP::esp32React.getSecurityManager());
 WebCustomEntityService  EMSESP::webCustomEntityService  = WebCustomEntityService(&webServer, &dummyFS, EMSESP::esp32React.getSecurityManager());
 WebModulesService       EMSESP::webModulesService       = WebModulesService(&webServer, &dummyFS, EMSESP::esp32React.getSecurityManager());
 #else
@@ -63,6 +64,7 @@ ESP32React              EMSESP::esp32React(&webServer, &LittleFS);
 WebSettingsService      EMSESP::webSettingsService      = WebSettingsService(&webServer, &LittleFS, EMSESP::esp32React.getSecurityManager());
 WebCustomizationService EMSESP::webCustomizationService = WebCustomizationService(&webServer, &LittleFS, EMSESP::esp32React.getSecurityManager());
 WebSchedulerService     EMSESP::webSchedulerService     = WebSchedulerService(&webServer, &LittleFS, EMSESP::esp32React.getSecurityManager());
+WebCommandService       EMSESP::webCommandService       = WebCommandService(&webServer, &LittleFS, EMSESP::esp32React.getSecurityManager());
 WebCustomEntityService  EMSESP::webCustomEntityService  = WebCustomEntityService(&webServer, &LittleFS, EMSESP::esp32React.getSecurityManager());
 WebModulesService       EMSESP::webModulesService       = WebModulesService(&webServer, &LittleFS, EMSESP::esp32React.getSecurityManager());
 #endif
@@ -682,6 +684,7 @@ void EMSESP::publish_other_values() {
     // publish_device_values(EMSdevice::DeviceType::GENERIC);
 
     webSchedulerService.publish();
+    webCommandService.publish();
     webCustomEntityService.publish();
 }
 
@@ -786,6 +789,11 @@ bool EMSESP::get_device_value_info(JsonObject root, const char * cmd, const int8
     // scheduler
     if (devicetype == DeviceType::SCHEDULER) {
         return webSchedulerService.get_value_info(root, cmd);
+    }
+
+    // commands
+    if (devicetype == DeviceType::COMMAND) {
+        return webCommandService.get_value_info(root, cmd);
     }
 
     // custom entities
@@ -1761,6 +1769,7 @@ void EMSESP::start() {
     // this will also handle any MQTT subscriptions
     webCustomizationService.begin(); // load the customizations
     webSchedulerService.begin();     // load the scheduler events
+    webCommandService.begin();       // load the user commands
     webCustomEntityService.begin();  // load the custom telegram reads
 
     // perform any system upgrades

@@ -29,7 +29,7 @@ import {
 import { useI18nContext } from 'i18n/i18n-react';
 import { useInterval } from 'utils';
 
-import { readSchedule, writeSchedule } from '../../api/app';
+import { readCommands, readSchedule, writeSchedule } from '../../api/app';
 import SettingsSchedulerDialog from './SchedulerDialog';
 import { ScheduleFlag } from './types';
 import type { Schedule, ScheduleItem } from './types';
@@ -54,14 +54,13 @@ const DEFAULT_SCHEDULE_ITEM: Omit<ScheduleItem, 'id' | 'o_id'> = {
   deleted: false,
   flags: FLAG_ALL_DAYS,
   time: '',
-  cmd: '',
-  value: '',
+  cmd_name: '',
   name: ''
 };
 
 const scheduleTheme = {
   Table: `
-    --data-table-library_grid-template-columns: 36px 210px 100px 192px repeat(1, minmax(100px, 1fr)) 160px;
+    --data-table-library_grid-template-columns: 36px 220px repeat(1, minmax(20px, 1fr)) 192px 160px;
   `,
   BaseRow: `
     font-size: 14px;
@@ -70,11 +69,8 @@ const scheduleTheme = {
     }
   `,
   BaseCell: `
-    &:nth-of-type(2) {
-      text-align: center;
-    }
     &:nth-of-type(1) {
-      text-align: center;
+      text-align: 8px;
     }
   `,
   HeaderRow: `
@@ -100,7 +96,6 @@ const scheduleTheme = {
 };
 
 const scheduleTypeLabels: Record<number, string> = {
-  [ScheduleFlag.SCHEDULE_IMMEDIATE]: 'Immediate',
   [ScheduleFlag.SCHEDULE_TIMER]: 'Timer',
   [ScheduleFlag.SCHEDULE_CONDITION]: 'Condition',
   [ScheduleFlag.SCHEDULE_ONCHANGE]: 'On Change'
@@ -125,6 +120,11 @@ const Scheduler = () => {
     initialData: []
   });
 
+  const { data: commandNames } = useRequest(readCommands, {
+    initialData: [],
+    initializing: true
+  });
+
   const { send: updateSchedule } = useRequest(
     (data: Schedule) => writeSchedule(data),
     {
@@ -140,8 +140,7 @@ const Scheduler = () => {
       si.deleted !== si.o_deleted ||
       si.flags !== si.o_flags ||
       si.time !== si.o_time ||
-      si.cmd !== si.o_cmd ||
-      si.value !== si.o_value
+      si.cmd_name !== si.o_cmd_name
     );
   };
 
@@ -177,8 +176,7 @@ const Scheduler = () => {
             active: condensed_si.active,
             flags: condensed_si.flags,
             time: condensed_si.time,
-            cmd: condensed_si.cmd,
-            value: condensed_si.value,
+            cmd_name: condensed_si.cmd_name,
             name: condensed_si.name
           }))
       });
@@ -289,7 +287,6 @@ const Scheduler = () => {
                 <HeaderCell stiff>{LL.SCHEDULE(0)}</HeaderCell>
                 <HeaderCell stiff>{LL.TIME(0)}/Cond.</HeaderCell>
                 <HeaderCell stiff>{LL.COMMAND(0)}</HeaderCell>
-                <HeaderCell stiff>{LL.VALUE(0)}</HeaderCell>
                 <HeaderCell stiff>{LL.NAME(0)}</HeaderCell>
               </HeaderRow>
             </Header>
@@ -297,12 +294,10 @@ const Scheduler = () => {
               {tableList.map((si: ScheduleItem) => (
                 <Row key={si.id} item={si} onClick={() => editScheduleItem(si)}>
                   <Cell stiff>
-                    {si.flags !== ScheduleFlag.SCHEDULE_IMMEDIATE && (
-                      <CircleIcon
-                        color={si.active ? 'success' : 'error'}
-                        sx={{ fontSize: ICON_SIZE, verticalAlign: 'middle' }}
-                      />
-                    )}
+                    <CircleIcon
+                      color={si.active ? 'success' : 'error'}
+                      sx={{ fontSize: ICON_SIZE, verticalAlign: 'middle' }}
+                    />
                   </Cell>
                   <Cell stiff>
                     <Stack spacing={0.5} direction="row">
@@ -322,8 +317,7 @@ const Scheduler = () => {
                     </Stack>
                   </Cell>
                   <Cell>{si.time}</Cell>
-                  <Cell>{si.cmd}</Cell>
-                  <Cell>{si.value}</Cell>
+                  <Cell>{si.cmd_name}</Cell>
                   <Cell>{si.name}</Cell>
                 </Row>
               ))}
@@ -351,6 +345,7 @@ const Scheduler = () => {
           selectedItem={selectedScheduleItem}
           validator={schedulerItemValidation(schedule, selectedScheduleItem)}
           dow={dow}
+          commandNames={commandNames.map((ci) => ci.name)}
         />
       )}
 

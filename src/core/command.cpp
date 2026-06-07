@@ -716,6 +716,10 @@ bool Command::device_has_commands(const uint8_t device_type) {
         return true;
     }
 
+    if (device_type == EMSdevice::DeviceType::COMMAND) {
+        return true;
+    }
+
     if (device_type == EMSdevice::DeviceType::CUSTOM) {
         return true;
     }
@@ -741,6 +745,7 @@ bool Command::device_has_commands(const uint8_t device_type) {
 void Command::show_devices(uuid::console::Shell & shell) {
     shell.printf("%s ", EMSdevice::device_type_2_device_name(EMSdevice::DeviceType::SYSTEM));
     shell.printf("%s ", EMSdevice::device_type_2_device_name(EMSdevice::DeviceType::CUSTOM));
+    shell.printf("%s ", EMSdevice::device_type_2_device_name(EMSdevice::DeviceType::COMMAND));
     shell.printf("%s ", EMSdevice::device_type_2_device_name(EMSdevice::DeviceType::SCHEDULER));
     if (EMSESP::sensor_enabled()) {
         shell.printf("%s ", EMSdevice::device_type_2_device_name(EMSdevice::DeviceType::TEMPERATURESENSOR));
@@ -779,6 +784,7 @@ void Command::show_all(uuid::console::Shell & shell) {
     // show system ones first
     show(shell, EMSdevice::DeviceType::SYSTEM, true);
     show(shell, EMSdevice::DeviceType::CUSTOM, true);
+    show(shell, EMSdevice::DeviceType::COMMAND, true);
     show(shell, EMSdevice::DeviceType::SCHEDULER, true);
 
     // then sensors

@@ -64,12 +64,12 @@ const DevicesDialog = ({
     }
   }, [open, selectedItem]);
 
-  const { send: executeSchedule } = useRequest(
-    (id: string) => callAction({ action: 'executeSchedule', param: id }),
+  const { send: executeCommand } = useRequest(
+    (id: string) => callAction({ action: 'executeCommand', param: id }),
     { immediate: false }
   )
     .onSuccess(() => {
-      toast.success(LL.EXECUTE_SCHEDULE_SENT());
+      toast.success(LL.EXECUTE_COMMAND_SENT());
     })
     .onError((error) => {
       toast.error(String(error.error?.message || 'An error occurred'));
@@ -79,7 +79,7 @@ const DevicesDialog = ({
     try {
       setFieldErrors(undefined);
       if (editItem.v === undefined && editItem.c !== undefined) {
-        await executeSchedule(editItem.c);
+        await executeCommand(editItem.c);
       } else {
         await validate(validator, editItem);
       }

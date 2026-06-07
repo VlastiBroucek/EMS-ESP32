@@ -354,21 +354,36 @@ export interface ScheduleItem {
   deleted?: boolean;
   flags: number;
   time: string; // also used for Condition and On Change
-  cmd: string;
-  value: string;
+  cmd_name: string; // references a named Command
   name: string;
   o_id?: number;
   o_active?: boolean;
   o_deleted?: boolean;
   o_flags?: number;
   o_time?: string;
-  o_cmd?: string;
-  o_value?: string;
+  o_cmd_name?: string;
   o_name?: string;
 }
 
 export interface Schedule {
   readonly schedule: readonly ScheduleItem[];
+}
+
+export interface CommandItem {
+  id: number;
+  cmd: string;
+  value: string;
+  name: string;
+  deleted?: boolean;
+  o_id?: number;
+  o_cmd?: string;
+  o_value?: string;
+  o_name?: string;
+  o_deleted?: boolean;
+}
+
+export interface Commands {
+  readonly commands: readonly CommandItem[];
 }
 
 export interface ModuleItem {
@@ -401,8 +416,7 @@ export enum ScheduleFlag {
   SCHEDULE_DAY = 0, // no bits set
   SCHEDULE_TIMER = 128, // bit 8
   SCHEDULE_ONCHANGE = 129, // bit 1
-  SCHEDULE_CONDITION = 130, // bit 2
-  SCHEDULE_IMMEDIATE = 132 // bit 3
+  SCHEDULE_CONDITION = 130 // bit 2
 }
 
 export interface EntityItem {
@@ -445,6 +459,7 @@ export const enum DeviceType {
   ANALOGSENSOR = 2,
   SCHEDULER = 3,
   CUSTOM = 4,
+  COMMAND = 5,
   BOILER,
   THERMOSTAT,
   MIXER,

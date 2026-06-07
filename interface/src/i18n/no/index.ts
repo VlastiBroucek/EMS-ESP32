@@ -286,14 +286,13 @@ const no: Translation = {
   STAY: 'Bli her',
   LEAVE: 'Forlat',
   SCHEDULER: 'Planlegger',
-  SCHEDULER_HELP_1: 'Automatiser kommandoer ved å legge til skedulerte hendelser nedenfor. Sett et unikt navn for å slå på/av aktivering via API/MQTT',
+  SCHEDULER_HELP_1: 'Automatiser kommandoer ved å legge til skedulerte hendelser nedenfor',
   SCHEDULER_HELP_2: 'Bruk 00:00 for å kjøre en gang ved oppstart',
   SCHEDULE: 'Planlegg',
   TIME: 'Tid',
   TIMER: 'Timer',
   ONCHANGE: 'På endring',
   CONDITION: 'Betingelse',
-  IMMEDIATE: 'Umiddelbar',
   SCHEDULE_UPDATED: 'Planlegger er oppdatert',
   SCHEDULE_TIMER_1: 'ved oppstart',
   SCHEDULE_TIMER_2: 'hvert minutt',
@@ -365,7 +364,10 @@ const no: Translation = {
   WARNING_SYSTEM_BACKUP: 'Dette vil lage en sikkerhetskopi av din fullstendige systemkonfigurasjon og innstillinger. Alle passord vil være lesbare i sikkerhetskopien. Vær forsiktig med deling! Vil du fortsette?',
   TEST_EMAIL_SUCCESSFUL: 'Test email sendt suksessfullt',
   SYSTEM_NAME: 'Systemnavn',
-  EXECUTE_SCHEDULE_SENT: 'Planlegger utført suksessfullt'
+  COMMANDS: 'Kommandoer',
+  COMMANDS_UPDATED: 'Kommandoer oppdatert',
+  COMMANDS_HELP_1: 'Definer egne kommandoer for EMS-Magistral',
+  EXECUTE_COMMAND_SENT: 'Kommando utført.',
 };
 
 export default no;

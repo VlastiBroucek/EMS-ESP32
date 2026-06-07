@@ -2610,6 +2610,12 @@ bool System::command_info(const char * value, const int8_t id, JsonObject output
         obj["name"]     = F_(scheduler);
         obj["entities"] = EMSESP::webSchedulerService.count_entities();
     }
+    if (EMSESP::webCommandService.count_entities()) {
+        JsonObject obj  = devices.add<JsonObject>();
+        obj["type"]     = F_(commands);
+        obj["name"]     = F_(commands);
+        obj["entities"] = EMSESP::webCommandService.count_entities();
+    }
     if (EMSESP::webCustomEntityService.count_entities()) {
         JsonObject obj  = devices.add<JsonObject>();
         obj["type"]     = F_(custom);

@@ -51,6 +51,7 @@
 #include "../web/WebSettingsService.h"
 #include "../web/WebCustomizationService.h"
 #include "../web/WebSchedulerService.h"
+#include "../web/WebCommandService.h"
 #include "../web/WebAPIService.h"
 #include "../web/WebLogService.h"
 #include "../web/WebCustomEntityService.h"
@@ -260,6 +261,7 @@ class EMSESP {
     static WebLogService           webLogService;
     static WebCustomizationService webCustomizationService;
     static WebSchedulerService     webSchedulerService;
+    static WebCommandService       webCommandService;
     static WebCustomEntityService  webCustomEntityService;
     static WebModulesService       webModulesService;
 

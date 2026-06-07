@@ -405,6 +405,7 @@ class EMSdevice {
     // Unique Identifiers for each Device type, used in Dashboard table
     // 100 and above is reserved for DeviceType
     enum DeviceTypeUniqueID : uint8_t {
+        COMMAND_UID           = 95,
         SCHEDULER_UID         = 96,
         ANALOGSENSOR_UID      = 97,
         TEMPERATURESENSOR_UID = 98,
@@ -417,6 +418,7 @@ class EMSdevice {
         ANALOGSENSOR,      // for internal analog sensors
         SCHEDULER,         // for internal schedule
         CUSTOM,            // for user defined entities
+        COMMAND,           // for user defined commands
         BOILER,            // from here on enum the ems-devices
         THERMOSTAT,
         MIXER,

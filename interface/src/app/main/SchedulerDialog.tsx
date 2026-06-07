@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react';
-import { toast } from 'react-toastify';
 
 import AddIcon from '@mui/icons-material/Add';
 import CancelIcon from '@mui/icons-material/Cancel';
 import DoneIcon from '@mui/icons-material/Done';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import RemoveIcon from '@mui/icons-material/RemoveCircleOutlined';
 import {
   Box,
@@ -15,15 +13,14 @@ import {
   DialogContent,
   DialogTitle,
   Grid,
+  MenuItem,
   TextField,
   ToggleButton,
   ToggleButtonGroup,
   Typography
 } from '@mui/material';
 
-import { callAction } from '@/api/app';
 import { dialogStyle } from 'CustomTheme';
-import { useRequest } from 'alova/client';
 import type Schema from 'async-validator';
 import type { ValidateFieldsError } from 'async-validator';
 import { BlockFormControlLabel, ValidatedTextField } from 'components';
@@ -77,6 +74,7 @@ interface SchedulerDialogProps {
   selectedItem: ScheduleItem;
   validator: Schema;
   dow: string[];
+  commandNames: string[];
 }
 
 const SchedulerDialog = ({
@@ -86,7 +84,8 @@ const SchedulerDialog = ({
   onSave,
   selectedItem,
   validator,
-  dow
+  dow,
+  commandNames
 }: SchedulerDialogProps) => {
   const { LL } = useI18nContext();
   const [editItem, setEditItem] = useState<ScheduleItem>(selectedItem);
@@ -103,12 +102,6 @@ const SchedulerDialog = ({
     if (open) {
       setFieldErrors(undefined);
       setEditItem(selectedItem);
-      // Set the flags based on type when page is loaded:
-      // 0-127 is day schedule
-      // 128 is timer
-      // 129 is on change
-      // 130 is on condition
-      // 132 is immediate
       setScheduleType(
         selectedItem.flags <= SCHEDULE_TYPE_THRESHOLD
           ? ScheduleFlag.SCHEDULE_DAY
@@ -129,21 +122,6 @@ const SchedulerDialog = ({
 
   const save = async () => {
     await handleSave(editItem);
-  };
-
-  const { send: executeSchedule } = useRequest(
-    (id: string) => callAction({ action: 'executeSchedule', param: id }),
-    { immediate: false }
-  )
-    .onSuccess(() => {
-      toast.success(LL.EXECUTE_SCHEDULE_SENT());
-    })
-    .onError((error) => {
-      toast.error(String(error.error?.message || 'An error occurred'));
-    });
-
-  const execute = async () => {
-    await executeSchedule(editItem.name);
   };
 
   const remove = () => {
@@ -197,7 +175,6 @@ const SchedulerDialog = ({
 
   const isDaySchedule = scheduleType === ScheduleFlag.SCHEDULE_DAY;
   const isTimerSchedule = scheduleType === ScheduleFlag.SCHEDULE_TIMER;
-  const isImmediateSchedule = scheduleType === ScheduleFlag.SCHEDULE_IMMEDIATE;
   const needsTimeField = isDaySchedule || isTimerSchedule;
 
   const dowFlags = getFlagDOWstring(editItem.flags);
@@ -214,7 +191,6 @@ const SchedulerDialog = ({
     if (scheduleType === ScheduleFlag.SCHEDULE_TIMER) return LL.TIMER(1);
     if (scheduleType === ScheduleFlag.SCHEDULE_CONDITION) return LL.CONDITION();
     if (scheduleType === ScheduleFlag.SCHEDULE_ONCHANGE) return LL.ONCHANGE();
-    if (scheduleType === ScheduleFlag.SCHEDULE_IMMEDIATE) return LL.IMMEDIATE();
     return LL.TIME(1);
   })();
 
@@ -269,14 +245,6 @@ const SchedulerDialog = ({
               {LL.CONDITION()}
             </Typography>
           </ToggleButton>
-          <ToggleButton value={ScheduleFlag.SCHEDULE_IMMEDIATE}>
-            <Typography
-              sx={{ fontSize: TYPOGRAPHY_FONT_SIZE }}
-              color={isImmediateSchedule ? 'primary' : 'grey'}
-            >
-              {LL.IMMEDIATE()}
-            </Typography>
-          </ToggleButton>
         </ToggleButtonGroup>
 
         {isDaySchedule && (
@@ -294,74 +262,66 @@ const SchedulerDialog = ({
           </ToggleButtonGroup>
         )}
 
-        {!isImmediateSchedule && (
-          <>
-            <Grid container>
-              <BlockFormControlLabel
-                control={
-                  <Checkbox
-                    checked={editItem.active}
-                    onChange={updateFormValue}
-                    name="active"
-                  />
-                }
-                label={LL.ACTIVE()}
+        <Grid container>
+          <BlockFormControlLabel
+            control={
+              <Checkbox
+                checked={editItem.active}
+                onChange={updateFormValue}
+                name="active"
               />
-            </Grid>
-            <Grid container>
-              {needsTimeField ? (
-                <>
-                  <TextField
-                    name="time"
-                    type="time"
-                    label={timeFieldLabel}
-                    value={timeFieldValue}
-                    margin="normal"
-                    onChange={updateFormValue}
-                  />
-                  {isTimerSchedule && (
-                    <Typography
-                      sx={{ ml: 2, mt: 4 }}
-                      color="warning"
-                      variant="body2"
-                    >
-                      {LL.SCHEDULER_HELP_2()}
-                    </Typography>
-                  )}
-                </>
-              ) : (
-                <TextField
-                  name="time"
-                  label={timeFieldLabel}
-                  multiline
-                  fullWidth
-                  value={timeFieldValue}
-                  margin="normal"
-                  onChange={updateFormValue}
-                />
+            }
+            label={LL.ACTIVE()}
+          />
+        </Grid>
+        <Grid container>
+          {needsTimeField ? (
+            <>
+              <TextField
+                name="time"
+                type="time"
+                label={timeFieldLabel}
+                value={timeFieldValue}
+                margin="normal"
+                onChange={updateFormValue}
+              />
+              {isTimerSchedule && (
+                <Typography
+                  sx={{ ml: 2, mt: 4 }}
+                  color="warning"
+                  variant="body2"
+                >
+                  {LL.SCHEDULER_HELP_2()}
+                </Typography>
               )}
-            </Grid>
-          </>
-        )}
-        <ValidatedTextField
-          fieldErrors={fieldErrors || {}}
-          name="cmd"
-          label={LL.COMMAND(0)}
-          multiline
-          fullWidth
-          value={editItem.cmd}
-          margin="normal"
-          onChange={updateFormValue}
-        />
+            </>
+          ) : (
+            <TextField
+              name="time"
+              label={timeFieldLabel}
+              multiline
+              fullWidth
+              value={timeFieldValue}
+              margin="normal"
+              onChange={updateFormValue}
+            />
+          )}
+        </Grid>
         <TextField
-          name="value"
-          label={LL.VALUE(0)}
-          multiline
-          margin="normal"
+          name="cmd_name"
+          label={LL.COMMAND(0)}
+          value={editItem.cmd_name}
           fullWidth
-          value={editItem.value}
+          select
+          margin="normal"
           onChange={updateFormValue}
-        />
+        >
+          {commandNames.map((name) => (
+            <MenuItem key={name} value={name}>
+              {name}
+            </MenuItem>
+          ))}
+        </TextField>
         <ValidatedTextField
           fieldErrors={fieldErrors || {}}
           name="name"
@@ -402,16 +362,6 @@ const SchedulerDialog = ({
         >
           {creating ? LL.ADD(0) : LL.UPDATE()}
         </Button>
-        {isImmediateSchedule && !creating && editItem.cmd !== '' && (
-          <Button
-            startIcon={<PlayArrowIcon />}
-            variant="outlined"
-            onClick={execute}
-            color="success"
-          >
-            {LL.EXECUTE()}
-          </Button>
-        )}
       </DialogActions>
     </Dialog>
   );

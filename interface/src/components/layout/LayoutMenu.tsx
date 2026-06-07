@@ -7,6 +7,7 @@ import ConstructionIcon from '@mui/icons-material/Construction';
 import KeyboardArrowDown from '@mui/icons-material/KeyboardArrowDown';
 import LiveHelpIcon from '@mui/icons-material/LiveHelp';
 import MoreTimeIcon from '@mui/icons-material/MoreTime';
+import PlaylistPlayIcon from '@mui/icons-material/PlaylistPlay';
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
 import SensorsIcon from '@mui/icons-material/Sensors';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -79,6 +80,12 @@ const LayoutMenuComponent = () => {
                 label={LL.CUSTOMIZATIONS()}
                 disabled={!me.admin}
                 to={`/customizations`}
+              />
+              <LayoutMenuItem
+                icon={PlaylistPlayIcon}
+                label={LL.COMMANDS()}
+                disabled={!me.admin}
+                to={`/commands`}
               />
               <LayoutMenuItem
                 icon={MoreTimeIcon}
