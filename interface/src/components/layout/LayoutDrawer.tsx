@@ -2,6 +2,9 @@ import { memo } from 'react';
 
 import { Box, Divider, Drawer, Toolbar, Typography, styled } from '@mui/material';
 
+import { readSettings } from 'api/app';
+
+import { useRequest } from 'alova/client';
 import { PROJECT_NAME } from 'env';
 
 import { DRAWER_WIDTH } from './Layout';
@@ -24,12 +27,28 @@ interface LayoutDrawerProps {
 }
 
 const LayoutDrawerComponent = ({ mobileOpen, onClose }: LayoutDrawerProps) => {
+  const { data: settings } = useRequest(readSettings);
+  const system_name = settings?.system_name;
+
   const drawer = (
     <>
       <Toolbar disableGutters>
         <Box sx={{ display: 'flex', alignItems: 'center', p: 2 }}>
           <LayoutDrawerLogo src="/app/icon.png" alt={PROJECT_NAME} />
-          <Typography variant="h6">{PROJECT_NAME}</Typography>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center'
+            }}
+          >
+            <Typography>{PROJECT_NAME}</Typography>
+            {system_name && (
+              <Typography color="secondary" variant="body2">
+                {system_name}
+              </Typography>
+            )}
+          </Box>
         </Box>
         <Divider absolute />
       </Toolbar>

@@ -363,7 +363,9 @@ const nl: Translation = {
   UPGRADE_IMPORTANT_MESSAGES_1: 'Deze upgrade vereist een fabrieksinstelling. Zorg ervoor dat u eerst een Systeem Backup download voordat u doorgaat, en upload deze file na de installatie van de nieuwe versie.',
   UPGRADE_IMPORTANT_MESSAGES_2: 'U updatet naar een nieuwe grote versie. Zorg ervoor dat u de ChangeLog hebt gelezen voor alle brekende wijzigingen.',
   WARNING_SYSTEM_BACKUP: 'Dit zal een back-up van uw volledige systeemconfiguratie en instellingen maken. Alle wachtwoorden zijn leesbaar in het back-upbestand. Wees voorzichtig bij delen! Wilt u doorgaan?',
-  TEST_EMAIL_SUCCESSFUL: 'Test email verzonden succesvol'
+  TEST_EMAIL_SUCCESSFUL: 'Test email verzonden succesvol',
+  SYSTEM_NAME: 'Systeemnaam',
+  EXECUTE_SCHEDULE_SENT: 'Planlegger uitgevoerd succesvol'
 };
 
 export default nl;

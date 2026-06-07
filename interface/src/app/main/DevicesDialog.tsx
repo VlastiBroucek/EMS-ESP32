@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 
 import CancelIcon from '@mui/icons-material/Cancel';
 import WarningIcon from '@mui/icons-material/Warning';
@@ -18,7 +19,9 @@ import {
   Typography
 } from '@mui/material';
 
+import { callAction } from '@/api/app';
 import { dialogStyle } from 'CustomTheme';
+import { useRequest } from 'alova/client';
 import type Schema from 'async-validator';
 import type { ValidateFieldsError } from 'async-validator';
 import { ValidatedTextField } from 'components';
@@ -61,13 +64,29 @@ const DevicesDialog = ({
     }
   }, [open, selectedItem]);
 
-  const save = async () => {
+  const { send: executeSchedule } = useRequest(
+    (id: string) => callAction({ action: 'executeSchedule', param: id }),
+    { immediate: false }
+  )
+    .onSuccess(() => {
+      toast.success(LL.EXECUTE_SCHEDULE_SENT());
+    })
+    .onError((error) => {
+      toast.error(String(error.error?.message || 'An error occurred'));
+    });
+
+  const doAction = async () => {
     try {
       setFieldErrors(undefined);
-      await validate(validator, editItem);
-      onSave(editItem);
+      if (editItem.v === undefined && editItem.c !== undefined) {
+        await executeSchedule(editItem.c);
+      } else {
+        await validate(validator, editItem);
+      }
     } catch (error) {
       setFieldErrors((error as ValidationError).fieldErrors);
+    } finally {
+      onSave(editItem);
     }
   };
 
@@ -100,9 +119,14 @@ const DevicesDialog = ({
     return undefined;
   };
 
-  const isCommand = selectedItem.v === '' && selectedItem.c;
+  const isCommand =
+    (selectedItem.v === '' || selectedItem.v === undefined) &&
+    Boolean(selectedItem.c);
+  const isSchedulerImmediate = selectedItem.v === undefined;
   const dialogTitle = isCommand
-    ? LL.RUN_COMMAND()
+    ? isSchedulerImmediate
+      ? LL.EXECUTE() + ' ' + LL.SCHEDULE(0)
+      : LL.RUN_COMMAND()
     : writeable
       ? LL.CHANGE_VALUE()
       : LL.VALUE(0);
@@ -118,67 +142,69 @@ const DevicesDialog = ({
         <Typography sx={{ mb: 2 }} color="warning" variant="body2">
           {editItem.id.slice(2)}
         </Typography>
-        <Grid container>
-          <Grid size={12}>
-            {editItem.l ? (
-              <TextField
-                name="v"
-                value={editItem.v}
-                aria-label={valueLabel}
-                disabled={!writeable}
-                sx={{ width: '30ch' }}
-                select
-                onChange={updateFormValue}
-              >
-                {editItem.l.map((val) => (
-                  <MenuItem value={val} key={val}>
-                    {val}
-                  </MenuItem>
-                ))}
-              </TextField>
-            ) : editItem.s || editItem.u !== DeviceValueUOM.NONE ? (
-              <ValidatedTextField
-                fieldErrors={fieldErrors || {}}
-                name="v"
-                label={valueLabel}
-                value={numberValue(Math.round((editItem.v as number) * 10) / 10)}
-                autoFocus
-                disabled={!writeable}
-                type="number"
-                sx={{ width: '30ch' }}
-                onChange={updateFormValue}
-                slotProps={{
-                  htmlInput: editItem.s
-                    ? { min: editItem.m, max: editItem.x, step: editItem.s }
-                    : {},
-                  input: {
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        {setUom(editItem.u)}
-                      </InputAdornment>
-                    )
-                  }
-                }}
-              />
-            ) : (
-              <ValidatedTextField
-                fieldErrors={fieldErrors || {}}
-                name="v"
-                label={valueLabel}
-                value={editItem.v}
-                disabled={!writeable}
-                sx={{ width: '30ch' }}
-                multiline={!editItem.u}
-                onChange={updateFormValue}
-              />
+        {!isSchedulerImmediate && (
+          <Grid container>
+            <Grid size={12}>
+              {editItem.l ? (
+                <TextField
+                  name="v"
+                  value={editItem.v}
+                  aria-label={valueLabel}
+                  disabled={!writeable}
+                  sx={{ width: '30ch' }}
+                  select
+                  onChange={updateFormValue}
+                >
+                  {editItem.l.map((val) => (
+                    <MenuItem value={val} key={val}>
+                      {val}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              ) : editItem.s || editItem.u !== DeviceValueUOM.NONE ? (
+                <ValidatedTextField
+                  fieldErrors={fieldErrors || {}}
+                  name="v"
+                  label={valueLabel}
+                  value={numberValue(Math.round((editItem.v as number) * 10) / 10)}
+                  autoFocus
+                  disabled={!writeable}
+                  type="number"
+                  sx={{ width: '30ch' }}
+                  onChange={updateFormValue}
+                  slotProps={{
+                    htmlInput: editItem.s
+                      ? { min: editItem.m, max: editItem.x, step: editItem.s }
+                      : {},
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          {setUom(editItem.u)}
+                        </InputAdornment>
+                      )
+                    }
+                  }}
+                />
+              ) : (
+                <ValidatedTextField
+                  fieldErrors={fieldErrors || {}}
+                  name="v"
+                  label={valueLabel}
+                  value={editItem.v}
+                  disabled={!writeable}
+                  sx={{ width: '30ch' }}
+                  multiline={!editItem.u}
+                  onChange={updateFormValue}
+                />
+              )}
+            </Grid>
+            {writeable && helperText && (
+              <Grid>
+                <FormHelperText>{helperText}</FormHelperText>
+              </Grid>
             )}
           </Grid>
-          {writeable && helperText && (
-            <Grid>
-              <FormHelperText>{helperText}</FormHelperText>
-            </Grid>
-          )}
-        </Grid>
+        )}
       </DialogContent>
 
       <DialogActions>
@@ -202,7 +228,7 @@ const DevicesDialog = ({
             <Button
               startIcon={<WarningIcon color="warning" />}
               variant="outlined"
-              onClick={save}
+              onClick={doAction}
               color="primary"
             >
               {buttonLabel}

@@ -265,6 +265,10 @@ class System {
         return std::string(locale_.c_str());
     }
 
+    std::string system_name() {
+        return std::string(system_name_.c_str());
+    }
+
     void healthcheck(uint8_t healthcheck) {
         healthcheck_ = healthcheck;
     }
@@ -358,7 +362,7 @@ class System {
     static uint32_t heap_mem_;
     static uint32_t min_free_mem_;
 
-    uint8_t systemStatus_; // uses SYSTEM_STATUS enum
+    volatile uint8_t systemStatus_; // uses SYSTEM_STATUS enum - written from the AsyncTCP task (e.g. cancel) and read from the main loop during OTA
 
     void set_partition_install_date();
 
@@ -410,6 +414,7 @@ class System {
 
     // EMS-ESP settings
     std::string hostname_;
+    String      system_name_;
     String      locale_;
     bool        low_clock_;
     String      board_profile_;

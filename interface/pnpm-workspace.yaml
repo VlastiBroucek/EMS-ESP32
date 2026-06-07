@@ -1,0 +1,11 @@
+allowBuilds:
+  cwebp-bin: false
+  esbuild: false
+  gifsicle: false
+  jpegtran-bin: false
+  mozjpeg: false
+  optipng-bin: false
+  pngquant-bin: false
+minimumReleaseAgeExclude:
+  - '@types/node@25.9.2'
+  - '@types/react@19.2.17'

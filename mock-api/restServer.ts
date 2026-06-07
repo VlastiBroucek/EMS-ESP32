@@ -15,6 +15,7 @@ const headers = {
 
 // EMS-ESP Application Settings
 let settings = {
+  system_name: 'standalone',
   locale: 'en',
   tx_mode: 1,
   ems_bus_id: 11,
@@ -229,6 +230,21 @@ let countWifiScanPoll = 0; // wifi network scan
 let countHardwarePoll = 0; // for during an upload
 
 // DeviceTypes
+const enum ScheduleFlag {
+  SCHEDULE_SUN = 1,
+  SCHEDULE_MON = 2,
+  SCHEDULE_TUE = 4,
+  SCHEDULE_WED = 8,
+  SCHEDULE_THU = 16,
+  SCHEDULE_FRI = 32,
+  SCHEDULE_SAT = 64,
+  SCHEDULE_DAY = 0,
+  SCHEDULE_TIMER = 128,
+  SCHEDULE_ONCHANGE = 129,
+  SCHEDULE_CONDITION = 130,
+  SCHEDULE_IMMEDIATE = 132
+}
+
 const enum DeviceType {
   SYSTEM = 0,
   TEMPERATURESENSOR,
@@ -4164,7 +4180,7 @@ let emsesp_schedule = {
     {
       id: 4,
       active: false,
-      flags: 1,
+      flags: ScheduleFlag.SCHEDULE_TIMER,
       time: '04:00',
       cmd: 'system/restart',
       value: '',
@@ -4173,7 +4189,7 @@ let emsesp_schedule = {
     {
       id: 5,
       active: false,
-      flags: 130,
+      flags: ScheduleFlag.SCHEDULE_CONDITION,
       time: 'system/network info/rssi < -70',
       cmd: 'system/restart',
       value: '',
@@ -4182,7 +4198,7 @@ let emsesp_schedule = {
     {
       id: 6,
       active: false,
-      flags: 129,
+      flags: ScheduleFlag.SCHEDULE_ONCHANGE,
       time: 'boiler/outdoortemp',
       cmd: 'boiler/selflowtemp',
       value: '(custom/setpoint - boiler/outdoortemp) * 2.8 + 3',
@@ -4191,11 +4207,11 @@ let emsesp_schedule = {
     {
       id: 7,
       active: false,
-      flags: 132,
+      flags: ScheduleFlag.SCHEDULE_IMMEDIATE,
       time: '',
       cmd: 'system/message',
       value: '"hello world"',
-      name: '' // empty
+      name: 'send_message'
     }
   ]
 };
@@ -4756,9 +4772,13 @@ router
           id: DeviceTypeUniqueID.SCHEDULER_UID * 100 + index,
           dv: {
             id: '00' + item.name,
-            v: item.active ? 'on' : 'off',
             c: item.name,
-            l: ['off', 'on']
+            ...(item.flags === ScheduleFlag.SCHEDULE_IMMEDIATE
+              ? {}
+              : {
+                  v: item.active ? 'on' : 'off',
+                  l: ['off', 'on']
+                })
           }
         }));
         dashboard_object = {

@@ -334,15 +334,9 @@ void WebSchedulerService::publish(const bool force) {
     }
 }
 
-// count number of entries, default: only named items
-uint8_t WebSchedulerService::count_entities(bool cmd_only) {
-    uint8_t count = 0;
-    for (const ScheduleItem & scheduleItem : *scheduleItems_) {
-        if (scheduleItem.name[0] != '\0' || !cmd_only) {
-            count++;
-        }
-    }
-    return count;
+// count number of scheduler entries
+uint8_t WebSchedulerService::count_entities() {
+    return static_cast<uint8_t>(scheduleItems_ ? scheduleItems_->size() : 0);
 }
 
 // execute scheduled command

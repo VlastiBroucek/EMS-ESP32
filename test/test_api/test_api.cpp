@@ -68,7 +68,9 @@ static TestStream stream;
 // load the tests
 // this is generated from this file when compiled with -DEMSESP_UNITY_CREATE
 // copy the output to the test_api.h file
+#ifndef EMSESP_UNITY_CREATE
 #include "test_api.h"
+#endif
 
 // Unity's setup call - is called before each test - empty for now
 void setUp() {

@@ -684,6 +684,7 @@ void System::store_settings(WebSettings & settings) {
     enum_format_    = settings.enum_format;
     readonly_mode_  = settings.readonly_mode;
     locale_         = settings.locale;
+    system_name_    = settings.system_name;
     developer_mode_ = settings.developer_mode;
 }
 
@@ -836,8 +837,9 @@ void System::send_info_mqtt() {
     }
     _connection = connection;
     JsonDocument doc;
-    // doc["event"]   = "connected";
-    doc["version"] = EMSESP_APP_VERSION;
+
+    doc["version"]    = EMSESP_APP_VERSION;
+    doc["systemName"] = system_name_.isEmpty() ? "EMS-ESP" : system_name_;
 
     // if NTP is enabled send the boot_time in local time in ISO 8601 format (eg: 2022-11-15 20:46:38)
     // https://github.com/emsesp/EMS-ESP32/issues/751
@@ -852,16 +854,6 @@ void System::send_info_mqtt() {
     if (EMSESP::network_.ethernet_connected()) {
         doc["network"]  = "ethernet";
         doc["hostname"] = ETH.getHostname();
-        /*
-        doc["MAC"]             = ETH.macAddress();
-        doc["IPv4 address"]    = uuid::printable_to_string(ETH.localIP()) + "/" + uuid::printable_to_string(ETH.subnetMask());
-        doc["IPv4 gateway"]    = uuid::printable_to_string(ETH.gatewayIP());
-        doc["IPv4 nameserver"] = uuid::printable_to_string(ETH.dnsIP());
-        if (ETH.localIPv6().toString() != "0000:0000:0000:0000:0000:0000:0000:0000" && ETH.localIPv6().toString() != "::") {
-            doc["IPv6 address"] = uuid::printable_to_string(ETH.localIPv6());
-    }
-            */
-
     } else if (EMSESP::network_.wifi_connected()) {
         doc["network"]         = "wifi";
         doc["hostname"]        = WiFi.getHostname();
@@ -1532,8 +1524,8 @@ bool System::check_upgrade() {
                 return StateUpdateResult::UNCHANGED;
             });
             // Scheduler name is now mandatory, update FS
-            uint8_t i             = 0;
-            bool schedule_changed = false;
+            uint8_t i                = 0;
+            bool    schedule_changed = false;
             EMSESP::webSchedulerService.update([&](WebScheduler & scheduler) {
                 for (ScheduleItem & scheduleItem : scheduler.scheduleItems) {
                     if (scheduleItem.name[0] == '\0') {
@@ -2970,7 +2962,7 @@ bool System::uploadFirmwareURL(const char * url) {
 
     String scheme = saved_url.substring(0, 8);
     scheme.toLowerCase();
-    const bool is_https = scheme.startsWith("https://");
+    const bool is_https   = scheme.startsWith("https://");
     const int  scheme_len = is_https ? 8 : 7; // "https://" vs "http://"
 
     WiFiClient    basic_client;
@@ -2992,11 +2984,11 @@ bool System::uploadFirmwareURL(const char * url) {
         ssl_client.setBufferSizes(16384, 1024);
         ssl_client.setSessionTimeout(120);
     }
-    basic_client.setTimeout(15000);             // socket-level read timeout
-    ssl_client.setTimeout(15000);               // Stream::readBytes timeout used by Update
+    basic_client.setTimeout(15000);                // socket-level read timeout
+    ssl_client.setTimeout(15000);                  // Stream::readBytes timeout used by Update
     ssl_client.setClient(&basic_client, is_https); // enableSSL = false for plain HTTP
 
-    const uint16_t port = is_https ? 443 : 80;
+    const uint16_t port           = is_https ? 443 : 80;
     String         url_remain     = saved_url.substring(scheme_len);
     int            redirect_count = 0;
 
@@ -3149,6 +3141,18 @@ bool System::uploadFirmwareURL(const char * url) {
     int                last_pct   = -1;
 
     while (total_read < (size_t)firmware_size) {
+        // a cancel is signalled by the WebUI dropping the status below UPLOADING (back to NORMAL)
+        // via the systemStatus action, which runs on the AsyncTCP task while we're blocked here
+        if (EMSESP::system_.systemStatus() < SYSTEM_STATUS::SYSTEM_STATUS_UPLOADING) {
+            LOG_WARNING("Firmware upload cancelled at %u of %d bytes", (unsigned)total_read, firmware_size);
+            Update.abort();    // release the OTA partition handle so a later attempt can start cleanly
+            ssl_client.stop(); // drop the connection
+            saved_url.clear(); // prevent it from downloading again
+            EMSESP::system_.systemStatus(SYSTEM_STATUS::SYSTEM_STATUS_NORMAL);
+            Shell::loop_all(); // flush log buffers so the cancel message shows in the console
+            return true;       // not an error - don't trigger the failure/reset path in emsesp.cpp
+        }
+
         // wait for some data or for the connection to drop
         uint32_t wait_start = millis();
         while (!stream->available()) {
@@ -3158,10 +3162,18 @@ bool System::uploadFirmwareURL(const char * url) {
             if (millis() - wait_start > READ_TIMEOUT_MS) {
                 break;
             }
+            // also bail out promptly if a cancel arrives mid-stall
+            if (EMSESP::system_.systemStatus() < SYSTEM_STATUS::SYSTEM_STATUS_UPLOADING) {
+                break;
+            }
             delay(1);
         }
 
         if (!stream->available()) {
+            // if the inner wait broke because of a cancel, loop back so the top-of-loop handler runs
+            if (EMSESP::system_.systemStatus() < SYSTEM_STATUS::SYSTEM_STATUS_UPLOADING) {
+                continue;
+            }
             LOG_ERROR("Firmware upload failed - read stalled at %u of %d bytes", (unsigned)total_read, firmware_size);
             EMSESP::system_.systemStatus(SYSTEM_STATUS::SYSTEM_STATUS_ERROR_UPLOAD);
             return false;

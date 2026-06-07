@@ -54,7 +54,7 @@ namespace emsesp {
 class ScheduleItem {
   public:
     boolean     active;
-    uint8_t     flags; // bit flags, see SCHEDULEFLAG_* defines
+    uint8_t     flags;       // bit flags, see SCHEDULEFLAG_* defines
     uint16_t    elapsed_min; // total mins from 00:00
     stringPSRAM time;        // HH:MM
     stringPSRAM cmd;
@@ -85,7 +85,7 @@ class WebSchedulerService : public StatefulService<WebScheduler> {
     void ha_reset() {
         ha_configdone_ = false;
     }
-    uint8_t count_entities(bool cmd_only = false);
+    uint8_t count_entities();
     bool    onChange(const char * cmd);
 
     bool executeSchedule(const char * name);

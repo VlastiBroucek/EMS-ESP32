@@ -304,7 +304,7 @@ class Thermostat : public EMSdevice {
     uint8_t instantstart;
     uint8_t coolstart;
     uint8_t coolondelay;
-    uint8_t cooloffdelay;    
+    uint8_t cooloffdelay;
 
     // HybridHP
     uint8_t hybridStrategy_;  // co2 = 1, cost = 2, temperature = 3, mix = 4

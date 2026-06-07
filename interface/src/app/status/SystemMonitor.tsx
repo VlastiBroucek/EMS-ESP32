@@ -145,9 +145,21 @@ const SystemMonitor = () => {
                 {LL.PLEASE_WAIT()}&hellip;
               </Typography>
               {isUploading && (
-                <Box sx={{ width: '100%', pl: 2, pr: 2, py: 2 }}>
-                  <LinearProgressWithLabel value={progressValue} />
-                </Box>
+                <>
+                  <Box sx={{ width: '100%', pl: 2, pr: 2, py: 2 }}>
+                    <LinearProgressWithLabel value={progressValue} />
+                  </Box>
+
+                  <Button
+                    sx={{ ml: 2, mt: 2 }}
+                    startIcon={<CancelIcon />}
+                    variant="outlined"
+                    color="secondary"
+                    onClick={onCancel}
+                  >
+                    {LL.CANCEL()}
+                  </Button>
+                </>
               )}
             </>
           )}

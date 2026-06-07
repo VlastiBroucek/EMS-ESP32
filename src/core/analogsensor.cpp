@@ -26,30 +26,30 @@ std::vector<uint8_t> AnalogSensor::exclude_types_;
 
 #ifndef EMSESP_STANDALONE
 portMUX_TYPE  mux                     = portMUX_INITIALIZER_UNLOCKED;
-unsigned long AnalogSensor::edge[]    = {0, 0, 0};
-unsigned long AnalogSensor::edgecnt[] = {0, 0, 0};
+volatile unsigned long AnalogSensor::edge[]    = {0, 0, 0};
+volatile unsigned long AnalogSensor::edgecnt[] = {0, 0, 0};
 
 void IRAM_ATTR AnalogSensor::freqIrq0() {
     portENTER_CRITICAL_ISR(&mux);
     if (micros() - edge[0] > 10) { // limit to 100kHz
-        edgecnt[0]++;
-        edge[0] = micros();
+        edgecnt[0] = edgecnt[0] + 1;
+        edge[0]    = micros();
     }
     portEXIT_CRITICAL_ISR(&mux);
 }
 void IRAM_ATTR AnalogSensor::freqIrq1() {
     portENTER_CRITICAL_ISR(&mux);
     if (micros() - edge[1] > 10) { // limit to 100kHz
-        edgecnt[1]++;
-        edge[1] = micros();
+        edgecnt[1] = edgecnt[1] + 1;
+        edge[1]    = micros();
     }
     portEXIT_CRITICAL_ISR(&mux);
 }
 void IRAM_ATTR AnalogSensor::freqIrq2() {
     portENTER_CRITICAL_ISR(&mux);
     if (micros() - edge[2] > 10) { // limit to 100kHz
-        edgecnt[2]++;
-        edge[2] = micros();
+        edgecnt[2] = edgecnt[2] + 1;
+        edge[2]    = micros();
     }
     portEXIT_CRITICAL_ISR(&mux);
 }
@@ -272,8 +272,10 @@ void AnalogSensor::reload(bool get_nvs) {
             sensor.set_value(0);
             publish_sensor(sensor);
             attachInterrupt(sensor.gpio(), index == 0 ? freqIrq0 : index == 1 ? freqIrq1 : freqIrq2, FALLING);
-            lastedge[index] = edge[index] = micros();
-            edgecnt[index]                = 0;
+            unsigned long now = micros();
+            edge[index]       = now;
+            lastedge[index]   = now;
+            edgecnt[index]    = 0;
         } else if (sensor.type() >= AnalogType::CNT_0 && sensor.type() <= AnalogType::CNT_2) {
             auto index = sensor.type() - AnalogType::CNT_0;
             LOG_DEBUG("Counter %d on GPIO %02d", index, sensor.gpio());

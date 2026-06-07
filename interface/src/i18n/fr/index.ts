@@ -363,7 +363,9 @@ const fr: Translation = {
   UPGRADE_IMPORTANT_MESSAGES_1: 'Cette mise à jour nécessite une réinitialisation de fabrique. Assurez-vous de télécharger une sauvegarde système avant de continuer, et de la charger après l\'installation de la nouvelle version.',
   UPGRADE_IMPORTANT_MESSAGES_2: 'Vous mettez à jour vers une nouvelle version majeure. Assurez-vous de lire le ChangeLog pour tout changement important.',
   WARNING_SYSTEM_BACKUP: 'Cela créera une sauvegarde de votre configuration et paramètres complets. Tous les mots de passe seront lisibles dans le fichier de sauvegarde. Soyez prudent avec le partage ! Voulez-vous continuer ?',
-  TEST_EMAIL_SUCCESSFUL: 'Test email envoyé avec succès'
+  TEST_EMAIL_SUCCESSFUL: 'Test email envoyé avec succès',
+  SYSTEM_NAME: 'Nom du système',
+  EXECUTE_SCHEDULE_SENT: 'Planlegger exécuté avec succès'
 };
 
 export default fr;

@@ -421,8 +421,8 @@ bool WebStatusService::refresh_versions_cache() {
 #else
     // detect scheme from EMSESP_VERSIONS_URL (case-insensitive). One code path for HTTP and HTTPS,
     // using ESP_SSLClient as a plain TCP passthrough when SSL is disabled.
-    String url     = EMSESP_VERSIONS_URL;
-    String lower   = url;
+    String url   = EMSESP_VERSIONS_URL;
+    String lower = url;
     lower.toLowerCase();
     const bool is_https = lower.startsWith("https://");
     if (!is_https && !lower.startsWith("http://")) {

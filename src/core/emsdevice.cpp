@@ -347,8 +347,9 @@ std::string EMSdevice::to_string() {
 }
 
 // returns string of EMS device version and productID
+// this is used in the MQTT Discovery config
 std::string EMSdevice::to_string_version() {
-    return "DeviceID:" + Helpers::hextoa(device_id_) + " ProductID:" + Helpers::itoa(product_id_) + " Version:" + version_;
+    return "DeviceID " + Helpers::hextoa(device_id_) + ", ProductID " + Helpers::itoa(product_id_) + ", Version " + version_;
 }
 
 // returns out brand + device name
