@@ -545,8 +545,8 @@ void Mqtt::ha_status() {
     JsonObject dev = doc["dev"].to<JsonObject>();
     dev["name"]    = Mqtt::basename();
     dev["sw"]      = "v" + std::string(EMSESP_APP_VERSION);
-    dev["mf"]      = "EMS-ESP";
-    dev["mdl"]     = "EMS-ESP";
+    dev["mf"]      = "EMS-ESP";                                                                         // manufacturer is EMS-ESP always
+    dev["mdl"]     = EMSESP::system_.system_name().empty() ? "EMS-ESP" : EMSESP::system_.system_name(); // use users custom system name if set
 #ifndef EMSESP_STANDALONE
     dev["cu"] = std::string("http://") + EMSESP::system_.get_ip_or_hostname().c_str();
 #endif
