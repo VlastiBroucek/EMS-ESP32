@@ -684,6 +684,7 @@ void System::store_settings(WebSettings & settings) {
     enum_format_    = settings.enum_format;
     readonly_mode_  = settings.readonly_mode;
     locale_         = settings.locale;
+    system_name_    = settings.system_name;
     developer_mode_ = settings.developer_mode;
 }
 
@@ -836,8 +837,9 @@ void System::send_info_mqtt() {
     }
     _connection = connection;
     JsonDocument doc;
-    // doc["event"]   = "connected";
+
     doc["version"] = EMSESP_APP_VERSION;
+    doc["system_name"] = system_name_.isEmpty() ? "EMS-ESP" : system_name_;
 
     // if NTP is enabled send the boot_time in local time in ISO 8601 format (eg: 2022-11-15 20:46:38)
     // https://github.com/emsesp/EMS-ESP32/issues/751
@@ -852,16 +854,6 @@ void System::send_info_mqtt() {
     if (EMSESP::network_.ethernet_connected()) {
         doc["network"]  = "ethernet";
         doc["hostname"] = ETH.getHostname();
-        /*
-        doc["MAC"]             = ETH.macAddress();
-        doc["IPv4 address"]    = uuid::printable_to_string(ETH.localIP()) + "/" + uuid::printable_to_string(ETH.subnetMask());
-        doc["IPv4 gateway"]    = uuid::printable_to_string(ETH.gatewayIP());
-        doc["IPv4 nameserver"] = uuid::printable_to_string(ETH.dnsIP());
-        if (ETH.localIPv6().toString() != "0000:0000:0000:0000:0000:0000:0000:0000" && ETH.localIPv6().toString() != "::") {
-            doc["IPv6 address"] = uuid::printable_to_string(ETH.localIPv6());
-    }
-            */
-
     } else if (EMSESP::network_.wifi_connected()) {
         doc["network"]         = "wifi";
         doc["hostname"]        = WiFi.getHostname();

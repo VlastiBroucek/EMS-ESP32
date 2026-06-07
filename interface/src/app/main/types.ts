@@ -1,4 +1,5 @@
 export interface Settings {
+  system_name: string;
   locale: string;
   tx_mode: number;
   ems_bus_id: number;

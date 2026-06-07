@@ -363,7 +363,8 @@ const de: Translation = {
   UPGRADE_IMPORTANT_MESSAGES_1: 'Für diese Aktualisierung ist ein Werksreset erforderlich. Stellen Sie sicher, dass Sie zuerst eine Systemsicherung herunterladen, bevor Sie fortfahren, und laden Sie diese Datei dann nach der Installation der neuen Version hoch.',
   UPGRADE_IMPORTANT_MESSAGES_2: 'Sie aktualisieren auf eine neue Hauptversion. Stellen Sie sicher, dass Sie den ChangeLog für alle wichtigen Änderungen gelesen haben.',
   WARNING_SYSTEM_BACKUP: 'Dies wird eine Sicherung Ihrer vollständigen Systemkonfiguration und Einstellungen erstellen. Alle Passwörter werden in dieser Sicherungsdatei lesbar sein. Seien Sie vorsichtig beim Teilen! Möchten Sie fortfahren?',
-  TEST_EMAIL_SUCCESSFUL: 'Test email erfolgreich gesendet'
+  TEST_EMAIL_SUCCESSFUL: 'Test email erfolgreich gesendet',
+  SYSTEM_NAME: 'Systemname'
 };
 
 export default de;

@@ -58,6 +58,7 @@ namespace emsesp {
 class WebSettings {
   public:
     String   version = EMSESP_APP_VERSION;
+    String   system_name;
     String   locale;
     uint8_t  tx_mode;
     uint8_t  ems_bus_id;

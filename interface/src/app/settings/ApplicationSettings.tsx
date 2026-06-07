@@ -189,7 +189,19 @@ const ApplicationSettings = () => {
 
     return (
       <>
-        <Typography sx={{ pb: 1 }} variant="h6" color="primary">
+        <Typography variant="h6" color="primary">
+          {LL.SYSTEM(0)}&nbsp;
+          {LL.CUSTOMIZATIONS()}
+        </Typography>
+        <TextField
+          name="system_name"
+          label={LL.SYSTEM_NAME()}
+          value={data.system_name}
+          variant="outlined"
+          onChange={updateFormValue}
+          margin="normal"
+        />
+        <Typography sx={{ pb: 1, pt: 2 }} variant="h6" color="primary">
           {LL.SERVICES()}
         </Typography>
         <Typography color="secondary">API</Typography>

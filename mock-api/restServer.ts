@@ -15,6 +15,7 @@ const headers = {
 
 // EMS-ESP Application Settings
 let settings = {
+  system_name: '',
   locale: 'en',
   tx_mode: 1,
   ems_bus_id: 11,

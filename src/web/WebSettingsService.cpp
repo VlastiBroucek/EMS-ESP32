@@ -36,6 +36,7 @@ void WebSettings::read(WebSettings & settings, JsonObject root) {
     root["version"]               = settings.version;
     root["board_profile"]         = settings.board_profile;
     root["platform"]              = EMSESP_PLATFORM;
+    root["system_name"]           = settings.system_name;
     root["locale"]                = settings.locale;
     root["tx_mode"]               = settings.tx_mode;
     root["ems_bus_id"]            = settings.ems_bus_id;
@@ -284,6 +285,8 @@ StateUpdateResult WebSettings::update(JsonObject root, WebSettings & settings) {
     //
     // without checks or necessary restarts...
     //
+    settings.system_name = root["system_name"] | EMSESP_DEFAULT_SYSTEM_NAME;
+
     settings.trace_raw = root["trace_raw"] | EMSESP_DEFAULT_TRACELOG_RAW;
     EMSESP::trace_raw(settings.trace_raw);
 

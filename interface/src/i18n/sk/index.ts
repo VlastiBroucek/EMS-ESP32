@@ -363,7 +363,8 @@ const sk: Translation = {
   UPGRADE_IMPORTANT_MESSAGES_1: 'Táto aktualizácia vyžaduje reštart základných nastavení. Uistite sa, že najprv stiahnete systémovú zálohu pred pokračovaním, a potom nahrajte tento súbor po instalácii novej verzie.',
   UPGRADE_IMPORTANT_MESSAGES_2: 'Aktualizujete sa na novú hlavnú verziu. Uistite sa, že ste prečítali ChangeLog pre akékoľvek dôležité zmeny.',
   WARNING_SYSTEM_BACKUP: 'Toto vytvorí zálohu všetkých vašich celých systémových konfigurácií a nastavení. Všetky hesla budú čitateľné v zálohovom súbore. Buďte opatrní pri zdieľaní! Chcete pokračovať?',
-  TEST_EMAIL_SUCCESSFUL: 'Test email bol úspešne odoslaný'
+  TEST_EMAIL_SUCCESSFUL: 'Test email bol úspešne odoslaný',
+  SYSTEM_NAME: 'Názov systému'
 };
 
 export default sk;

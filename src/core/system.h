@@ -265,6 +265,10 @@ class System {
         return std::string(locale_.c_str());
     }
 
+    std::string system_name() {
+        return std::string(system_name_.c_str());
+    }
+
     void healthcheck(uint8_t healthcheck) {
         healthcheck_ = healthcheck;
     }
@@ -410,6 +414,7 @@ class System {
 
     // EMS-ESP settings
     std::string hostname_;
+    String      system_name_;
     String      locale_;
     bool        low_clock_;
     String      board_profile_;
