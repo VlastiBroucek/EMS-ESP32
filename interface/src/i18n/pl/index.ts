@@ -364,7 +364,8 @@ const pl: BaseTranslation = {
   UPGRADE_IMPORTANT_MESSAGES_2: 'Aktualizujesz się do nowej głównej wersji. Upewnij się, że przeczytałeś ChangeLog dla wszelkich istotnych zmian.',
   WARNING_SYSTEM_BACKUP: 'To spowoduje utworzenie kopii zapasowej całej konfiguracji i ustawień systemu. Wszystkie hasła będą widoczne w pliku kopii zapasowej. Bądź ostrożny przy udostępnianiu! Chcesz kontynuować?',
   TEST_EMAIL_SUCCESSFUL: 'Test email wysłany pomyślnie',
-  SYSTEM_NAME: 'Nazwa systemu'
+  SYSTEM_NAME: 'Nazwa systemu',
+  EXECUTE_SCHEDULE_SENT: 'Harmonogram wykonany pomyślnie'
 };
 
 export default pl;

@@ -7,6 +7,7 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import EditIcon from '@mui/icons-material/Edit';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutlined';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 import {
@@ -75,24 +76,25 @@ const Dashboard = memo(() => {
     {
       immediate: false
     }
-  );
+  )
+    .onSuccess(() => {
+      toast.success(LL.WRITE_CMD_SENT());
+    })
+    .onError((error) => {
+      toast.error(String(error.error?.message || 'An error occurred'));
+    });
 
   const deviceValueDialogSave = async (devicevalue: DeviceValue) => {
     if (!selectedDashboardItem) {
       return;
     }
-    const id = selectedDashboardItem.parentNode.id; // this is the parent ID
-    await sendDeviceValue({ id, c: devicevalue.c ?? '', v: devicevalue.v })
-      .then(() => {
-        toast.success(LL.WRITE_CMD_SENT());
-      })
-      .catch((error: Error) => {
-        toast.error(error.message);
-      })
-      .finally(() => {
-        setDeviceValueDialogOpen(false);
-        setSelectedDashboardItem(undefined);
-      });
+    // skip if we're executing an immediate schedule
+    if (devicevalue.v !== undefined) {
+      const id = selectedDashboardItem.parentNode.id; // this is the parent ID
+      await sendDeviceValue({ id, c: devicevalue.c ?? '', v: devicevalue.v });
+    }
+    setDeviceValueDialogOpen(false);
+    setSelectedDashboardItem(undefined);
   };
 
   const dashboard_theme = useTheme({
@@ -210,7 +212,12 @@ const Dashboard = memo(() => {
     (parseInt(id.slice(0, 2), 16) & mask) === mask;
 
   const editDashboardValue = (di: DashboardItem) => {
-    if (me.admin && di.dv?.c) {
+    // don't execute on parent nodes
+    if (!me.admin || di.id <= 99) {
+      return;
+    }
+
+    if (di.dv?.c) {
       setSelectedDashboardItem(di);
       setDeviceValueDialogOpen(true);
     }
@@ -321,7 +328,19 @@ const Dashboard = memo(() => {
                             <Cell>
                               {me.admin &&
                                 di.dv?.c &&
-                                !hasMask(di.dv.id, DeviceEntityMask.DV_READONLY) && (
+                                !hasMask(di.dv.id, DeviceEntityMask.DV_READONLY) &&
+                                (di.dv.v === '' || di.dv.v === undefined ? (
+                                  <IconButton
+                                    size="small"
+                                    aria-label={LL.RUN_COMMAND()}
+                                    onClick={() => editDashboardValue(di)}
+                                  >
+                                    <PlayArrowIcon
+                                      color="primary"
+                                      sx={{ fontSize: 16 }}
+                                    />
+                                  </IconButton>
+                                ) : (
                                   <IconButton
                                     size="small"
                                     aria-label={
@@ -334,7 +353,7 @@ const Dashboard = memo(() => {
                                       sx={{ fontSize: 16 }}
                                     />
                                   </IconButton>
-                                )}
+                                ))}
                             </Cell>
                           </>
                         ) : (

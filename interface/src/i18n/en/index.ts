@@ -364,7 +364,8 @@ const en: Translation = {
   UPGRADE_IMPORTANT_MESSAGES_2: 'You are upgrading to a new major version. Make sure you have read the ChangeLog for any breaking changes.',
   WARNING_SYSTEM_BACKUP: 'This will create a backup of your full system configuration and settings. All passwords will be readable in the backup file. Be careful with sharing! Do you want to continue?',
   TEST_EMAIL_SUCCESSFUL: 'Test email sent successfully',
-  SYSTEM_NAME: 'System Name'
+  SYSTEM_NAME: 'System Name',
+  EXECUTE_SCHEDULE_SENT: 'Schedule executed successfully'
 };
 
 export default en;

@@ -364,7 +364,8 @@ const sv: Translation = {
   UPGRADE_IMPORTANT_MESSAGES_2: 'Du uppdaterar till en ny huvudversion. Se till att du har läst ChangeLog för eventuella brkande ändringar.',
   WARNING_SYSTEM_BACKUP: 'Detta kommer att skapa en säkerhetskopia av din fullständiga systemkonfiguration och inställningar. Alla lösenord kommer att vara läsbara i säkerhetskopien. Var försiktig med att dela! Vill du fortsätta?',
   TEST_EMAIL_SUCCESSFUL: 'Test email skickad lyckades',
-  SYSTEM_NAME: 'Systemnamn'
+  SYSTEM_NAME: 'Systemnamn',
+  EXECUTE_SCHEDULE_SENT: 'Schema utfört'
 };
 
 export default sv;

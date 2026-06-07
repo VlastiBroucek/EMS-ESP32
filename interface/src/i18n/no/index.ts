@@ -364,7 +364,8 @@ const no: Translation = {
   UPGRADE_IMPORTANT_MESSAGES_2: 'Du oppdaterer til en ny hovedversjon. Sørg for at du har lest ChangeLog for eventuelle bruddende endringer.',
   WARNING_SYSTEM_BACKUP: 'Dette vil lage en sikkerhetskopi av din fullstendige systemkonfigurasjon og innstillinger. Alle passord vil være lesbare i sikkerhetskopien. Vær forsiktig med deling! Vil du fortsette?',
   TEST_EMAIL_SUCCESSFUL: 'Test email sendt suksessfullt',
-  SYSTEM_NAME: 'Systemnavn'
+  SYSTEM_NAME: 'Systemnavn',
+  EXECUTE_SCHEDULE_SENT: 'Planlegger utført suksessfullt'
 };
 
 export default no;

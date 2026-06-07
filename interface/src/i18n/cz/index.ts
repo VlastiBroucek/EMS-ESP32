@@ -364,7 +364,8 @@ const cz: Translation = {
   UPGRADE_IMPORTANT_MESSAGES_2: 'Aktualizujete se na novou hlavní verzi. Ujistěte se, že jste přečetli ChangeLog pro jakékoliv závažné změny.',
   WARNING_SYSTEM_BACKUP: 'Toto vytvoří zálohu vašich celých systémových konfigurací a nastavení. Všechna hesla budou v zálohovém souboru čitelná. Buďte opatrní při sdílení! Opravdu chcete pokračovat?',
   TEST_EMAIL_SUCCESSFUL: 'Test email byl úspěšně odeslán',
-  SYSTEM_NAME: 'Název systému'
+  SYSTEM_NAME: 'Název systému',
+  EXECUTE_SCHEDULE_SENT: 'Plán byl úspěšně proveden'
 };
 
 export default cz;

@@ -364,7 +364,8 @@ const tr: Translation = {
   UPGRADE_IMPORTANT_MESSAGES_2: 'Yeni bir büyük sürüme yükselteceksiniz. Değişiklikleri ChangeLogı okuduğunuzdan emin olun.',
   WARNING_SYSTEM_BACKUP: 'Bu, sistem yapılandırmanızı ve ayarlarınızın bir yedeklemesi oluşturacaktır. Tüm şifreler yedekleme dosyasında okunabilir olacaktır. Paylaşırken dikkatli olun! Devam etmek istediğinize emin misiniz?',
   TEST_EMAIL_SUCCESSFUL: 'Test email başarıyla gönderildi',
-  SYSTEM_NAME: 'Sistem Adı'
+  SYSTEM_NAME: 'Sistem Adı',
+  EXECUTE_SCHEDULE_SENT: 'Zamanlama başarıyla uygulandı'
 };
 
 export default tr;

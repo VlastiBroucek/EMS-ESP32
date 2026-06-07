@@ -364,7 +364,8 @@ const it: Translation = {
   UPGRADE_IMPORTANT_MESSAGES_2: 'Stai aggiornando a una nuova versione principale. Assicurati di aver letto il ChangeLog per qualsiasi cambiamento importante.',
   WARNING_SYSTEM_BACKUP: 'Questo creerà un backup delle tue configurazioni e impostazioni complete. Tutte le password saranno leggibili nel file di backup. Sei sicuro di voler continuare?',
   TEST_EMAIL_SUCCESSFUL: 'Test email inviata con successo',
-  SYSTEM_NAME: 'Nome del sistema'
+  SYSTEM_NAME: 'Nome del sistema',
+  EXECUTE_SCHEDULE_SENT: 'Programma eseguito con successo'
 };
 
 export default it;

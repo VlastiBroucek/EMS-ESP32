@@ -364,7 +364,8 @@ const de: Translation = {
   UPGRADE_IMPORTANT_MESSAGES_2: 'Sie aktualisieren auf eine neue Hauptversion. Stellen Sie sicher, dass Sie den ChangeLog für alle wichtigen Änderungen gelesen haben.',
   WARNING_SYSTEM_BACKUP: 'Dies wird eine Sicherung Ihrer vollständigen Systemkonfiguration und Einstellungen erstellen. Alle Passwörter werden in dieser Sicherungsdatei lesbar sein. Seien Sie vorsichtig beim Teilen! Möchten Sie fortfahren?',
   TEST_EMAIL_SUCCESSFUL: 'Test email erfolgreich gesendet',
-  SYSTEM_NAME: 'Systemname'
+  SYSTEM_NAME: 'Systemname',
+  EXECUTE_SCHEDULE_SENT: 'Zeitplan erfolgreich ausgeführt'
 };
 
 export default de;

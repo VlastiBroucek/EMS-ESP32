@@ -134,9 +134,13 @@ const SchedulerDialog = ({
   const { send: executeSchedule } = useRequest(
     (id: string) => callAction({ action: 'executeSchedule', param: id }),
     { immediate: false }
-  ).onError((error) => {
-    toast.error(String(error.error?.message || 'An error occurred'));
-  });
+  )
+    .onSuccess(() => {
+      toast.success(LL.EXECUTE_SCHEDULE_SENT());
+    })
+    .onError((error) => {
+      toast.error(String(error.error?.message || 'An error occurred'));
+    });
 
   const execute = async () => {
     await executeSchedule(editItem.name);

@@ -332,17 +332,9 @@ void WebSchedulerService::publish(const bool force) {
     }
 }
 
-// count number of entries, default: only named items
-// if exclude_immediate is true, include those that are of type SCHEDULEFLAG_SCHEDULE_IMMEDIATE
-uint8_t WebSchedulerService::count_entities(bool exclude_immediate) {
-    uint8_t count = 0;
-    for (const ScheduleItem & scheduleItem : *scheduleItems_) {
-        // count all except SCHEDULE_IMMEDIATE if exclude_immediate is true, else count all
-        if (!exclude_immediate || scheduleItem.flags != SCHEDULEFLAG_SCHEDULE_IMMEDIATE) {
-            count++;
-        }
-    }
-    return count;
+// count number of scheduler entries
+uint8_t WebSchedulerService::count_entities() {
+    return static_cast<uint8_t>(scheduleItems_ ? scheduleItems_->size() : 0);
 }
 
 // execute scheduled command
