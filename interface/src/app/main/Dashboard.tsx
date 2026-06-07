@@ -88,7 +88,7 @@ const Dashboard = memo(() => {
     if (!selectedDashboardItem) {
       return;
     }
-    // skip if we're executing an immediate schedule
+    // skip if we're executing an immediate schedule as this is handled in DevicesDialog::doAction()
     if (devicevalue.v !== undefined) {
       const id = selectedDashboardItem.parentNode.id; // this is the parent ID
       await sendDeviceValue({ id, c: devicevalue.c ?? '', v: devicevalue.v });
