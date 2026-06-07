@@ -76,13 +76,15 @@ StateUpdateResult WebScheduler::update(JsonObject root, WebScheduler & webSchedu
     for (ScheduleItem & scheduleItem : webScheduler.scheduleItems) {
         char key[sizeof(scheduleItem.name) + 2];
         snprintf(key, sizeof(key), "s:%s", scheduleItem.name);
-        EMSESP::nvs_.remove(key);
+        if (EMSESP::nvs_.isKey(key)) {
+            EMSESP::nvs_.remove(key);
+        }
     }
     webScheduler.scheduleItems.clear();
     EMSESP::webSchedulerService.ha_reset();
 
     // build up the list of schedule items
-    auto    scheduleItems = root["schedule"].as<JsonArray>();
+    auto scheduleItems = root["schedule"].as<JsonArray>();
     for (const JsonObject schedule : scheduleItems) {
         // create each schedule item, overwriting any previous settings
         // ignore the id (as this is only used in the web for table rendering)
@@ -491,7 +493,7 @@ void WebSchedulerService::loop() {
     for (ScheduleItem & scheduleItem : *scheduleItems_) {
         if (scheduleItem.active && scheduleItem.flags == SCHEDULEFLAG_SCHEDULE_IMMEDIATE) {
             command(scheduleItem.name, scheduleItem.cmd.c_str(), compute_cmd_value(scheduleItem.cmd, scheduleItem.value));
-            // scheduleItem.active = false;
+            scheduleItem.active = false;
             publish_single(scheduleItem.name, false);
             if (EMSESP::mqtt_.get_publish_onchange(0)) {
                 publish();
