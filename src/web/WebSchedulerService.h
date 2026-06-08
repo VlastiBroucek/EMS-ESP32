@@ -51,7 +51,7 @@ namespace emsesp {
 
 class ScheduleItem {
   public:
-    boolean     active;
+    boolean     active;      // on or off
     uint8_t     flags;       // bit flags, see SCHEDULEFLAG_* defines
     uint16_t    elapsed_min; // total mins from 00:00
     stringPSRAM time;        // HH:MM
