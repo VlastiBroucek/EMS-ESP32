@@ -21,8 +21,8 @@
 #ifndef WebCommandService_h
 #define WebCommandService_h
 
-#define EMSESP_COMMAND_FILE "/config/emsespCommands.json"
-#define EMSESP_COMMAND_SERVICE_PATH "/rest/commands" // GET and POST
+#define EMSESP_COMMANDS_FILE "/config/emsespCommands.json"
+#define EMSESP_COMMANDS_SERVICE_PATH "/rest/commands" // GET and POST
 
 namespace emsesp {
 
@@ -50,7 +50,7 @@ class WebCommandService : public StatefulService<WebCommands> {
     bool get_value_info(JsonObject output, const char * cmd);
     void get_value_json(JsonObject output, const CommandItem & commandItem);
 
-    bool executeCommand(const char * name);
+    bool executeCommand(const char * name, const char * value = nullptr);
     bool executeCommand(const char * name, const std::string & cmd, const std::string & value);
 
     const CommandItem * find(const char * name);

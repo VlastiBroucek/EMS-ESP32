@@ -24,8 +24,8 @@
 namespace emsesp {
 
 WebCommandService::WebCommandService(AsyncWebServer * server, FS * fs, SecurityManager * securityManager)
-    : _httpEndpoint(WebCommands::read, WebCommands::update, this, server, EMSESP_COMMAND_SERVICE_PATH, securityManager, AuthenticationPredicates::IS_AUTHENTICATED)
-    , _fsPersistence(WebCommands::read, WebCommands::update, this, fs, EMSESP_COMMAND_FILE) {
+    : _httpEndpoint(WebCommands::read, WebCommands::update, this, server, EMSESP_COMMANDS_SERVICE_PATH, securityManager, AuthenticationPredicates::IS_AUTHENTICATED)
+    , _fsPersistence(WebCommands::read, WebCommands::update, this, fs, EMSESP_COMMANDS_FILE) {
 }
 
 void WebCommandService::begin() {
@@ -67,14 +67,14 @@ StateUpdateResult WebCommands::update(JsonObject root, WebCommands & webCommands
         strlcpy(ci.name, item["name"].as<const char *>(), sizeof(ci.name));
 
         webCommands.commandItems.push_back(ci);
-        if (webCommands.commandItems.back().name[0] != '\0') {
-            Command::add(
-                EMSdevice::DeviceType::COMMAND,
-                webCommands.commandItems.back().name,
-                [](const char * value, const int8_t id) { return EMSESP::webCommandService.executeCommand(value); },
-                FL_(command_cmd),
-                CommandFlag::ADMIN_ONLY);
-        }
+        Command::add(
+            EMSdevice::DeviceType::COMMAND,
+            webCommands.commandItems.back().name,
+            [name = std::string(webCommands.commandItems.back().name)](const char * value, const int8_t id) {
+                return EMSESP::webCommandService.executeCommand(name.c_str(), value); // value is optional
+            },
+            FL_(command_cmd),
+            CommandFlag::ADMIN_ONLY);
     }
     return StateUpdateResult::CHANGED;
 }
@@ -94,14 +94,15 @@ const CommandItem * WebCommandService::find(const char * name) {
 }
 
 // execute a named command — looks up by name and runs it
-// called from console 'call commands <name>', API/MQTT, web UI
-bool WebCommandService::executeCommand(const char * name) {
+bool WebCommandService::executeCommand(const char * name, const char * value) {
     const CommandItem * ci = find(name);
     if (!ci) {
         EMSESP::logger().warning("Command '%s' not found", name ? name : "");
         return false;
     }
-    return executeCommand(ci->name, std::string(ci->cmd.c_str()), std::string(ci->value.c_str()));
+    // if there is a value use it, otherwise use the command's default value
+    std::string cmd_value = value ? value : ci->value.c_str();
+    return executeCommand(ci->name, std::string(ci->cmd.c_str()), cmd_value);
 }
 
 // execute a command with explicit cmd and value strings
@@ -231,22 +232,22 @@ std::string WebCommandService::get_metrics_prometheus() {
 }
 
 void WebCommandService::get_value_json(JsonObject output, const CommandItem & ci) {
-    output["name"]      = (const char *)ci.name;
-    output["fullname"]  = (const char *)ci.name;
-    output["type"]      = "command";
-    output["command"]   = ci.cmd;
-    output["cmd_data"]  = ci.value;
-    bool hasName        = ci.name[0] != '\0';
-    output["readable"]  = hasName;
-    output["writeable"] = hasName;
-    output["visible"]   = hasName;
+    output["name"] = (const char *)ci.name;
+    // output["fullname"]  = (const char *)ci.name;
+    // output["type"]     = "command";
+    output["command"] = ci.cmd;
+    output["value"]   = ci.value;
+    // bool hasName       = ci.name[0] != '\0';
+    // output["readable"]  = hasName;
+    // output["writeable"] = hasName;
+    // output["visible"]   = hasName;
 }
 
 void WebCommandService::publish(const bool force) {
     if (!Mqtt::enabled() || commandItems_->empty()) {
         return;
     }
-    if (force && !EMSESP::mqtt_.get_publish_onchange(0)) {
+    if (force && !EMSESP::mqtt_.get_publish_onchange(EMSdevice::DeviceType::SYSTEM)) {
         return;
     }
 
@@ -278,21 +279,30 @@ void WebCommandService::load_test_data() {
         auto ci  = CommandItem();
         ci.cmd   = "system/fetch";
         ci.value = "10";
-        strcpy(ci.name, "test_cmd1");
+        strcpy(ci.name, "fetch_values");
         webCommands.commandItems.push_back(ci);
 
         ci       = CommandItem();
         ci.cmd   = "system/message";
         ci.value = "hello";
-        strcpy(ci.name, "test_cmd2");
+        strcpy(ci.name, "send_message");
         webCommands.commandItems.push_back(ci);
 
+        ci       = CommandItem();
+        ci.cmd   = "system/message";
+        ci.value = "{\"url\":\"http://emsesp.org/versions.json\"}";
+        strcpy(ci.name, "get_versions");
+        webCommands.commandItems.push_back(ci);
+
+        // manually add the commands
         for (const auto & item : webCommands.commandItems) {
             if (item.name[0] != '\0') {
                 Command::add(
                     EMSdevice::DeviceType::COMMAND,
                     item.name,
-                    [](const char * value, const int8_t id) { return EMSESP::webCommandService.executeCommand(value); },
+                    [name = std::string(item.name)](const char * value, const int8_t id) {
+                        return EMSESP::webCommandService.executeCommand(name.c_str(), value);
+                    },
                     FL_(command_cmd),
                     CommandFlag::ADMIN_ONLY);
             }
