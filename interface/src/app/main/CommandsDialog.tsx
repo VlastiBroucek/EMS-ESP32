@@ -46,6 +46,7 @@ const CommandsDialog = ({
   validator
 }: CommandsDialogProps) => {
   const { LL } = useI18nContext();
+  const [hasChanges, setHasChanges] = useState<boolean>(false);
   const [editItem, setEditItem] = useState<CommandItem>(selectedItem);
   const [fieldErrors, setFieldErrors] = useState<ValidateFieldsError>();
 
@@ -62,6 +63,17 @@ const CommandsDialog = ({
     }
   }, [open, selectedItem]);
 
+  const hasChanged = (ci: CommandItem) =>
+    ci.id !== ci.o_id ||
+    (ci.name || '') !== (ci.o_name || '') ||
+    ci.cmd !== ci.o_cmd ||
+    ci.value !== ci.o_value ||
+    ci.deleted !== ci.o_deleted;
+
+  useEffect(() => {
+    setHasChanges(hasChanged(editItem));
+  }, [editItem]);
+
   const handleSave = async (itemToSave: CommandItem) => {
     try {
       setFieldErrors(undefined);
@@ -69,6 +81,8 @@ const CommandsDialog = ({
       onSave(itemToSave);
     } catch (error) {
       setFieldErrors((error as ValidationError).fieldErrors);
+    } finally {
+      setHasChanges(false);
     }
   };
 
@@ -162,15 +176,19 @@ const CommandsDialog = ({
         >
           {LL.CANCEL()}
         </Button>
-        <Button
-          startIcon={creating ? <AddIcon /> : <DoneIcon />}
-          variant="outlined"
-          onClick={save}
-          color="primary"
-        >
-          {creating ? LL.ADD(0) : LL.UPDATE()}
-        </Button>
-        {!creating && editItem.cmd !== '' && (
+
+        {hasChanges && (
+          <Button
+            startIcon={creating ? <AddIcon /> : <DoneIcon />}
+            variant="outlined"
+            onClick={save}
+            color="primary"
+          >
+            {creating ? LL.ADD(0) : LL.UPDATE()}
+          </Button>
+        )}
+
+        {!creating && !hasChanges && editItem.cmd !== '' && (
           <Button
             startIcon={<PlayArrowIcon />}
             variant="outlined"
