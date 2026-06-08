@@ -296,7 +296,12 @@ const Scheduler = () => {
                   <Cell stiff>
                     <CircleIcon
                       color={si.active ? 'success' : 'error'}
-                      sx={{ fontSize: ICON_SIZE, verticalAlign: 'middle' }}
+                      sx={{
+                        fontSize: ICON_SIZE,
+                        ml: '4px',
+                        position: 'relative',
+                        top: '2px'
+                      }}
                     />
                   </Cell>
                   <Cell stiff>

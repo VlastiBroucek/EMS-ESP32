@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 import AddIcon from '@mui/icons-material/Add';
 import CancelIcon from '@mui/icons-material/Cancel';
+import CircleIcon from '@mui/icons-material/Circle';
 import DoneIcon from '@mui/icons-material/Done';
 import RemoveIcon from '@mui/icons-material/RemoveCircleOutlined';
 import {
@@ -273,7 +274,15 @@ const SchedulerDialog = ({
             }
             label={LL.ACTIVE()}
           />
+          <CircleIcon
+            color={editItem.active ? 'success' : 'error'}
+            sx={{
+              fontSize: 16,
+              mt: '12px'
+            }}
+          />
         </Grid>
+
         <Grid container>
           {needsTimeField ? (
             <>
