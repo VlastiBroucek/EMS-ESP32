@@ -1592,6 +1592,7 @@ static const std::pair<const char *, const char *> SECTION_MAP[] = {
     {NTP_SETTINGS_FILE, "NTP"},
     {SECURITY_SETTINGS_FILE, "Security"},
     {EMSESP_SETTINGS_FILE, "Settings"},
+    {EMSESP_COMMANDS_FILE, "Commands"},
     {EMSESP_SCHEDULER_FILE, "Schedule"},
     {EMSESP_CUSTOMIZATION_FILE, "Customizations"},
     {EMSESP_CUSTOMENTITY_FILE, "Entities"},
@@ -1667,6 +1668,8 @@ void System::exportSystemBackup(JsonObject output) {
     exportSettings("settings", SECURITY_SETTINGS_FILE, node);
     exportSettings("settings", EMSESP_SETTINGS_FILE, node);
 
+    node = nodes.add<JsonObject>();
+    exportSettings("commands", EMSESP_COMMANDS_FILE, node);
     node = nodes.add<JsonObject>();
     exportSettings("schedule", EMSESP_SCHEDULER_FILE, node);
     node = nodes.add<JsonObject>();
