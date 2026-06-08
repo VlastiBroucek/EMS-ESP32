@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import CancelIcon from '@mui/icons-material/Cancel';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import WarningIcon from '@mui/icons-material/Warning';
 import {
   Box,
@@ -226,10 +227,12 @@ const DevicesDialog = ({
               {LL.CANCEL()}
             </Button>
             <Button
-              startIcon={<WarningIcon color="warning" />}
+              startIcon={
+                isCommand ? <PlayArrowIcon /> : <WarningIcon color="warning" />
+              }
               variant="outlined"
               onClick={doAction}
-              color="primary"
+              color={isCommand ? 'success' : 'primary'}
             >
               {buttonLabel}
             </Button>
