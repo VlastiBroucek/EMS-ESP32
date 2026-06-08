@@ -286,11 +286,7 @@ const SchedulerDialog = ({
                 onChange={updateFormValue}
               />
               {isTimerSchedule && (
-                <Typography
-                  sx={{ ml: 2, mt: 4 }}
-                  color="warning"
-                  variant="body2"
-                >
+                <Typography sx={{ ml: 2, mt: 4 }} color="warning" variant="body2">
                   {LL.SCHEDULER_HELP_2()}
                 </Typography>
               )}

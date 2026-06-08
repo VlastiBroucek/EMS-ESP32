@@ -238,13 +238,13 @@ export const schedulerItemValidation = (
       NAME_PATTERN_REQUIRED,
       uniqueNameValidator(schedule, scheduleItem.o_name)
     ],
-    cmd_name: [
-      { required: true, message: 'Command is required' }
-    ]
+    cmd_name: [{ required: true, message: 'Command is required' }]
   });
 
-export const uniqueCommandNameValidator = (commands: CommandItem[], o_name?: string) =>
-  createUniqueNameValidator(commands, o_name);
+export const uniqueCommandNameValidator = (
+  commands: CommandItem[],
+  o_name?: string
+) => createUniqueNameValidator(commands, o_name);
 
 export const commandItemValidation = (
   commands: CommandItem[],
