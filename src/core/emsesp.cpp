@@ -1131,7 +1131,7 @@ bool EMSESP::process_telegram(const std::shared_ptr<const Telegram> & telegram) 
         wait_validate_ = 0;
     }
 
-    // Check for custom entities reding this telegram
+    // check for custom entities reding this telegram
     webCustomEntityService.get_value(telegram);
 
     // check for common types, like the Version(0x02)
@@ -1182,6 +1182,7 @@ bool EMSESP::process_telegram(const std::shared_ptr<const Telegram> & telegram) 
             }
         }
     }
+
     // handle unknown telegrams
     if (!telegram_found) {
         // mark nonempty telegrams as ignored
@@ -1763,8 +1764,8 @@ void EMSESP::start() {
     // start the core web services, as this loads the settings from the filesystem
     // this will also handle any MQTT subscriptions
     webCustomizationService.begin(); // load the customizations
-    webSchedulerService.begin();     // load the scheduler events
     webCommandService.begin();       // load the user commands
+    webSchedulerService.begin();     // load the scheduler events
     webCustomEntityService.begin();  // load the custom telegram reads
 
     // perform any system upgrades
