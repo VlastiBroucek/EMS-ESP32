@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useBlocker } from 'react-router';
 import { toast } from 'react-toastify';
 
@@ -131,7 +131,7 @@ const CommandsPage = () => {
             name: ci.name
           }))
       });
-      toast.success(LL.UPDATED_OF(LL.COMMANDS(1)));
+      toast.success(LL.UPDATED_OF(LL.COMMANDS(0)));
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
       toast.error(message);
