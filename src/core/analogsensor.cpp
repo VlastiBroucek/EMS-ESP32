@@ -25,7 +25,7 @@ uuid::log::Logger    AnalogSensor::logger_{F_(analogsensor), uuid::log::Facility
 std::vector<uint8_t> AnalogSensor::exclude_types_;
 
 #ifndef EMSESP_STANDALONE
-portMUX_TYPE  mux                     = portMUX_INITIALIZER_UNLOCKED;
+portMUX_TYPE           mux                     = portMUX_INITIALIZER_UNLOCKED;
 volatile unsigned long AnalogSensor::edge[]    = {0, 0, 0};
 volatile unsigned long AnalogSensor::edgecnt[] = {0, 0, 0};
 
@@ -671,7 +671,7 @@ void AnalogSensor::publish_values(const bool force) {
                 publish_sensor(sensor);
             }
             return;
-        } else if (!EMSESP::mqtt_.get_publish_onchange(0)) {
+        } else if (!EMSESP::mqtt_.get_publish_onchange(EMSdevice::DeviceType::SYSTEM)) {
             return; // wait for first time period
         }
     }
