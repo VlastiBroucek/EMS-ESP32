@@ -1511,7 +1511,20 @@ bool System::check_upgrade() {
             EMSESP::network_.reconnect();
         }
 
-        // changes going to v3.9 from an earlier version
+        // capture the raw Scheduler file now, before any upgrade step below rewrites it in the new format.
+        // it's needed further down to migrate the pre-v3.9.0-dev.12 inline command format into the Commands Service
+#ifndef EMSESP_STANDALONE
+        JsonDocument oldScheduleDoc(PSRAM_DOC);
+        {
+            File schedulerFile = LittleFS.open(EMSESP_SCHEDULER_FILE);
+            if (schedulerFile) {
+                deserializeJson(oldScheduleDoc, schedulerFile);
+                schedulerFile.close();
+            }
+        }
+#endif
+
+        // changes going to v3.9 from an 3.8.x or earlier
         if (settings_version.major() == 3 && settings_version.minor() < 9) {
 #ifndef EMSESP_STANDALONE
             // AP_MODE_ALWAYS has been removed
@@ -1523,7 +1536,7 @@ bool System::check_upgrade() {
                 }
                 return StateUpdateResult::UNCHANGED;
             });
-            // Scheduler name is now mandatory, update FS
+            // Scheduler name is now mandatory, update FS if name is empty
             uint8_t i                = 0;
             bool    schedule_changed = false;
             EMSESP::webSchedulerService.update([&](WebScheduler & scheduler) {
@@ -1537,6 +1550,80 @@ bool System::check_upgrade() {
             });
 #endif
         }
+
+        // Core3 3.9.0-dev.12 implements the new Commands Service.
+        // versions before that stored the command (cmd) and value inline within each Scheduler entry
+#ifndef EMSESP_STANDALONE
+        {
+            JsonArray oldScheduleItems = oldScheduleDoc["schedule"].as<JsonArray>();
+
+            // only migrate if at least one entry still uses the old inline format (has "cmd" but no "cmd_name")
+            bool old_format = false;
+            for (JsonObject item : oldScheduleItems) {
+                if (!item["cmd"].isNull() && item["cmd_name"].isNull()) {
+                    old_format = true;
+                    break;
+                }
+            }
+
+            if (old_format) {
+                LOG_INFO("Upgrade: Migrating %d Scheduler entries to the new Commands Service", (int)oldScheduleItems.size());
+
+                // create a Command for each Scheduler entry, reusing the entry's name (generating one if empty)
+                EMSESP::webCommandService.update([&](WebCommands & commands) {
+                    commands.commandItems.clear();
+                    uint8_t idx = 0;
+                    for (JsonObject item : oldScheduleItems) {
+                        auto ci         = CommandItem();
+                        ci.cmd          = item["cmd"].as<std::string>();
+                        ci.value        = item["value"].as<std::string>();
+                        const char * nm = item["name"];
+                        // name could still be empty
+                        if (nm != nullptr && nm[0] != '\0') {
+                            strlcpy(ci.name, nm, sizeof(ci.name));
+                        } else {
+                            snprintf(ci.name, sizeof(ci.name), "schedule_%d", idx);
+                        }
+                        commands.commandItems.push_back(ci);
+                        idx++;
+                    }
+                    return StateUpdateResult::CHANGED;
+                });
+
+                // point each Scheduler entry at its new Command via cmd_name
+                EMSESP::webSchedulerService.update([&](WebScheduler & scheduler) {
+                    uint8_t idx = 0;
+                    auto    it  = scheduler.scheduleItems.begin();
+                    for (JsonObject item : oldScheduleItems) {
+                        if (it == scheduler.scheduleItems.end()) {
+                            break;
+                        }
+                        // flag 132 (0x84) is the old IMMEDIATE format which has no command - erase the entry
+                        if (item["flags"].as<uint8_t>() == 0x84) {
+                            it = scheduler.scheduleItems.erase(it);
+                            idx++;
+                            continue;
+                        }
+                        const char * nm = item["name"];
+                        char         cmd_name[sizeof(it->name)];
+                        if (nm != nullptr && nm[0] != '\0') {
+                            strlcpy(cmd_name, nm, sizeof(cmd_name));
+                        } else {
+                            snprintf(cmd_name, sizeof(cmd_name), "schedule_%d", idx);
+                            strlcpy(it->name, cmd_name, sizeof(it->name)); // keep entry name consistent with its command
+                        }
+                        it->cmd_name = cmd_name;
+                        ++it;
+                        idx++;
+                    }
+                    return StateUpdateResult::CHANGED;
+                });
+
+                // reboot so both services reload cleanly in the new format and re-register their commands
+                reboot_required = true;
+            }
+        }
+#endif
 
         // changes to application settings
         EMSESP::webSettingsService.update([&](WebSettings & settings) {
