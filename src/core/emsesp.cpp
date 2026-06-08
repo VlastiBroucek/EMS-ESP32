@@ -51,23 +51,19 @@ uint32_t          EMSESP::last_fetch_       = 0;
 AsyncWebServer webServer(80);
 
 #if defined(EMSESP_STANDALONE)
-FS                      dummyFS;
-ESP32React              EMSESP::esp32React(&webServer, &dummyFS);
-WebSettingsService      EMSESP::webSettingsService      = WebSettingsService(&webServer, &dummyFS, EMSESP::esp32React.getSecurityManager());
-WebCustomizationService EMSESP::webCustomizationService = WebCustomizationService(&webServer, &dummyFS, EMSESP::esp32React.getSecurityManager());
-WebSchedulerService     EMSESP::webSchedulerService     = WebSchedulerService(&webServer, &dummyFS, EMSESP::esp32React.getSecurityManager());
-WebCommandService       EMSESP::webCommandService       = WebCommandService(&webServer, &dummyFS, EMSESP::esp32React.getSecurityManager());
-WebCustomEntityService  EMSESP::webCustomEntityService  = WebCustomEntityService(&webServer, &dummyFS, EMSESP::esp32React.getSecurityManager());
-WebModulesService       EMSESP::webModulesService       = WebModulesService(&webServer, &dummyFS, EMSESP::esp32React.getSecurityManager());
+FS dummyFS;
+auto& fsRef = dummyFS;
 #else
-ESP32React              EMSESP::esp32React(&webServer, &LittleFS);
-WebSettingsService      EMSESP::webSettingsService      = WebSettingsService(&webServer, &LittleFS, EMSESP::esp32React.getSecurityManager());
-WebCustomizationService EMSESP::webCustomizationService = WebCustomizationService(&webServer, &LittleFS, EMSESP::esp32React.getSecurityManager());
-WebSchedulerService     EMSESP::webSchedulerService     = WebSchedulerService(&webServer, &LittleFS, EMSESP::esp32React.getSecurityManager());
-WebCommandService       EMSESP::webCommandService       = WebCommandService(&webServer, &LittleFS, EMSESP::esp32React.getSecurityManager());
-WebCustomEntityService  EMSESP::webCustomEntityService  = WebCustomEntityService(&webServer, &LittleFS, EMSESP::esp32React.getSecurityManager());
-WebModulesService       EMSESP::webModulesService       = WebModulesService(&webServer, &LittleFS, EMSESP::esp32React.getSecurityManager());
+auto& fsRef = LittleFS;
 #endif
+
+ESP32React EMSESP::esp32React(&webServer, &fsRef);
+WebSettingsService      EMSESP::webSettingsService      = WebSettingsService(&webServer, &fsRef, EMSESP::esp32React.getSecurityManager());
+WebCustomizationService EMSESP::webCustomizationService = WebCustomizationService(&webServer, &fsRef, EMSESP::esp32React.getSecurityManager());
+WebSchedulerService     EMSESP::webSchedulerService     = WebSchedulerService(&webServer, &fsRef, EMSESP::esp32React.getSecurityManager());
+WebCommandService       EMSESP::webCommandService       = WebCommandService(&webServer, &fsRef, EMSESP::esp32React.getSecurityManager());
+WebCustomEntityService  EMSESP::webCustomEntityService  = WebCustomEntityService(&webServer, &fsRef, EMSESP::esp32React.getSecurityManager());
+WebModulesService       EMSESP::webModulesService       = WebModulesService(&webServer, &fsRef, EMSESP::esp32React.getSecurityManager());
 
 WebActivityService EMSESP::webActivityService = WebActivityService(&webServer, EMSESP::esp32React.getSecurityManager());
 WebStatusService   EMSESP::webStatusService   = WebStatusService(&webServer, EMSESP::esp32React.getSecurityManager());
