@@ -37,10 +37,14 @@ void WebCommandService::begin() {
     char topic[Mqtt::MQTT_TOPIC_MAX_SIZE];
     snprintf(topic, sizeof(topic), "%s/#", F_(commands));
     Mqtt::subscribe(EMSdevice::DeviceType::COMMAND, topic, nullptr);
+
+#if defined(EMSESP_TEST)
+    load_test_data();
+#endif
 }
 
 void WebCommands::read(WebCommands & webCommands, JsonObject root) {
-    JsonArray items = root["commands"].to<JsonArray>();
+    JsonArray items   = root["commands"].to<JsonArray>();
     uint8_t   counter = 1;
     for (const CommandItem & ci : webCommands.commandItems) {
         JsonObject obj = items.add<JsonObject>();
@@ -57,8 +61,8 @@ StateUpdateResult WebCommands::update(JsonObject root, WebCommands & webCommands
 
     auto items = root["commands"].as<JsonArray>();
     for (const JsonObject item : items) {
-        auto ci = CommandItem();
-        ci.cmd  = item["cmd"].as<std::string>();
+        auto ci  = CommandItem();
+        ci.cmd   = item["cmd"].as<std::string>();
         ci.value = item["value"].as<std::string>();
         strlcpy(ci.name, item["name"].as<const char *>(), sizeof(ci.name));
 
@@ -67,9 +71,7 @@ StateUpdateResult WebCommands::update(JsonObject root, WebCommands & webCommands
             Command::add(
                 EMSdevice::DeviceType::COMMAND,
                 webCommands.commandItems.back().name,
-                [](const char * value, const int8_t id) {
-                    return EMSESP::webCommandService.executeCommand(value);
-                },
+                [](const char * value, const int8_t id) { return EMSESP::webCommandService.executeCommand(value); },
                 FL_(command_cmd),
                 CommandFlag::ADMIN_ONLY);
         }
@@ -99,7 +101,7 @@ bool WebCommandService::executeCommand(const char * name) {
         EMSESP::logger().warning("Command '%s' not found", name ? name : "");
         return false;
     }
-    return executeCommand(ci->name, ci->cmd, ci->value);
+    return executeCommand(ci->name, std::string(ci->cmd.c_str()), std::string(ci->value.c_str()));
 }
 
 // execute a command with explicit cmd and value strings
@@ -111,7 +113,7 @@ bool WebCommandService::executeCommand(const char * name, const std::string & co
     JsonDocument doc;
     if (deserializeJson(doc, cmd) == DeserializationError::Ok) {
         std::string url = doc["url"] | "";
-        auto q = url.find_first_of('?');
+        auto        q   = url.find_first_of('?');
         if (q != std::string::npos) {
             auto s = url.substr(q + 1);
             auto l = s.length();
@@ -269,20 +271,32 @@ uint8_t WebCommandService::count_entities() {
 
 #if defined(EMSESP_TEST)
 void WebCommandService::load_test_data() {
+    Command::erase_device_commands(EMSdevice::DeviceType::COMMAND);
     update([&](WebCommands & webCommands) {
         webCommands.commandItems.clear();
 
-        auto ci = CommandItem();
-        ci.cmd  = "system/fetch";
+        auto ci  = CommandItem();
+        ci.cmd   = "system/fetch";
         ci.value = "10";
         strcpy(ci.name, "test_cmd1");
         webCommands.commandItems.push_back(ci);
 
-        ci      = CommandItem();
-        ci.cmd  = "system/message";
+        ci       = CommandItem();
+        ci.cmd   = "system/message";
         ci.value = "hello";
         strcpy(ci.name, "test_cmd2");
         webCommands.commandItems.push_back(ci);
+
+        for (const auto & item : webCommands.commandItems) {
+            if (item.name[0] != '\0') {
+                Command::add(
+                    EMSdevice::DeviceType::COMMAND,
+                    item.name,
+                    [](const char * value, const int8_t id) { return EMSESP::webCommandService.executeCommand(value); },
+                    FL_(command_cmd),
+                    CommandFlag::ADMIN_ONLY);
+            }
+        }
 
         return StateUpdateResult::CHANGED;
     });

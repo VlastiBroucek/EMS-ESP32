@@ -49,6 +49,10 @@ void WebSchedulerService::begin() {
 #endif
     }
 #endif
+
+#if defined(EMSESP_TEST)
+    load_test_data();
+#endif
 }
 
 // this creates the scheduler file, saving it to the FS
@@ -454,6 +458,7 @@ void WebSchedulerService::scheduler_task(void * pvParameters) {
 
 #if defined(EMSESP_TEST)
 void WebSchedulerService::load_test_data() {
+    Command::erase_device_commands(EMSdevice::DeviceType::SCHEDULER);
     update([&](WebScheduler & webScheduler) {
         webScheduler.scheduleItems.clear();
 
@@ -478,6 +483,19 @@ void WebSchedulerService::load_test_data() {
         si.retry_cnt   = 0xFF;
 
         webScheduler.scheduleItems.push_back(si);
+
+        for (const auto & item : webScheduler.scheduleItems) {
+            if (item.name[0] != '\0') {
+                Command::add(
+                    EMSdevice::DeviceType::SCHEDULER,
+                    item.name,
+                    [name = std::string(item.name)](const char * value, const int8_t id) {
+                        return EMSESP::webSchedulerService.command_setvalue(value, id, name.c_str());
+                    },
+                    FL_(schedule_cmd),
+                    CommandFlag::ADMIN_ONLY);
+            }
+        }
 
         return StateUpdateResult::CHANGED;
     });

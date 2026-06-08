@@ -350,6 +350,7 @@ void Test::run_test(uuid::console::Shell & shell, const std::string & cmd, const
         EMSESP::webCustomEntityService.load_test_data();  // custom entities
         EMSESP::webCustomizationService.load_test_data(); // set customizations - this will overwrite any settings in the FS
         EMSESP::temperaturesensor_.load_test_data();      // add temperature sensors
+        EMSESP::webCommandService.load_test_data();       // add command items
         EMSESP::webSchedulerService.load_test_data();     // add scheduler data
 
         shell.invoke_command("show values");
@@ -406,7 +407,7 @@ void Test::run_test(uuid::console::Shell & shell, const std::string & cmd, const
     if (command == "scheduler") {
         shell.printfln("Adding Scheduler items...");
 
-        // add some dummy entities
+        EMSESP::webCommandService.load_test_data();
         EMSESP::webSchedulerService.load_test_data();
 
 #ifdef EMSESP_STANDALONE
@@ -1116,6 +1117,7 @@ void Test::run_test(uuid::console::Shell & shell, const std::string & cmd, const
         EMSESP::webCustomEntityService.load_test_data();  // custom entities
         EMSESP::webCustomizationService.load_test_data(); // set customizations - this will overwrite any settings in the FS
         EMSESP::temperaturesensor_.load_test_data();      // add temperature sensors
+        EMSESP::webCommandService.load_test_data();       // add command items
         EMSESP::webSchedulerService.load_test_data();     // run scheduler tests, and conditions
 
         JsonDocument          doc;
@@ -1379,6 +1381,7 @@ void Test::run_test(uuid::console::Shell & shell, const std::string & cmd, const
             EMSESP::webCustomEntityService.load_test_data();  // custom entities
             EMSESP::webCustomizationService.load_test_data(); // set customizations - this will overwrite any settings in the FS
             EMSESP::temperaturesensor_.load_test_data();      // add temperature sensors
+            EMSESP::webCommandService.load_test_data();       // add command items
             EMSESP::webSchedulerService.load_test_data();     // run scheduler tests, and conditions
 
             request.method(HTTP_GET);
