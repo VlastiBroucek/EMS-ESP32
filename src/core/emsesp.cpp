@@ -51,13 +51,13 @@ uint32_t          EMSESP::last_fetch_       = 0;
 AsyncWebServer webServer(80);
 
 #if defined(EMSESP_STANDALONE)
-FS dummyFS;
-auto& fsRef = dummyFS;
+FS     dummyFS;
+auto & fsRef = dummyFS;
 #else
-auto& fsRef = LittleFS;
+auto & fsRef = LittleFS;
 #endif
 
-ESP32React EMSESP::esp32React(&webServer, &fsRef);
+ESP32React              EMSESP::esp32React(&webServer, &fsRef);
 WebSettingsService      EMSESP::webSettingsService      = WebSettingsService(&webServer, &fsRef, EMSESP::esp32React.getSecurityManager());
 WebCustomizationService EMSESP::webCustomizationService = WebCustomizationService(&webServer, &fsRef, EMSESP::esp32React.getSecurityManager());
 WebSchedulerService     EMSESP::webSchedulerService     = WebSchedulerService(&webServer, &fsRef, EMSESP::esp32React.getSecurityManager());
@@ -919,7 +919,6 @@ std::string EMSESP::pretty_telegram(const std::shared_ptr<const Telegram> & tele
         }
     }
 
-    // Optimized: Use stack buffer and build string once to avoid multiple temporary allocations
     char buf[250];
     if (telegram->operation == Telegram::Operation::RX_READ) {
         auto pos = snprintf(buf,

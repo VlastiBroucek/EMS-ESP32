@@ -27,7 +27,7 @@
 
 namespace emsesp {
 
-// find tokens - optimized to reduce string allocations
+// find tokens
 std::deque<Token> exprToTokens(const std::string & expr) {
     std::deque<Token> tokens;
 
@@ -231,7 +231,7 @@ std::deque<Token> exprToTokens(const std::string & expr) {
     return tokens;
 }
 
-// sort tokens to RPN form - optimized for memory usage
+// sort tokens to RPN form
 std::deque<Token> shuntingYard(const std::deque<Token> & tokens) {
     std::deque<Token>  queue;
     std::vector<Token> stack;
@@ -347,7 +347,6 @@ bool isnum(const std::string & s) {
 std::string commands(std::string & expr, bool quotes) {
     auto expr_new = Helpers::toLower(expr);
     for (uint8_t device = 0; device < EMSdevice::DeviceType::UNKNOWN; device++) {
-        // Optimized: build string with reserve to avoid temporary allocations
         std::string d;
         d.reserve(32); // typical device name length + "/"
         d = EMSdevice::device_type_2_device_name(device);
@@ -374,8 +373,7 @@ std::string commands(std::string & expr, bool quotes) {
             JsonDocument doc_in;
             JsonObject   output = doc_out.to<JsonObject>();
             JsonObject   input  = doc_in.to<JsonObject>();
-            // Optimized: use stack buffer for small strings to avoid heap allocation
-            char cmd_s[COMMAND_MAX_LENGTH + 5]; // "api/" prefix + cmd
+            char         cmd_s[COMMAND_MAX_LENGTH + 5]; // "api/" prefix + cmd
             snprintf(cmd_s, sizeof(cmd_s), "api/%s", cmd);
 
             auto return_code = Command::process(cmd_s, true, input, output);
