@@ -378,7 +378,12 @@ uint8_t Command::call(const uint8_t device_type, const char * command, const cha
         if (!strcmp(cmd, F_(commands))) {
             return Command::list(device_type, output);
         }
-        if (EMSESP::get_device_value_info(output, cmd, id, device_type)) { // entity = cmd
+        // for the Commands device, calling a named command executes it (using its stored value)
+        // rather than returning its definition, so skip the value-info lookup and fall through
+        // to the registered command function. The list keywords above are still handled.
+        bool is_named_command = (device_type == EMSdevice::DeviceType::COMMAND) && strcmp(cmd, F_(info)) && strcmp(cmd, F_(values))
+                                && strcmp(cmd, F_(entities)) && strcmp(cmd, F_(metrics));
+        if (!is_named_command && EMSESP::get_device_value_info(output, cmd, id, device_type)) { // entity = cmd
             LOG_DEBUG("Fetched device entity/attributes for %s/%s (id=%d)", dname, cmd, id);
             return CommandRet::OK;
         }
