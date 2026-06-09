@@ -1858,9 +1858,7 @@ void EMSESP::loop() {
         publish_all_loop();         // with HA messages in parts to avoid flooding the MQTT queue
         mqtt_.loop();               // sends out anything in the MQTT queue
         webModulesService.loop();   // loop through the external library modules
-        if (system_.PSram() == 0) { // run non-async if there is no PSRAM available
-            webSchedulerService.loop();
-        }
+        webSchedulerService.loop(); // scheduler timing logic; command execution is offloaded to WebCommandService's worker task
         scheduled_fetch_values(); // force a query on the EMS devices to fetch latest data at a set interval (1 min)
     }
     // check for GPIO Errors - this is called once when booting
