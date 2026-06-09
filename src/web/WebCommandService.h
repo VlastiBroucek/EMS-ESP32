@@ -18,11 +18,30 @@
 
 #include <esp32-psram.h>
 
+#ifndef EMSESP_STANDALONE
+#include <freertos/FreeRTOS.h>
+#include <freertos/queue.h>
+#include <freertos/task.h>
+#endif
+
 #ifndef WebCommandService_h
 #define WebCommandService_h
 
 #define EMSESP_COMMANDS_FILE "/config/emsespCommands.json"
 #define EMSESP_COMMANDS_SERVICE_PATH "/rest/commands" // GET and POST
+
+#ifndef EMSESP_COMMAND_RUNNING_CORE
+#define EMSESP_COMMAND_RUNNING_CORE 1
+#endif
+#ifndef EMSESP_COMMAND_STACKSIZE
+#define EMSESP_COMMAND_STACKSIZE 8192
+#endif
+#ifndef EMSESP_COMMAND_PRIORITY
+#define EMSESP_COMMAND_PRIORITY 1
+#endif
+#ifndef EMSESP_COMMAND_QUEUE_SIZE
+#define EMSESP_COMMAND_QUEUE_SIZE 10
+#endif
 
 namespace emsesp {
 
@@ -31,6 +50,14 @@ class CommandItem {
     stringPSRAM cmd;
     stringPSRAM value;
     char        name[20];
+};
+
+// a single unit of work handed to the command worker task
+class CommandJob {
+  public:
+    std::string name;
+    std::string value;
+    bool        has_value;
 };
 
 class WebCommands {
@@ -53,6 +80,12 @@ class WebCommandService : public StatefulService<WebCommands> {
     bool executeCommand(const char * name, const char * value = nullptr);
     bool executeCommand(const char * name, const std::string & cmd, const std::string & value);
 
+    bool queueCommand(const char * name, const char * value = nullptr);
+    bool dispatchCommand(const char * name, const char * value = nullptr);
+
+    static bool isUrlCommand(const std::string & command);    // true if the command definition is a HTTP/URL command
+    static bool valueContainsUrl(const std::string & value);  // true if a value embeds a {"url":...} compute() will fetch
+
     const CommandItem * find(const char * name);
 
     uint8_t count_entities();
@@ -64,6 +97,11 @@ class WebCommandService : public StatefulService<WebCommands> {
 #endif
 
   private:
+#ifndef EMSESP_STANDALONE
+    static void          command_task(void * pvParameters);
+    static QueueHandle_t commandQueue_;
+#endif
+
     HttpEndpoint<WebCommands>  _httpEndpoint;
     FSPersistence<WebCommands> _fsPersistence;
 

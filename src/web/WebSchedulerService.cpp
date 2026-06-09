@@ -39,16 +39,6 @@ void WebSchedulerService::begin() {
     char topic[Mqtt::MQTT_TOPIC_MAX_SIZE];
     snprintf(topic, sizeof(topic), "%s/#", F_(scheduler));
     Mqtt::subscribe(EMSdevice::DeviceType::SCHEDULER, topic, nullptr); // use empty function callback
-#ifndef EMSESP_STANDALONE
-    if (EMSESP::system_.PSram()) {
-#if defined(CONFIG_FREERTOS_UNICORE) || (EMSESP_SCHEDULER_RUNNING_CORE < 0)
-        xTaskCreate((TaskFunction_t)scheduler_task, "scheduler_task", EMSESP_SCHEDULER_STACKSIZE, NULL, EMSESP_SCHEDULER_PRIORITY, NULL);
-#else
-        xTaskCreatePinnedToCore(
-            (TaskFunction_t)scheduler_task, "scheduler_task", EMSESP_SCHEDULER_STACKSIZE, NULL, EMSESP_SCHEDULER_PRIORITY, NULL, EMSESP_SCHEDULER_RUNNING_CORE);
-#endif
-    }
-#endif
 
 #if defined(EMSESP_TEST)
     load_test_data();
@@ -339,7 +329,7 @@ bool WebSchedulerService::runScheduleCommand(const ScheduleItem & si) {
         EMSESP::logger().warning("Schedule '%s': no command assigned", si.name);
         return false;
     }
-    return EMSESP::webCommandService.executeCommand(si.cmd_name.c_str());
+    return EMSESP::webCommandService.dispatchCommand(si.cmd_name.c_str());
 }
 
 // queue schedules to be handled executed in WebSchedulerService::loop() called from emsesp.cpp
@@ -441,19 +431,6 @@ void WebSchedulerService::loop() {
         }
         last_tm_min = tm->tm_min;
     }
-}
-
-// process schedules async
-void WebSchedulerService::scheduler_task(void * pvParameters) {
-    while (1) {
-        delay(10);
-        if (EMSESP::system_.systemStatus() == SYSTEM_STATUS::SYSTEM_STATUS_NORMAL) {
-            EMSESP::webSchedulerService.loop();
-        }
-    }
-#ifndef EMSESP_STANDALONE
-    vTaskDelete(NULL);
-#endif
 }
 
 #if defined(EMSESP_TEST)

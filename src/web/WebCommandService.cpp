@@ -23,6 +23,10 @@
 
 namespace emsesp {
 
+#ifndef EMSESP_STANDALONE
+QueueHandle_t WebCommandService::commandQueue_ = nullptr;
+#endif
+
 WebCommandService::WebCommandService(AsyncWebServer * server, FS * fs, SecurityManager * securityManager)
     : _httpEndpoint(WebCommands::read, WebCommands::update, this, server, EMSESP_COMMANDS_SERVICE_PATH, securityManager, AuthenticationPredicates::IS_AUTHENTICATED)
     , _fsPersistence(WebCommands::read, WebCommands::update, this, fs, EMSESP_COMMANDS_FILE) {
@@ -38,10 +42,133 @@ void WebCommandService::begin() {
     snprintf(topic, sizeof(topic), "%s/#", F_(commands));
     Mqtt::subscribe(EMSdevice::DeviceType::COMMAND, topic, nullptr);
 
+#ifndef EMSESP_STANDALONE
+    // when PSRAM is available, run command execution (potentially blocking, e.g. HTTP) in its own task
+    // so it never stalls the main loop. Without PSRAM we execute inline (see queueCommand()).
+    if (EMSESP::system_.PSram()) {
+        commandQueue_ = xQueueCreate(EMSESP_COMMAND_QUEUE_SIZE, sizeof(CommandJob *));
+        if (commandQueue_ != nullptr) {
+#if defined(CONFIG_FREERTOS_UNICORE) || (EMSESP_COMMAND_RUNNING_CORE < 0)
+            xTaskCreate((TaskFunction_t)command_task, "command_task", EMSESP_COMMAND_STACKSIZE, NULL, EMSESP_COMMAND_PRIORITY, NULL);
+#else
+            xTaskCreatePinnedToCore(
+                (TaskFunction_t)command_task, "command_task", EMSESP_COMMAND_STACKSIZE, NULL, EMSESP_COMMAND_PRIORITY, NULL, EMSESP_COMMAND_RUNNING_CORE);
+#endif
+        }
+    }
+#endif
+
 #if defined(EMSESP_TEST)
     load_test_data();
 #endif
 }
+
+// enqueue a command for the worker task. Fire-and-forget: returns true when the job was queued
+// (or executed inline when no worker exists). It does NOT report the command's success/failure.
+bool WebCommandService::queueCommand(const char * name, const char * value) {
+#ifndef EMSESP_STANDALONE
+    if (commandQueue_ != nullptr) {
+        CommandJob * job = new CommandJob();
+        if (job == nullptr) {
+            return false;
+        }
+        job->name      = name ? name : "";
+        job->has_value = (value != nullptr);
+        job->value     = value ? value : "";
+        if (xQueueSend(commandQueue_, &job, 0) != pdPASS) {
+            EMSESP::logger().warning("Command queue full, dropping '%s'", job->name.c_str());
+            delete job;
+            return false;
+        }
+        return true;
+    }
+#endif
+    // no worker task available (no PSRAM or standalone build) - run synchronously
+    return executeCommand(name, value);
+}
+
+// true if the command definition is a HTTP/URL command (JSON with a http(s):// url),
+// i.e. one that will do a blocking TCP/TLS request when executed
+bool WebCommandService::isUrlCommand(const std::string & command) {
+    JsonDocument doc;
+    if (deserializeJson(doc, command) != DeserializationError::Ok) {
+        return false;
+    }
+    std::string url       = doc["url"] | "";
+    auto        lower_url = Helpers::toLower(url.c_str());
+    return lower_url.starts_with("http://") || lower_url.starts_with("https://");
+}
+
+// true if a value expression contains an embedded {"url":...} JSON snippet, which compute()
+// will resolve with a blocking HTTP request. Mirrors the scan compute() does in shuntingYard.cpp
+bool WebCommandService::valueContainsUrl(const std::string & value) {
+    auto f = value.find_first_of('{');
+    while (f != std::string::npos) {
+        // find the matching closing brace, like compute() does
+        auto e = f + 1;
+        for (uint8_t i = 1; i > 0; e++) {
+            if (e >= value.length()) {
+                return false; // unbalanced braces, compute() will give up too
+            } else if (value[e] == '}') {
+                i--;
+            } else if (value[e] == '{') {
+                i++;
+            }
+        }
+        JsonDocument doc;
+        if (deserializeJson(doc, value.substr(f, e - f)) == DeserializationError::Ok) {
+            for (JsonPairConst p : doc.as<JsonObjectConst>()) {
+                if (Helpers::toLower(p.key().c_str()) == "url") {
+                    return true;
+                }
+            }
+        }
+        f = value.find_first_of('{', e);
+    }
+    return false;
+}
+
+// smart dispatch: commands that will do a blocking HTTP/TLS request - either a URL command or an
+// internal command whose value embeds a {url} fetch - are offloaded to the worker task so they
+// can't stall the caller (main loop for MQTT, async_tcp task for the web API). Everything else
+// runs synchronously, so the caller still gets the command's real success/failure.
+// for queued commands the return value only means "dispatched".
+bool WebCommandService::dispatchCommand(const char * name, const char * value) {
+#ifndef EMSESP_STANDALONE
+    if (commandQueue_ != nullptr) {
+        const CommandItem * ci = find(name);
+        if (ci != nullptr) {
+            if (isUrlCommand(ci->cmd.c_str())) {
+                return queueCommand(name, value);
+            }
+            // system/message defers evaluation of its value (via the scheduler's raw_value),
+            // so executing it never blocks - keep it synchronous even if the value has a {url}
+            if (Helpers::toLower(ci->cmd.c_str()) != "system/message") {
+                // the effective value is the override if given, else the command's stored default
+                const std::string effective_value = value ? value : std::string(ci->value.c_str());
+                if (valueContainsUrl(effective_value)) {
+                    return queueCommand(name, value);
+                }
+            }
+        }
+    }
+#endif
+    return executeCommand(name, value);
+}
+
+#ifndef EMSESP_STANDALONE
+// worker task: blocks on the queue and executes each command in turn, off the main loop
+void WebCommandService::command_task(void * pvParameters) {
+    CommandJob * job = nullptr;
+    while (1) {
+        if (xQueueReceive(commandQueue_, &job, portMAX_DELAY) == pdPASS && job != nullptr) {
+            EMSESP::webCommandService.executeCommand(job->name.c_str(), job->has_value ? job->value.c_str() : nullptr);
+            delete job;
+            job = nullptr;
+        }
+    }
+}
+#endif
 
 void WebCommands::read(WebCommands & webCommands, JsonObject root) {
     JsonArray items   = root["commands"].to<JsonArray>();
@@ -71,7 +198,7 @@ StateUpdateResult WebCommands::update(JsonObject root, WebCommands & webCommands
             EMSdevice::DeviceType::COMMAND,
             webCommands.commandItems.back().name,
             [name = std::string(webCommands.commandItems.back().name)](const char * value, const int8_t id) {
-                return EMSESP::webCommandService.executeCommand(name.c_str(), value); // value is optional
+                return EMSESP::webCommandService.dispatchCommand(name.c_str(), value); // value is optional
             },
             FL_(command_cmd),
             CommandFlag::ADMIN_ONLY);
@@ -110,6 +237,20 @@ bool WebCommandService::executeCommand(const char * name, const char * value) {
 bool WebCommandService::executeCommand(const char * name, const std::string & command, const std::string & data) {
     std::string cmd = Helpers::toLower(command);
 
+    // run the value through the shunting-yard calculator so expressions like "custom/heatcnt + 1"
+    // are resolved (entity references replaced by their values, then computed). Plain values pass
+    // through unchanged. Applies to both URL and internal commands, like the old scheduler code
+    // which computed the value before executing. system/message evaluates its own argument later
+    // (deferred via the scheduler's raw_value), so pre-computing it would run it twice - pass raw.
+    std::string computed_data = data;
+    if (!data.empty() && cmd != "system/message") {
+        computed_data = compute(data);
+        if (computed_data.empty()) {
+            EMSESP::logger().warning("Command '%s': cannot compute value '%s'", name, data.c_str());
+            return false;
+        }
+    }
+
     // handle HTTP commands (JSON with url/method/value)
     JsonDocument doc;
     if (deserializeJson(doc, cmd) == DeserializationError::Ok) {
@@ -121,7 +262,8 @@ bool WebCommandService::executeCommand(const char * name, const std::string & co
             commands(s, false);
             url.replace(q + 1, l, s);
         }
-        std::string value  = doc["value"] | data;
+        // the cmd's embedded value only gets entity substitution (commands), the passed value is fully computed
+        std::string value  = doc["value"] | computed_data;
         std::string method = doc["method"] | "GET";
         commands(value, false);
         auto lower_url = Helpers::toLower(url.c_str());
@@ -142,8 +284,8 @@ bool WebCommandService::executeCommand(const char * name, const std::string & co
     // handle internal API commands
     doc.clear();
     JsonObject input = doc.to<JsonObject>();
-    if (!data.empty()) {
-        input["data"] = data;
+    if (!computed_data.empty()) {
+        input["data"] = computed_data;
     }
 
     JsonDocument doc_output;
@@ -301,7 +443,7 @@ void WebCommandService::load_test_data() {
                     EMSdevice::DeviceType::COMMAND,
                     item.name,
                     [name = std::string(item.name)](const char * value, const int8_t id) {
-                        return EMSESP::webCommandService.executeCommand(name.c_str(), value);
+                        return EMSESP::webCommandService.dispatchCommand(name.c_str(), value);
                     },
                     FL_(command_cmd),
                     CommandFlag::ADMIN_ONLY);

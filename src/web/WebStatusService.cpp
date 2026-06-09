@@ -233,7 +233,7 @@ void WebStatusService::action(AsyncWebServerRequest * request, JsonVariant json)
     } else if (action == "upgradeImportantMessages") {
         root["upgradeImportantMessageType"] = upgradeImportantMessages(param);
     } else if (action == "executeCommand") {
-        ok = EMSESP::webCommandService.executeCommand(param.c_str());
+        ok = EMSESP::webCommandService.dispatchCommand(param.c_str()); // command worker task (ok = dispatched); fast internal commands run inline (ok = real result)
     }
 
 #if defined(EMSESP_STANDALONE) && !defined(EMSESP_UNITY)
