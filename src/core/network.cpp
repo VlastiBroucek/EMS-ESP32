@@ -308,7 +308,11 @@ void Network::checkConnection() {
         network_ip_    = 0;
         has_ipv6_      = false;
         connect_retry_ = 0;
-        if (network_iface_ == NetIface::ETHERNET) {
+        // reset the active interface so findNetworks() treats the next link-up (even on the
+        // same interface) as a new connection and re-runs the setup, including startmDNS()
+        const NetIface lost_iface = network_iface_;
+        network_iface_            = NetIface::NONE;
+        if (lost_iface == NetIface::ETHERNET) {
             LOG_WARNING("Ethernet connection lost");
             return;
         }
