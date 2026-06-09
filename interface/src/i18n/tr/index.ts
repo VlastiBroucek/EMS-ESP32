@@ -287,7 +287,7 @@ const tr: Translation = {
   LEAVE: 'Çık',
   SCHEDULER: 'Zamanlayıcı',
   SCHEDULER_HELP_1: 'Komutları zamanlayarak otomatikleştirin',
-  SCHEDULER_HELP_2: 'Başlangıçta bir kere tetiklemek için 00:00 kullanın',
+  SCHEDULER_HELP_2: 'başlangıçta',
   SCHEDULE: 'Zamanlama',
   TIME: 'Zaman',
   TIMER: 'Zamanlayıcı',

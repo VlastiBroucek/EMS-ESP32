@@ -285,7 +285,9 @@ const Scheduler = () => {
               <HeaderRow>
                 <HeaderCell />
                 <HeaderCell stiff>{LL.SCHEDULE(0)}</HeaderCell>
-                <HeaderCell stiff>{LL.TIME(0)}/Cond.</HeaderCell>
+                <HeaderCell stiff>
+                  {LL.TIME(0)}/{LL.CONDITION()}
+                </HeaderCell>
                 <HeaderCell stiff>{LL.COMMAND(0)}</HeaderCell>
                 <HeaderCell stiff>{LL.NAME(0)}</HeaderCell>
               </HeaderRow>
@@ -321,7 +323,7 @@ const Scheduler = () => {
                       )}
                     </Stack>
                   </Cell>
-                  <Cell>{si.time}</Cell>
+                  <Cell>{si.time === '' ? LL.SCHEDULER_HELP_2() : si.time}</Cell>
                   <Cell>{si.cmd_name}</Cell>
                   <Cell>{si.name}</Cell>
                 </Row>

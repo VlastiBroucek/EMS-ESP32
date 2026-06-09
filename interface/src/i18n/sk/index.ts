@@ -287,7 +287,7 @@ const sk: Translation = {
   LEAVE: 'Opustiť',
   SCHEDULER: 'Plánovač',
   SCHEDULER_HELP_1: 'Automatizujte príkazy pridaním naplánovaných udalostí nižšie',
-  SCHEDULER_HELP_2: 'Použite 00:00 na jednorazové spustenie pri štarte',
+  SCHEDULER_HELP_2: 'pri štarte',
   SCHEDULE: 'Plánovač',
   TIME: 'Čas',
   TIMER: 'Časovač',

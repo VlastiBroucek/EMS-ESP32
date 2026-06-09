@@ -287,7 +287,7 @@ const nl: Translation = {
   LEAVE: 'Verlaten',
   SCHEDULER: 'Scheduler',
   SCHEDULER_HELP_1: 'Automatiseer opdrachten door hieronder geplande gebeurtenissen toe te voegen',
-  SCHEDULER_HELP_2: 'Gebruik 00:00 om eenmaal te activeren bij het opstarten',
+  SCHEDULER_HELP_2: 'bij het opstarten',
   SCHEDULE: 'Schedule',
   TIME: 'Tijd',
   TIMER: 'Timer',

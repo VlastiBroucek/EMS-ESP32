@@ -290,7 +290,7 @@ const en: Translation = {
   EXECUTE_COMMAND_SENT: 'Command executed successfully',
   SCHEDULER: 'Scheduler',
   SCHEDULER_HELP_1: 'Automate commands by adding scheduled events below',
-  SCHEDULER_HELP_2: 'Use 00:00 to trigger once on start-up',
+  SCHEDULER_HELP_2: 'at start-up',
   SCHEDULE: 'Schedule',
   TIME: 'Time',
   TIMER: 'Timer',

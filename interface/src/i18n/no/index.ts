@@ -287,7 +287,7 @@ const no: Translation = {
   LEAVE: 'Forlat',
   SCHEDULER: 'Planlegger',
   SCHEDULER_HELP_1: 'Automatiser kommandoer ved å legge til skedulerte hendelser nedenfor',
-  SCHEDULER_HELP_2: 'Bruk 00:00 for å kjøre en gang ved oppstart',
+  SCHEDULER_HELP_2: 'ved oppstart',
   SCHEDULE: 'Planlegg',
   TIME: 'Tid',
   TIMER: 'Timer',

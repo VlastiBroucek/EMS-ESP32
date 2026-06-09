@@ -287,7 +287,7 @@ const sv: Translation = {
   LEAVE: 'Lämna',
   SCHEDULER: 'Schemaläggning',
   SCHEDULER_HELP_1: 'Automatisera kommandon genom att lägga till schemahändelser nedan',
-  SCHEDULER_HELP_2: 'Använd 00:00 för att trigga en gång vid uppstart',
+  SCHEDULER_HELP_2: 'vid uppstart',
   SCHEDULE: 'schema',
   TIME: 'Tid',
   TIMER: 'Timer',

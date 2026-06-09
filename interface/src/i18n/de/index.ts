@@ -287,7 +287,7 @@ const de: Translation = {
   LEAVE: 'Verlassen',
   SCHEDULER: 'Planer',
   SCHEDULER_HELP_1: 'Fügen Sie eigene geplante Befehle zur Automatisierung hinzu',
-  SCHEDULER_HELP_2: '00:00 aktiviert einmalige Ausführung beim Start.',
+  SCHEDULER_HELP_2: 'beim Start',
   SCHEDULE: 'Zeitplan',
   TIME: 'Zeit',
   TIMER: 'Timer',

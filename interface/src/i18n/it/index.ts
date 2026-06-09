@@ -287,7 +287,7 @@ const it: Translation = {
   LEAVE: 'Esci',
   SCHEDULER: 'Programma eventi',
   SCHEDULER_HELP_1: "Automatizza i comandi aggiungendo gli eventi programmati di seguito",
-  SCHEDULER_HELP_2: "per attivare una volta all'avvio",
+  SCHEDULER_HELP_2: "all'avvio",
   SCHEDULE: 'Programma',
   TIME: 'Ora',
   TIMER: 'Orologio',

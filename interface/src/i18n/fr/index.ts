@@ -287,7 +287,7 @@ const fr: Translation = {
   LEAVE: 'Quitter',
   SCHEDULER: 'Scheduler',
   SCHEDULER_HELP_1: 'Automatiser les commandes en ajoutant des événements programmés ci-dessous',
-  SCHEDULER_HELP_2: 'Utiliser 00:00 pour déclencher une fois au démarrage',
+  SCHEDULER_HELP_2: 'au démarrage',
   SCHEDULE: 'Programme',
   TIME: 'Temps',
   TIMER: 'Minuteur',

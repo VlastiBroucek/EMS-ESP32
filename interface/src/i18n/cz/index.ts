@@ -287,7 +287,7 @@ const cz: Translation = {
   LEAVE: 'Odejít',
   SCHEDULER: 'Plánovač',
   SCHEDULER_HELP_1: 'Automatizujte příkazy přidáním naplánovaných událostí níže',
-  SCHEDULER_HELP_2: 'Použijte 00:00 pro spuštění při startu',
+  SCHEDULER_HELP_2: 'při startu',
   SCHEDULE: 'Harmonogram',
   TIME: 'Čas',
   TIMER: 'Časovač',

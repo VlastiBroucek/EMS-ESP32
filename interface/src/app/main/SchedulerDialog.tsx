@@ -296,7 +296,7 @@ const SchedulerDialog = ({
               />
               {isTimerSchedule && (
                 <Typography sx={{ ml: 2, mt: 4 }} color="warning" variant="body2">
-                  {LL.SCHEDULER_HELP_2()}
+                  00:00 = {LL.SCHEDULER_HELP_2()}
                 </Typography>
               )}
             </>

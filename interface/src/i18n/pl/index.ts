@@ -287,7 +287,7 @@ const pl: BaseTranslation = {
   LEAVE: 'Opuść',
   SCHEDULER: 'Harmonogram',
   SCHEDULER_HELP_1: 'Zautomatyzuj wykonywanie komend, dodając poniżej harmonogram zdarzeń',
-  SCHEDULER_HELP_2: 'Wpisz 00:00 aby wykonywać jednorazowo przy starcie.',
+  SCHEDULER_HELP_2: 'przy starcie',
   SCHEDULE: '{{H|h|}}armonogram{{|u|}}',
   TIME: '{{Czas|Godzina|}}',
   TIMER: '{{m|M|}}inutnik',
