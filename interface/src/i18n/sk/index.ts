@@ -31,8 +31,8 @@ const sk: Translation = {
   ID_OF: '{0} ID',
   DEVICE: 'Zariadenie',
   PRODUCT: 'Produkt',
-  VERSION: 'Verzia',
   BRAND: 'Značka',
+  VERSION: 'Verzia',
   ENTITY_NAME: 'Názov entity',
   VALUE: '{{hodnota|Hodnota}}',
   DEVICES: 'Zariadenia',
@@ -102,8 +102,8 @@ const sk: Translation = {
   PHY_TYPE: 'Eth PHY Typ',
   DISABLED: 'zakázané',
   TX_MODE: 'EMS Tx režim',
-  HARDWARE: 'Hardware',
   EMS_BUS: '{{Bus|EMS Bus}}',
+  HARDWARE: 'Hardware',
   GENERAL_OPTIONS: 'Všeobecné možnosti',
   LANGUAGE_ENTITIES: 'Jazyk (pre entity zariadenia)',
   HIDE_LED: 'Skryť LED',
@@ -367,7 +367,7 @@ const sk: Translation = {
   COMMANDS: 'Príkazy',
   COMMANDS_UPDATED: 'Príkazy aktualizované',
   COMMANDS_HELP_1: 'Definujte vlastné príkazy pre magistrali EMS',
-  EXECUTE_COMMAND_SENT: 'Príkaz bol vykonaný.',
+  EXECUTE_COMMAND_SENT: 'Príkaz odoslaný',
 };
 
 export default sk;

@@ -367,7 +367,7 @@ const pl: BaseTranslation = {
   COMMANDS: 'Komendy',
   COMMANDS_UPDATED: 'Komendy zostały zaktualizowane',
   COMMANDS_HELP_1: 'Zdefiniuj niestandardowe komendy dla magistrali EMS',
-  EXECUTE_COMMAND_SENT: 'Komenda została wysłana.'
+  EXECUTE_COMMAND_SENT: 'Komenda wysłana',
 };
 
 export default pl;

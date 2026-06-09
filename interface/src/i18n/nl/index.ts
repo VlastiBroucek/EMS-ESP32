@@ -31,8 +31,8 @@ const nl: Translation = {
   ID_OF: '{0} ID',
   DEVICE: 'Apparaat',
   PRODUCT: 'Product',
-  VERSION: 'Versie',
   BRAND: 'Merk',
+  VERSION: 'Versie',
   ENTITY_NAME: 'Entiteit',
   VALUE: '{{waarde|Waarde}}',
   DEVICES: 'Apparaten',
@@ -100,10 +100,10 @@ const nl: Translation = {
   BUTTON: 'Toets',
   TEMPERATURE: 'Temperatuur',
   PHY_TYPE: 'Eth PHY Type',
-  TX_MODE: 'EMS Tx Mode',
-  HARDWARE: 'Hardware',
-  EMS_BUS: '{{Bus|EMS Bus}}',
   DISABLED: 'Uitgeschakeld',
+  TX_MODE: 'EMS Tx Mode',
+  EMS_BUS: '{{Bus|EMS Bus}}',
+  HARDWARE: 'Hardware',
   GENERAL_OPTIONS: 'Algemene Opties',
   LANGUAGE_ENTITIES: 'Taal (voor apparaat entiteiten)',
   HIDE_LED: 'Verberg LED',
@@ -367,7 +367,7 @@ const nl: Translation = {
   COMMANDS: 'Commando\'s',
   COMMANDS_UPDATED: 'Commando\'s bijgewerkt',
   COMMANDS_HELP_1: 'Definieer hergebruikbare benoemde commando\'s hieronder. Deze kunnen worden uitgevoerd vanuit de console, API/MQTT, of worden aangeroepen door de Scheduler',
-  EXECUTE_COMMAND_SENT: 'Commando uitgevoerd.',
+  EXECUTE_COMMAND_SENT: 'Commando verzonden',
 };
 
 export default nl;

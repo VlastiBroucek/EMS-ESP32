@@ -31,8 +31,8 @@ const no: Translation = {
   ID_OF: '{0}-ID',
   DEVICE: 'Enhets',
   PRODUCT: 'Produkt',
-  VERSION: 'Versjon',
   BRAND: 'Fabrikat',
+  VERSION: 'Versjon',
   ENTITY_NAME: 'Objektsnavn',
   VALUE: '{{verdi|Verdi}}',
   DEVICES: 'Enheter',
@@ -102,8 +102,8 @@ const no: Translation = {
   PHY_TYPE: 'Eth PHY Type',
   DISABLED: 'avslått',
   TX_MODE: 'EMS Tx Mode',
-  HARDWARE: 'Hardware',
   EMS_BUS: '{{Bus|EMS Bus}}',
+  HARDWARE: 'Hardware',
   GENERAL_OPTIONS: 'Generelle Innstillinger',
   LANGUAGE_ENTITIES: 'Språk (for objekter)',
   HIDE_LED: 'Skjul LED',
@@ -367,7 +367,7 @@ const no: Translation = {
   COMMANDS: 'Kommandoer',
   COMMANDS_UPDATED: 'Kommandoer oppdatert',
   COMMANDS_HELP_1: 'Definer egne kommandoer for EMS-Magistral',
-  EXECUTE_COMMAND_SENT: 'Kommando utført.',
+  EXECUTE_COMMAND_SENT: 'Kommando sendt',
 };
 
 export default no;

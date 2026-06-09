@@ -31,8 +31,8 @@ const sv: Translation = {
   ID_OF: '{0}-ID',
   DEVICE: 'Enhet',
   PRODUCT: 'Produkt',
-  VERSION: 'Version',
   BRAND: 'Fabrikat',
+  VERSION: 'Version',
   ENTITY_NAME: 'Entitetsnamn',
   VALUE: '{{värde|Värde}}',
   DEVICES: 'Enheter',
@@ -102,8 +102,8 @@ const sv: Translation = {
   PHY_TYPE: 'Eth PHY-typ',
   DISABLED: 'inaktiverad',
   TX_MODE: 'EMS Tx-läge',
-  HARDWARE: 'Hårdvara',
   EMS_BUS: '{{Buss|EMS-Buss}}',
+  HARDWARE: 'Hårdvara',
   GENERAL_OPTIONS: 'Allmänna inställningar',
   LANGUAGE_ENTITIES: 'Språk (för entiteter)',
   HIDE_LED: 'Inaktivera LED',
@@ -367,7 +367,7 @@ const sv: Translation = {
   COMMANDS: 'Kommandon',
   COMMANDS_UPDATED: 'Kommandon uppdaterade',
   COMMANDS_HELP_1: 'Definiera egna kommandon för EMS-Magistral',
-  EXECUTE_COMMAND_SENT: 'Kommando utfört.',
+  EXECUTE_COMMAND_SENT: 'Kommando skickat',
 };
 
 export default sv;

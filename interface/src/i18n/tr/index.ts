@@ -31,8 +31,8 @@ const tr: Translation = {
   ID_OF: 'Kimlik {0}',
   DEVICE: 'Cihaz',
   PRODUCT: 'Ürün',
-  VERSION: 'Sürüm',
   BRAND: 'Marka',
+  VERSION: 'Sürüm',
   ENTITY_NAME: 'Valık Adı',
   VALUE: '{{değer|Değer}}',
   DEVICES: 'Cihazlar',
@@ -102,8 +102,8 @@ const tr: Translation = {
   PHY_TYPE: 'Eth PHY Tipi',
   DISABLED: 'devre dışı',
   TX_MODE: 'EMS Tx Modu',
-  HARDWARE: 'Donanım',
   EMS_BUS: '{{Hat|EMS Hatti}}',
+  HARDWARE: 'Donanım',
   GENERAL_OPTIONS: 'Genel Seçenekler',
   LANGUAGE_ENTITIES: 'Dil (cihaz varlıkları için)',
   HIDE_LED: 'LEDi kapa',
@@ -367,7 +367,7 @@ const tr: Translation = {
   COMMANDS: 'Komutlar',
   COMMANDS_UPDATED: 'Komutlar güncellendi',
   COMMANDS_HELP_1: 'Özel komutları EMS hattına tanımlayın',
-  EXECUTE_COMMAND_SENT: 'Komut başarıyla çalıştırıldı.',
+  EXECUTE_COMMAND_SENT: 'Komut gönderildi',
 };
 
 export default tr;

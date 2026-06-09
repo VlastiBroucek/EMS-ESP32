@@ -31,8 +31,8 @@ const de: Translation = {
   ID_OF: '{0}-ID',
   DEVICE: 'Geräte',
   PRODUCT: 'Produkt',
-  VERSION: 'Version',
   BRAND: 'Marke',
+  VERSION: 'Version',
   ENTITY_NAME: 'Entitätsname',
   VALUE: '{{wert|Wert}}',
   DEVICES: 'Geräte',
@@ -102,8 +102,8 @@ const de: Translation = {
   PHY_TYPE: 'Eth PHY Typ',
   DISABLED: 'deaktiviert',
   TX_MODE: 'EMS Tx-Modus',
-  HARDWARE: 'Hardware',
   EMS_BUS: '{{Bus|EMS Bus}}',
+  HARDWARE: 'Hardware',
   GENERAL_OPTIONS: 'Allgemeine Optionen',
   LANGUAGE_ENTITIES: 'Sprache (für Geräteentitäten)',
   HIDE_LED: 'LED ausblenden',
@@ -367,7 +367,7 @@ const de: Translation = {
   COMMANDS: 'Befehle',
   COMMANDS_UPDATED: 'Befehle wurden aktualisiert',
   COMMANDS_HELP_1: 'Definieren Sie eigene Befehle für die EMS-Magistral',
-  EXECUTE_COMMAND_SENT: 'Befehl wurde ausgeführt.',
+  EXECUTE_COMMAND_SENT: 'Befehl gesendet',
 };
 
 export default de;
