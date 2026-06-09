@@ -4243,6 +4243,14 @@ let emsesp_schedule = {
       time: 'boiler/outdoortemp',
       cmd_name: 'heatingcurve',
       name: 'heatingcurve'
+    },
+    {
+      id: 7,
+      active: true,
+      flags: ScheduleFlag.SCHEDULE_TIMER,
+      time: '',
+      cmd_name: 'send_message',
+      name: 'on_boot'
     }
   ]
 };
