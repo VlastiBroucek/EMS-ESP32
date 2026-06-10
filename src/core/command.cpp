@@ -443,16 +443,13 @@ uint8_t Command::call(const uint8_t device_type, const char * command, const cha
     // call the function based on command function type
     // commands return true or false only (bool)
     uint8_t return_code = CommandRet::OK;
-    if (cf->cmdfunction_json_) {
-        // handle commands that report back a JSON body
-        return_code = ((cf->cmdfunction_json_)(value, id, output)) ? CommandRet::OK : CommandRet::ERROR;
-    } else if (cf->cmdfunction_) {
-        // if it's a read only command and we're trying to set a value, return an error
-        if (!single_command && EMSESP::cmd_is_readonly(device_type, device_id, cmd, id)) {
+    if (cf->cmdfunction_) {
+        // JSON-output commands bypass the readonly check; for the rest, reject a write to a read-only entity
+        if (!cf->has_json_output_ && !single_command && EMSESP::cmd_is_readonly(device_type, device_id, cmd, id)) {
             return_code = CommandRet::INVALID; // error on readonly or invalid hc
         } else {
-            // call the command...
-            return_code = ((cf->cmdfunction_)(value, id)) ? CommandRet::OK : CommandRet::ERROR;
+            // call the command (the output object is ignored by non-JSON commands)
+            return_code = ((cf->cmdfunction_)(value, id, output)) ? CommandRet::OK : CommandRet::ERROR;
         }
     }
 
@@ -506,7 +503,7 @@ void Command::add(const uint8_t device_type, const uint8_t device_id, const char
         flags |= CommandFlag::HIDDEN;
     }
 
-    cmdfunctions_.emplace_back(device_type, device_id, flags, cmd, cb, nullptr, description); // callback for json is nullptr
+    cmdfunctions_.emplace_back(device_type, device_id, flags, false, cmd, cb, description); // not a json-output command
 }
 
 // add a command with no json output
@@ -516,13 +513,14 @@ void Command::add(const uint8_t device_type, const char * cmd, const cmd_functio
 }
 
 // add a command to the list, which does return a json object as output
-void Command::add(const uint8_t device_type, const char * cmd, const cmd_json_function_p cb, const char * const * description, uint8_t flags) {
+// these commands bypass the readonly check (they are actions, not entity setters)
+void Command::add_json(const uint8_t device_type, const char * cmd, const cmd_function_p cb, const char * const * description, uint8_t flags) {
     // if the command already exists for that device type don't add it
     if (find_command(device_type, 0, cmd, flags) != nullptr) {
         return;
     }
 
-    cmdfunctions_.emplace_back(device_type, 0, flags, cmd, nullptr, cb, description); // callback for json is included
+    cmdfunctions_.emplace_back(device_type, 0, flags, true, cmd, cb, description); // json-output command
 }
 
 // see if a command exists for that device type

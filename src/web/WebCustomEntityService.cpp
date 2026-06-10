@@ -145,8 +145,8 @@ StateUpdateResult WebCustomEntity::update(JsonObject root, WebCustomEntity & web
                 Command::add(
                     EMSdevice::DeviceType::CUSTOM,
                     webCustomEntity.customEntityItems.back().name,
-                    [webCustomEntity](const char * value, const int8_t id) {
-                        return EMSESP::webCustomEntityService.command_setvalue(value, id, webCustomEntity.customEntityItems.back().name);
+                    [name = std::string(webCustomEntity.customEntityItems.back().name)](const char * value, const int8_t id, JsonObject output) {
+                        return EMSESP::webCustomEntityService.command_setvalue(value, id, name.c_str());
                     },
                     FL_(entity_cmd),
                     CommandFlag::ADMIN_ONLY);
@@ -796,8 +796,8 @@ void WebCustomEntityService::load_test_data() {
         Command::add(
             EMSdevice::DeviceType::CUSTOM,
             webCustomEntity.customEntityItems.back().name,
-            [webCustomEntity](const char * value, const int8_t id) {
-                return EMSESP::webCustomEntityService.command_setvalue(value, id, webCustomEntity.customEntityItems.back().name);
+            [name = std::string(webCustomEntity.customEntityItems.back().name)](const char * value, const int8_t id, JsonObject output) {
+                return EMSESP::webCustomEntityService.command_setvalue(value, id, name.c_str());
             },
             FL_(entity_cmd),
             CommandFlag::ADMIN_ONLY);
@@ -832,8 +832,8 @@ void WebCustomEntityService::load_test_data() {
         Command::add(
             EMSdevice::DeviceType::CUSTOM,
             webCustomEntity.customEntityItems.back().name,
-            [webCustomEntity](const char * value, const int8_t id) {
-                return EMSESP::webCustomEntityService.command_setvalue(value, id, webCustomEntity.customEntityItems.back().name);
+            [name = std::string(webCustomEntity.customEntityItems.back().name)](const char * value, const int8_t id, JsonObject output) {
+                return EMSESP::webCustomEntityService.command_setvalue(value, id, name.c_str());
             },
             FL_(entity_cmd),
             CommandFlag::ADMIN_ONLY);
@@ -855,8 +855,8 @@ void WebCustomEntityService::load_test_data() {
         Command::add(
             EMSdevice::DeviceType::CUSTOM,
             webCustomEntity.customEntityItems.back().name,
-            [webCustomEntity](const char * value, const int8_t id) {
-                return EMSESP::webCustomEntityService.command_setvalue(value, id, webCustomEntity.customEntityItems.back().name);
+            [name = std::string(webCustomEntity.customEntityItems.back().name)](const char * value, const int8_t id, JsonObject output) {
+                return EMSESP::webCustomEntityService.command_setvalue(value, id, name.c_str());
             },
             FL_(entity_cmd),
             CommandFlag::ADMIN_ONLY);

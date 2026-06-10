@@ -102,7 +102,7 @@ void AnalogSensor::start(const bool factory_settings) {
     Command::add(
         EMSdevice::DeviceType::ANALOGSENSOR,
         F_(setvalue),
-        [&](const char * value, const int8_t id) { return command_setvalue(value, id); },
+        [&](const char * value, const int8_t id, JsonObject output) { return command_setvalue(value, id); },
         FL_(setiovalue_cmd),
         CommandFlag::ADMIN_ONLY);
 
@@ -195,7 +195,7 @@ void AnalogSensor::reload(bool get_nvs) {
                 Command::add(
                     EMSdevice::DeviceType::ANALOGSENSOR,
                     sensor.name,
-                    [&](const char * value, const int8_t id) { return command_setvalue(value, sensor.gpio); },
+                    [&](const char * value, const int8_t id, JsonObject output) { return command_setvalue(value, sensor.gpio); },
                     sensor.type == AnalogType::COUNTER || (sensor.type >= AnalogType::CNT_0 && sensor.type <= AnalogType::CNT_2) ? FL_(counter)
                     : sensor.type == AnalogType::DIGITAL_OUT                                                                     ? FL_(digital_out)
                     : sensor.type == AnalogType::RGB                                                                             ? FL_(RGB)

@@ -98,7 +98,9 @@ class Module {}; // forward declaration
         return +[](emsesp::EMSdevice * dev, const std::shared_ptr<const Telegram> & t) { static_cast<SelfT *>(dev)->__f(t); };                                 \
     }())
 
-#define MAKE_CF_CB(__f) [&](const char * value, const int8_t id) { return __f(value, id); } // for Command Function callbacks Command::cmd_function_p
+// for Command Function callbacks (Command::cmd_function_p). The unified callback takes a JsonObject
+// output which entity/setter commands ignore.
+#define MAKE_CF_CB(__f) [&](const char * value, const int8_t id, JsonObject output) { return __f(value, id); }
 
 namespace emsesp {
 

@@ -197,7 +197,7 @@ StateUpdateResult WebCommands::update(JsonObject root, WebCommands & webCommands
         Command::add(
             EMSdevice::DeviceType::COMMAND,
             webCommands.commandItems.back().name,
-            [name = std::string(webCommands.commandItems.back().name)](const char * value, const int8_t id) {
+            [name = std::string(webCommands.commandItems.back().name)](const char * value, const int8_t id, JsonObject output) {
                 return EMSESP::webCommandService.dispatchCommand(name.c_str(), value); // value is optional
             },
             FL_(command_cmd),
@@ -442,7 +442,7 @@ void WebCommandService::load_test_data() {
                 Command::add(
                     EMSdevice::DeviceType::COMMAND,
                     item.name,
-                    [name = std::string(item.name)](const char * value, const int8_t id) {
+                    [name = std::string(item.name)](const char * value, const int8_t id, JsonObject output) {
                         return EMSESP::webCommandService.dispatchCommand(name.c_str(), value);
                     },
                     FL_(command_cmd),

@@ -33,7 +33,7 @@ void Shower::start() {
         shower_min_duration_   = settings.shower_min_duration;       // in seconds
     });
 
-    Command::add(
+    Command::add_json(
         EMSdevice::DeviceType::BOILER,
         F_(coldshot),
         [&](const char * value, const int8_t id, JsonObject output) {
