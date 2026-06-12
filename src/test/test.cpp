@@ -2113,6 +2113,101 @@ void Test::run_test(uuid::console::Shell & shell, const std::string & cmd, const
         ok = true;
     }
 
+    if (command == "version") {
+        shell.printfln("Testing version upgrade and downgrade detection...");
+
+        // mirrors System::check_upgrade(): settings = version stored in settings file, current = running firmware
+        struct VersionTest {
+            const char * settings;
+            const char * current;
+            const char * expected; // "upgrade", "downgrade" or "same"
+        };
+
+        const VersionTest tests[] = {
+            // identical versions
+            {"3.9.0", "3.9.0", "same"},
+            {"3.9.0-dev.12", "3.9.0-dev.12", "same"},
+
+            // numeric upgrades (patch, minor, major)
+            {"3.9.0", "3.9.1", "upgrade"},
+            {"3.8.5", "3.9.0", "upgrade"},
+            {"2.10.9", "3.0.0", "upgrade"},
+
+            // numeric downgrades
+            {"3.9.1", "3.9.0", "downgrade"},
+            {"3.9.0", "3.8.5", "downgrade"},
+            {"3.0.0", "2.10.9", "downgrade"},
+
+            // prerelease (dev) sequences on the same base version
+            {"3.9.0-dev.12", "3.9.0-dev.13", "upgrade"},
+            {"3.9.0-dev.13", "3.9.0-dev.12", "downgrade"},
+            {"3.9.0-dev.9", "3.9.0-dev.12", "upgrade"}, // single vs double digit dev number
+            {"3.9.0-dev.8", "3.9.0-dev.12", "upgrade"}, // regression: was reported as a downgrade
+
+            // prerelease vs release on the same base version (semver: prerelease < release)
+            {"3.9.0-dev.12", "3.9.0", "upgrade"},
+            {"3.9.0", "3.9.0-dev.12", "downgrade"},
+
+            // prerelease vs a different base version
+            {"3.9.0-dev.12", "3.9.1", "upgrade"},
+            {"3.9.1", "3.9.0-dev.12", "downgrade"},
+            {"3.8.5", "3.9.0-dev.12", "upgrade"},
+
+            // mixed prerelease tags
+            {"3.5.0-b13", "3.9.0-dev.12", "upgrade"},
+
+            // partial version strings are shorter than 5 chars, so check_upgrade() treats them as missing (3.5.0)
+            {"3.9", "3.9.0", "upgrade"},
+            {"3.9", "3.9.1", "upgrade"},
+
+            // build metadata after '+' is ignored
+            {"3.9.0+abc123", "3.9.0", "same"},
+
+            // numeric prerelease identifiers compare numerically, so leading zeros are equivalent
+            {"3.9.0-dev.01", "3.9.0-dev.1", "same"},
+            {"3.9.0-dev.012", "3.9.0-dev.12", "same"},
+
+            // missing/short version: check_upgrade() assumes 3.5.0
+            {"", "3.9.0", "upgrade"},
+            {"1.0", "3.9.0", "upgrade"},
+        };
+
+        uint8_t failed = 0;
+        for (const auto & test : tests) {
+            // replicate check_upgrade()'s handling of a missing version
+            std::string settingsVersion = test.settings;
+            if (settingsVersion.length() < 5) {
+                settingsVersion = "3.5.0";
+            }
+
+            FirmwareVersion settings_version(settingsVersion);
+            FirmwareVersion this_version(test.current);
+
+            const char * actual;
+            if (this_version > settings_version) {
+                actual = "upgrade";
+            } else if (this_version < settings_version) {
+                actual = "downgrade";
+            } else {
+                actual = "same";
+            }
+
+            bool pass = (strcmp(actual, test.expected) == 0);
+            if (!pass) {
+                failed++;
+            }
+            shell.printfln("%s %-14s -> %-14s expected %-9s got %-9s", pass ? "PASS" : "FAIL", test.settings, test.current, test.expected, actual);
+        }
+
+        if (failed) {
+            shell.printfln("%d test(s) FAILED", failed);
+        } else {
+            shell.printfln("All version tests passed");
+        }
+
+        ok = true;
+    }
+
     if (command == "mqtt2") {
         shell.printfln("Testing MQTT large payloads...");
 
