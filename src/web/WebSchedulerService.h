@@ -24,28 +24,14 @@
 #define EMSESP_SCHEDULER_FILE "/config/emsespScheduler.json"
 #define EMSESP_SCHEDULER_SERVICE_PATH "/rest/schedule" // GET and POST
 
-#ifndef EMSESP_SCHEDULER_RUNNING_CORE
-#define EMSESP_SCHEDULER_RUNNING_CORE 1
-#endif
-
-#ifndef EMSESP_SCHEDULER_STACKSIZE
-#define EMSESP_SCHEDULER_STACKSIZE 5120
-#endif
-
-#ifndef EMSESP_SCHEDULER_PRIORITY
-#define EMSESP_SCHEDULER_PRIORITY 1
-#endif
-
 // bit flags for the schedule items. Matches those in interface/src/app/main/SchedulerDialog.tsx
 // 0-127 (0->0x7F) is day schedule
 // 128 (0x80) is timer
 // 129 (0x81) is on change
 // 130 (0x82) is on condition
-// 132 (0x84) is immediate
 #define SCHEDULEFLAG_SCHEDULE_TIMER 0x80     // 7th bit for Timer
 #define SCHEDULEFLAG_SCHEDULE_ONCHANGE 0x81  // 7th+1st bit for OnChange
 #define SCHEDULEFLAG_SCHEDULE_CONDITION 0x82 // 7th+2nd bit for Condition
-#define SCHEDULEFLAG_SCHEDULE_IMMEDIATE 0x84 // 7th+3rd bit for Immediate
 
 #define MAX_STARTUP_RETRIES 3 // retry the start-up commands x times
 
@@ -53,12 +39,11 @@ namespace emsesp {
 
 class ScheduleItem {
   public:
-    boolean     active;
+    boolean     active;      // on or off
     uint8_t     flags;       // bit flags, see SCHEDULEFLAG_* defines
     uint16_t    elapsed_min; // total mins from 00:00
     stringPSRAM time;        // HH:MM
-    stringPSRAM cmd;
-    stringPSRAM value;
+    stringPSRAM cmd_name;    // references a named command from WebCommandService
     char        name[20];
     uint8_t     retry_cnt;
 };
@@ -88,8 +73,6 @@ class WebSchedulerService : public StatefulService<WebScheduler> {
     uint8_t count_entities();
     bool    onChange(const char * cmd);
 
-    bool executeSchedule(const char * name);
-
     std::string get_metrics_prometheus();
 
     std::string raw_value;
@@ -103,9 +86,7 @@ class WebSchedulerService : public StatefulService<WebScheduler> {
 #ifndef EMSESP_STANDALONE
   private:
 #endif
-    static void scheduler_task(void * pvParameters);
-
-    bool command(const char * name, const std::string & cmd, const std::string & data);
+    bool runScheduleCommand(const ScheduleItem & si);
     void condition();
 
     HttpEndpoint<WebScheduler>  _httpEndpoint;

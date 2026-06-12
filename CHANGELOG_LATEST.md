@@ -8,6 +8,7 @@ For more details go to [emsesp.org](https://emsesp.org/).
 
 - user-requested LED blink [#3063](https://github.com/emsesp/EMS-ESP32/issues/3063)
 - KM300 at address 0x4A [#3084](https://github.com/emsesp/EMS-ESP32/issues/3084)
+- Commands Service that can be called via MQTT or API or used in the Scheduler Service
 
 ## Fixed
 

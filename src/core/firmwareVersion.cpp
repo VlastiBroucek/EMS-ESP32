@@ -19,6 +19,7 @@
 #include "firmwareVersion.h"
 
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 
 namespace emsesp {
@@ -47,6 +48,66 @@ const std::string & FirmwareVersion::prerelease() const {
     return prerelease_;
 }
 
+// semver prerelease ordering: a release (empty tag) ranks higher than any prerelease,
+// and dot-separated numeric identifiers are compared numerically (so dev.9 < dev.12).
+// returns <0, 0 or >0
+static int compare_prerelease(const std::string & a, const std::string & b) {
+    if (a == b) {
+        return 0;
+    }
+    if (a.empty()) {
+        return 1; // release > prerelease
+    }
+    if (b.empty()) {
+        return -1;
+    }
+
+    size_t ia = 0;
+    size_t ib = 0;
+    while (ia < a.size() && ib < b.size()) {
+        size_t ea = a.find('.', ia);
+        size_t eb = b.find('.', ib);
+        if (ea == std::string::npos) {
+            ea = a.size();
+        }
+        if (eb == std::string::npos) {
+            eb = b.size();
+        }
+        std::string id_a = a.substr(ia, ea - ia);
+        std::string id_b = b.substr(ib, eb - ib);
+
+        bool num_a = !id_a.empty() && id_a.find_first_not_of("0123456789") == std::string::npos;
+        bool num_b = !id_b.empty() && id_b.find_first_not_of("0123456789") == std::string::npos;
+
+        if (num_a && num_b) {
+            long va = atol(id_a.c_str());
+            long vb = atol(id_b.c_str());
+            if (va != vb) {
+                return (va < vb) ? -1 : 1;
+            }
+        } else if (num_a != num_b) {
+            return num_a ? -1 : 1; // numeric identifiers rank lower than alphanumeric ones
+        } else {
+            int cmp = id_a.compare(id_b);
+            if (cmp != 0) {
+                return (cmp < 0) ? -1 : 1;
+            }
+        }
+
+        ia = ea + 1;
+        ib = eb + 1;
+    }
+
+    // all shared identifiers are equal; the one with more identifiers ranks higher
+    if (ia < a.size()) {
+        return 1;
+    }
+    if (ib < b.size()) {
+        return -1;
+    }
+    return 0;
+}
+
 bool operator<(const FirmwareVersion & a, const FirmwareVersion & b) {
     if (a.major_ != b.major_)
         return a.major_ < b.major_;
@@ -54,7 +115,7 @@ bool operator<(const FirmwareVersion & a, const FirmwareVersion & b) {
         return a.minor_ < b.minor_;
     if (a.patch_ != b.patch_)
         return a.patch_ < b.patch_;
-    return a.prerelease_ < b.prerelease_;
+    return compare_prerelease(a.prerelease_, b.prerelease_) < 0;
 }
 
 bool operator>(const FirmwareVersion & a, const FirmwareVersion & b) {
@@ -62,7 +123,7 @@ bool operator>(const FirmwareVersion & a, const FirmwareVersion & b) {
 }
 
 bool operator==(const FirmwareVersion & a, const FirmwareVersion & b) {
-    return a.major_ == b.major_ && a.minor_ == b.minor_ && a.patch_ == b.patch_ && a.prerelease_ == b.prerelease_;
+    return a.major_ == b.major_ && a.minor_ == b.minor_ && a.patch_ == b.patch_ && compare_prerelease(a.prerelease_, b.prerelease_) == 0;
 }
 
 bool operator!=(const FirmwareVersion & a, const FirmwareVersion & b) {

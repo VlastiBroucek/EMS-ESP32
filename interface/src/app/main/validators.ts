@@ -4,6 +4,7 @@ import { IP_OR_HOSTNAME_VALIDATOR } from 'validators/shared';
 
 import type {
   AnalogSensor,
+  CommandItem,
   DeviceValue,
   EntityItem,
   ScheduleItem,
@@ -236,6 +237,24 @@ export const schedulerItemValidation = (
       { required: true, message: 'Name is required' },
       NAME_PATTERN_REQUIRED,
       uniqueNameValidator(schedule, scheduleItem.o_name)
+    ],
+    cmd_name: [{ required: true, message: 'Command is required' }]
+  });
+
+export const uniqueCommandNameValidator = (
+  commands: CommandItem[],
+  o_name?: string
+) => createUniqueNameValidator(commands, o_name);
+
+export const commandItemValidation = (
+  commands: CommandItem[],
+  commandItem: CommandItem
+) =>
+  new Schema({
+    name: [
+      { required: true, message: 'Name is required' },
+      NAME_PATTERN_REQUIRED,
+      uniqueCommandNameValidator(commands, commandItem.o_name)
     ],
     cmd: [
       { required: true, message: 'Command is required' },

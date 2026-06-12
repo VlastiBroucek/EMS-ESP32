@@ -489,7 +489,7 @@ void TemperatureSensor::publish_values(const bool force) {
                 publish_sensor(sensor);
             }
             return;
-        } else if (!EMSESP::mqtt_.get_publish_onchange(0)) {
+        } else if (!EMSESP::mqtt_.get_publish_onchange(EMSdevice::DeviceType::SYSTEM)) {
             return; // wait for first time period
         }
     }

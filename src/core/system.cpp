@@ -990,22 +990,24 @@ void System::system_check() {
 // commands - takes static function pointers
 // can be called via Console using 'call system <cmd>'
 void System::commands_init() {
-    Command::add(EMSdevice::DeviceType::SYSTEM, F_(read), System::command_read, FL_(read_cmd), CommandFlag::ADMIN_ONLY);
-    Command::add(EMSdevice::DeviceType::SYSTEM, F_(send), System::command_send, FL_(send_cmd), CommandFlag::ADMIN_ONLY);
-    Command::add(EMSdevice::DeviceType::SYSTEM, F_(fetch), System::command_fetch, FL_(fetch_cmd), CommandFlag::ADMIN_ONLY);
-    Command::add(EMSdevice::DeviceType::SYSTEM, F_(sendmail), System::command_sendmail, FL_(sendmail_cmd), CommandFlag::ADMIN_ONLY);
-    Command::add(EMSdevice::DeviceType::SYSTEM, F_(restart), System::command_restart, FL_(restart_cmd), CommandFlag::ADMIN_ONLY);
-    Command::add(EMSdevice::DeviceType::SYSTEM, F_(format), System::command_format, FL_(format_cmd), CommandFlag::ADMIN_ONLY);
-    Command::add(EMSdevice::DeviceType::SYSTEM, F_(txpause), System::command_txpause, FL_(txpause_cmd), CommandFlag::ADMIN_ONLY);
-    Command::add(EMSdevice::DeviceType::SYSTEM, F_(led), System::command_led, FL_(led_cmd), CommandFlag::ADMIN_ONLY);
-    Command::add(EMSdevice::DeviceType::SYSTEM, F_(watch), System::command_watch, FL_(watch_cmd));
-    Command::add(EMSdevice::DeviceType::SYSTEM, F_(message), System::command_message, FL_(message_cmd));
+    // Command::reserve(200);
+
+    Command::add(EMSdevice::DeviceType::SYSTEM, F_(read), MAKE_CF_CB(System::command_read), FL_(read_cmd), CommandFlag::ADMIN_ONLY);
+    Command::add(EMSdevice::DeviceType::SYSTEM, F_(send), MAKE_CF_CB(System::command_send), FL_(send_cmd), CommandFlag::ADMIN_ONLY);
+    Command::add(EMSdevice::DeviceType::SYSTEM, F_(fetch), MAKE_CF_CB(System::command_fetch), FL_(fetch_cmd), CommandFlag::ADMIN_ONLY);
+    Command::add(EMSdevice::DeviceType::SYSTEM, F_(sendmail), MAKE_CF_CB(System::command_sendmail), FL_(sendmail_cmd), CommandFlag::ADMIN_ONLY);
+    Command::add(EMSdevice::DeviceType::SYSTEM, F_(restart), MAKE_CF_CB(System::command_restart), FL_(restart_cmd), CommandFlag::ADMIN_ONLY);
+    Command::add(EMSdevice::DeviceType::SYSTEM, F_(format), MAKE_CF_CB(System::command_format), FL_(format_cmd), CommandFlag::ADMIN_ONLY);
+    Command::add(EMSdevice::DeviceType::SYSTEM, F_(txpause), MAKE_CF_CB(System::command_txpause), FL_(txpause_cmd), CommandFlag::ADMIN_ONLY);
+    Command::add(EMSdevice::DeviceType::SYSTEM, F_(led), MAKE_CF_CB(System::command_led), FL_(led_cmd), CommandFlag::ADMIN_ONLY);
+    Command::add(EMSdevice::DeviceType::SYSTEM, F_(watch), MAKE_CF_CB(System::command_watch), FL_(watch_cmd));
+    Command::add_json(EMSdevice::DeviceType::SYSTEM, F_(message), System::command_message, FL_(message_cmd));
 #if defined(EMSESP_TEST)
-    Command::add(EMSdevice::DeviceType::SYSTEM, ("test"), System::command_test, FL_(test_cmd));
+    Command::add(EMSdevice::DeviceType::SYSTEM, ("test"), MAKE_CF_CB(System::command_test), FL_(test_cmd));
 #endif
 
     // these commands will return data in JSON format
-    Command::add(EMSdevice::DeviceType::SYSTEM, F("response"), System::command_response, FL_(commands_response));
+    Command::add_json(EMSdevice::DeviceType::SYSTEM, F("response"), System::command_response, FL_(commands_response));
 
     // MQTT subscribe "ems-esp/system/#"
     Mqtt::subscribe(EMSdevice::DeviceType::SYSTEM, "system/#", nullptr); // use empty function callback
@@ -1511,7 +1513,20 @@ bool System::check_upgrade() {
             EMSESP::network_.reconnect();
         }
 
-        // changes going to v3.9 from an earlier version
+        // capture the raw Scheduler file now, before any upgrade step below rewrites it in the new format.
+        // it's needed further down to migrate the pre-v3.9.0-dev.12 inline command format into the Commands Service
+#ifndef EMSESP_STANDALONE
+        JsonDocument oldScheduleDoc(PSRAM_DOC);
+        {
+            File schedulerFile = LittleFS.open(EMSESP_SCHEDULER_FILE);
+            if (schedulerFile) {
+                deserializeJson(oldScheduleDoc, schedulerFile);
+                schedulerFile.close();
+            }
+        }
+#endif
+
+        // changes going to v3.9 from an 3.8.x or earlier
         if (settings_version.major() == 3 && settings_version.minor() < 9) {
 #ifndef EMSESP_STANDALONE
             // AP_MODE_ALWAYS has been removed
@@ -1523,7 +1538,7 @@ bool System::check_upgrade() {
                 }
                 return StateUpdateResult::UNCHANGED;
             });
-            // Scheduler name is now mandatory, update FS
+            // Scheduler name is now mandatory, update FS if name is empty
             uint8_t i                = 0;
             bool    schedule_changed = false;
             EMSESP::webSchedulerService.update([&](WebScheduler & scheduler) {
@@ -1537,6 +1552,80 @@ bool System::check_upgrade() {
             });
 #endif
         }
+
+        // Core3 3.9.0-dev.12 implements the new Commands Service.
+        // versions before that stored the command (cmd) and value inline within each Scheduler entry
+#ifndef EMSESP_STANDALONE
+        {
+            JsonArray oldScheduleItems = oldScheduleDoc["schedule"].as<JsonArray>();
+
+            // only migrate if at least one entry still uses the old inline format (has "cmd" but no "cmd_name")
+            bool old_format = false;
+            for (JsonObject item : oldScheduleItems) {
+                if (!item["cmd"].isNull() && item["cmd_name"].isNull()) {
+                    old_format = true;
+                    break;
+                }
+            }
+
+            if (old_format) {
+                LOG_INFO("Upgrade: Migrating %d Scheduler entries to the new Commands Service", (int)oldScheduleItems.size());
+
+                // create a Command for each Scheduler entry, reusing the entry's name (generating one if empty)
+                EMSESP::webCommandService.update([&](WebCommands & commands) {
+                    commands.commandItems.clear();
+                    uint8_t idx = 0;
+                    for (JsonObject item : oldScheduleItems) {
+                        auto ci         = CommandItem();
+                        ci.cmd          = item["cmd"].as<std::string>();
+                        ci.value        = item["value"].as<std::string>();
+                        const char * nm = item["name"];
+                        // name could still be empty
+                        if (nm != nullptr && nm[0] != '\0') {
+                            strlcpy(ci.name, nm, sizeof(ci.name));
+                        } else {
+                            snprintf(ci.name, sizeof(ci.name), "schedule_%d", idx);
+                        }
+                        commands.commandItems.push_back(ci);
+                        idx++;
+                    }
+                    return StateUpdateResult::CHANGED;
+                });
+
+                // point each Scheduler entry at its new Command via cmd_name
+                EMSESP::webSchedulerService.update([&](WebScheduler & scheduler) {
+                    uint8_t idx = 0;
+                    auto    it  = scheduler.scheduleItems.begin();
+                    for (JsonObject item : oldScheduleItems) {
+                        if (it == scheduler.scheduleItems.end()) {
+                            break;
+                        }
+                        // flag 132 (0x84) is the old IMMEDIATE format which has no command - erase the entry
+                        if (item["flags"].as<uint8_t>() == 0x84) {
+                            it = scheduler.scheduleItems.erase(it);
+                            idx++;
+                            continue;
+                        }
+                        const char * nm = item["name"];
+                        char         cmd_name[sizeof(it->name)];
+                        if (nm != nullptr && nm[0] != '\0') {
+                            strlcpy(cmd_name, nm, sizeof(cmd_name));
+                        } else {
+                            snprintf(cmd_name, sizeof(cmd_name), "schedule_%d", idx);
+                            strlcpy(it->name, cmd_name, sizeof(it->name)); // keep entry name consistent with its command
+                        }
+                        it->cmd_name = cmd_name;
+                        ++it;
+                        idx++;
+                    }
+                    return StateUpdateResult::CHANGED;
+                });
+
+                // reboot so both services reload cleanly in the new format and re-register their commands
+                reboot_required = true;
+            }
+        }
+#endif
 
         // changes to application settings
         EMSESP::webSettingsService.update([&](WebSettings & settings) {
@@ -1592,6 +1681,7 @@ static const std::pair<const char *, const char *> SECTION_MAP[] = {
     {NTP_SETTINGS_FILE, "NTP"},
     {SECURITY_SETTINGS_FILE, "Security"},
     {EMSESP_SETTINGS_FILE, "Settings"},
+    {EMSESP_COMMANDS_FILE, "Commands"},
     {EMSESP_SCHEDULER_FILE, "Schedule"},
     {EMSESP_CUSTOMIZATION_FILE, "Customizations"},
     {EMSESP_CUSTOMENTITY_FILE, "Entities"},
@@ -1667,6 +1757,8 @@ void System::exportSystemBackup(JsonObject output) {
     exportSettings("settings", SECURITY_SETTINGS_FILE, node);
     exportSettings("settings", EMSESP_SETTINGS_FILE, node);
 
+    node = nodes.add<JsonObject>();
+    exportSettings("commands", EMSESP_COMMANDS_FILE, node);
     node = nodes.add<JsonObject>();
     exportSettings("schedule", EMSESP_SCHEDULER_FILE, node);
     node = nodes.add<JsonObject>();
@@ -2609,6 +2701,12 @@ bool System::command_info(const char * value, const int8_t id, JsonObject output
         obj["type"]     = F_(scheduler);
         obj["name"]     = F_(scheduler);
         obj["entities"] = EMSESP::webSchedulerService.count_entities();
+    }
+    if (EMSESP::webCommandService.count_entities()) {
+        JsonObject obj  = devices.add<JsonObject>();
+        obj["type"]     = F_(commands);
+        obj["name"]     = F_(commands);
+        obj["entities"] = EMSESP::webCommandService.count_entities();
     }
     if (EMSESP::webCustomEntityService.count_entities()) {
         JsonObject obj  = devices.add<JsonObject>();

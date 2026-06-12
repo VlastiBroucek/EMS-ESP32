@@ -37,7 +37,6 @@ class FirmwareVersion {
     int                 patch() const;
     const std::string & prerelease() const;
 
-    // Numeric-only comparison (major.minor.patch). Prerelease tags are ignored on purpose.
     friend bool operator<(const FirmwareVersion & a, const FirmwareVersion & b);
     friend bool operator>(const FirmwareVersion & a, const FirmwareVersion & b);
     friend bool operator==(const FirmwareVersion & a, const FirmwareVersion & b);

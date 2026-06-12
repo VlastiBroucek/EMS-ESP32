@@ -378,7 +378,12 @@ uint8_t Command::call(const uint8_t device_type, const char * command, const cha
         if (!strcmp(cmd, F_(commands))) {
             return Command::list(device_type, output);
         }
-        if (EMSESP::get_device_value_info(output, cmd, id, device_type)) { // entity = cmd
+        // for the Commands device, calling a named command executes it (using its stored value)
+        // rather than returning its definition, so skip the value-info lookup and fall through
+        // to the registered command function. The list keywords above are still handled.
+        bool is_named_command = (device_type == EMSdevice::DeviceType::COMMAND) && strcmp(cmd, F_(info)) && strcmp(cmd, F_(values))
+                                && strcmp(cmd, F_(entities)) && strcmp(cmd, F_(metrics));
+        if (!is_named_command && EMSESP::get_device_value_info(output, cmd, id, device_type)) { // entity = cmd
             LOG_DEBUG("Fetched device entity/attributes for %s/%s (id=%d)", dname, cmd, id);
             return CommandRet::OK;
         }
@@ -438,16 +443,13 @@ uint8_t Command::call(const uint8_t device_type, const char * command, const cha
     // call the function based on command function type
     // commands return true or false only (bool)
     uint8_t return_code = CommandRet::OK;
-    if (cf->cmdfunction_json_) {
-        // handle commands that report back a JSON body
-        return_code = ((cf->cmdfunction_json_)(value, id, output)) ? CommandRet::OK : CommandRet::ERROR;
-    } else if (cf->cmdfunction_) {
-        // if it's a read only command and we're trying to set a value, return an error
-        if (!single_command && EMSESP::cmd_is_readonly(device_type, device_id, cmd, id)) {
+    if (cf->cmdfunction_) {
+        // JSON-output commands bypass the readonly check; for the rest, reject a write to a read-only entity
+        if (!cf->has_json_output_ && !single_command && EMSESP::cmd_is_readonly(device_type, device_id, cmd, id)) {
             return_code = CommandRet::INVALID; // error on readonly or invalid hc
         } else {
-            // call the command...
-            return_code = ((cf->cmdfunction_)(value, id)) ? CommandRet::OK : CommandRet::ERROR;
+            // call the command (the output object is ignored by non-JSON commands)
+            return_code = ((cf->cmdfunction_)(value, id, output)) ? CommandRet::OK : CommandRet::ERROR;
         }
     }
 
@@ -501,7 +503,7 @@ void Command::add(const uint8_t device_type, const uint8_t device_id, const char
         flags |= CommandFlag::HIDDEN;
     }
 
-    cmdfunctions_.emplace_back(device_type, device_id, flags, cmd, cb, nullptr, description); // callback for json is nullptr
+    cmdfunctions_.emplace_back(device_type, device_id, flags, false, cmd, cb, description); // not a json-output command
 }
 
 // add a command with no json output
@@ -511,13 +513,14 @@ void Command::add(const uint8_t device_type, const char * cmd, const cmd_functio
 }
 
 // add a command to the list, which does return a json object as output
-void Command::add(const uint8_t device_type, const char * cmd, const cmd_json_function_p cb, const char * const * description, uint8_t flags) {
+// these commands bypass the readonly check (they are actions, not entity setters)
+void Command::add_json(const uint8_t device_type, const char * cmd, const cmd_function_p cb, const char * const * description, uint8_t flags) {
     // if the command already exists for that device type don't add it
     if (find_command(device_type, 0, cmd, flags) != nullptr) {
         return;
     }
 
-    cmdfunctions_.emplace_back(device_type, 0, flags, cmd, nullptr, cb, description); // callback for json is included
+    cmdfunctions_.emplace_back(device_type, 0, flags, true, cmd, cb, description); // json-output command
 }
 
 // see if a command exists for that device type
@@ -716,6 +719,10 @@ bool Command::device_has_commands(const uint8_t device_type) {
         return true;
     }
 
+    if (device_type == EMSdevice::DeviceType::COMMAND) {
+        return true;
+    }
+
     if (device_type == EMSdevice::DeviceType::CUSTOM) {
         return true;
     }
@@ -741,6 +748,7 @@ bool Command::device_has_commands(const uint8_t device_type) {
 void Command::show_devices(uuid::console::Shell & shell) {
     shell.printf("%s ", EMSdevice::device_type_2_device_name(EMSdevice::DeviceType::SYSTEM));
     shell.printf("%s ", EMSdevice::device_type_2_device_name(EMSdevice::DeviceType::CUSTOM));
+    shell.printf("%s ", EMSdevice::device_type_2_device_name(EMSdevice::DeviceType::COMMAND));
     shell.printf("%s ", EMSdevice::device_type_2_device_name(EMSdevice::DeviceType::SCHEDULER));
     if (EMSESP::sensor_enabled()) {
         shell.printf("%s ", EMSdevice::device_type_2_device_name(EMSdevice::DeviceType::TEMPERATURESENSOR));
@@ -779,6 +787,7 @@ void Command::show_all(uuid::console::Shell & shell) {
     // show system ones first
     show(shell, EMSdevice::DeviceType::SYSTEM, true);
     show(shell, EMSdevice::DeviceType::CUSTOM, true);
+    show(shell, EMSdevice::DeviceType::COMMAND, true);
     show(shell, EMSdevice::DeviceType::SCHEDULER, true);
 
     // then sensors

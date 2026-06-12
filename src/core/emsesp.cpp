@@ -51,21 +51,19 @@ uint32_t          EMSESP::last_fetch_       = 0;
 AsyncWebServer webServer(80);
 
 #if defined(EMSESP_STANDALONE)
-FS                      dummyFS;
-ESP32React              EMSESP::esp32React(&webServer, &dummyFS);
-WebSettingsService      EMSESP::webSettingsService      = WebSettingsService(&webServer, &dummyFS, EMSESP::esp32React.getSecurityManager());
-WebCustomizationService EMSESP::webCustomizationService = WebCustomizationService(&webServer, &dummyFS, EMSESP::esp32React.getSecurityManager());
-WebSchedulerService     EMSESP::webSchedulerService     = WebSchedulerService(&webServer, &dummyFS, EMSESP::esp32React.getSecurityManager());
-WebCustomEntityService  EMSESP::webCustomEntityService  = WebCustomEntityService(&webServer, &dummyFS, EMSESP::esp32React.getSecurityManager());
-WebModulesService       EMSESP::webModulesService       = WebModulesService(&webServer, &dummyFS, EMSESP::esp32React.getSecurityManager());
+FS     dummyFS;
+auto & fsRef = dummyFS;
 #else
-ESP32React              EMSESP::esp32React(&webServer, &LittleFS);
-WebSettingsService      EMSESP::webSettingsService      = WebSettingsService(&webServer, &LittleFS, EMSESP::esp32React.getSecurityManager());
-WebCustomizationService EMSESP::webCustomizationService = WebCustomizationService(&webServer, &LittleFS, EMSESP::esp32React.getSecurityManager());
-WebSchedulerService     EMSESP::webSchedulerService     = WebSchedulerService(&webServer, &LittleFS, EMSESP::esp32React.getSecurityManager());
-WebCustomEntityService  EMSESP::webCustomEntityService  = WebCustomEntityService(&webServer, &LittleFS, EMSESP::esp32React.getSecurityManager());
-WebModulesService       EMSESP::webModulesService       = WebModulesService(&webServer, &LittleFS, EMSESP::esp32React.getSecurityManager());
+auto & fsRef = LittleFS;
 #endif
+
+ESP32React              EMSESP::esp32React(&webServer, &fsRef);
+WebSettingsService      EMSESP::webSettingsService      = WebSettingsService(&webServer, &fsRef, EMSESP::esp32React.getSecurityManager());
+WebCustomizationService EMSESP::webCustomizationService = WebCustomizationService(&webServer, &fsRef, EMSESP::esp32React.getSecurityManager());
+WebSchedulerService     EMSESP::webSchedulerService     = WebSchedulerService(&webServer, &fsRef, EMSESP::esp32React.getSecurityManager());
+WebCommandService       EMSESP::webCommandService       = WebCommandService(&webServer, &fsRef, EMSESP::esp32React.getSecurityManager());
+WebCustomEntityService  EMSESP::webCustomEntityService  = WebCustomEntityService(&webServer, &fsRef, EMSESP::esp32React.getSecurityManager());
+WebModulesService       EMSESP::webModulesService       = WebModulesService(&webServer, &fsRef, EMSESP::esp32React.getSecurityManager());
 
 WebActivityService EMSESP::webActivityService = WebActivityService(&webServer, EMSESP::esp32React.getSecurityManager());
 WebStatusService   EMSESP::webStatusService   = WebStatusService(&webServer, EMSESP::esp32React.getSecurityManager());
@@ -682,6 +680,7 @@ void EMSESP::publish_other_values() {
     // publish_device_values(EMSdevice::DeviceType::GENERIC);
 
     webSchedulerService.publish();
+    webCommandService.publish();
     webCustomEntityService.publish();
 }
 
@@ -786,6 +785,11 @@ bool EMSESP::get_device_value_info(JsonObject root, const char * cmd, const int8
     // scheduler
     if (devicetype == DeviceType::SCHEDULER) {
         return webSchedulerService.get_value_info(root, cmd);
+    }
+
+    // commands
+    if (devicetype == DeviceType::COMMAND) {
+        return webCommandService.get_value_info(root, cmd);
     }
 
     // custom entities
@@ -915,7 +919,6 @@ std::string EMSESP::pretty_telegram(const std::shared_ptr<const Telegram> & tele
         }
     }
 
-    // Optimized: Use stack buffer and build string once to avoid multiple temporary allocations
     char buf[250];
     if (telegram->operation == Telegram::Operation::RX_READ) {
         auto pos = snprintf(buf,
@@ -1128,7 +1131,7 @@ bool EMSESP::process_telegram(const std::shared_ptr<const Telegram> & telegram) 
         wait_validate_ = 0;
     }
 
-    // Check for custom entities reding this telegram
+    // check for custom entities reding this telegram
     webCustomEntityService.get_value(telegram);
 
     // check for common types, like the Version(0x02)
@@ -1179,6 +1182,7 @@ bool EMSESP::process_telegram(const std::shared_ptr<const Telegram> & telegram) 
             }
         }
     }
+
     // handle unknown telegrams
     if (!telegram_found) {
         // mark nonempty telegrams as ignored
@@ -1760,6 +1764,7 @@ void EMSESP::start() {
     // start the core web services, as this loads the settings from the filesystem
     // this will also handle any MQTT subscriptions
     webCustomizationService.begin(); // load the customizations
+    webCommandService.begin();       // load the user commands
     webSchedulerService.begin();     // load the scheduler events
     webCustomEntityService.begin();  // load the custom telegram reads
 
@@ -1853,9 +1858,7 @@ void EMSESP::loop() {
         publish_all_loop();         // with HA messages in parts to avoid flooding the MQTT queue
         mqtt_.loop();               // sends out anything in the MQTT queue
         webModulesService.loop();   // loop through the external library modules
-        if (system_.PSram() == 0) { // run non-async if there is no PSRAM available
-            webSchedulerService.loop();
-        }
+        webSchedulerService.loop(); // scheduler timing logic; command execution is offloaded to WebCommandService's worker task
         scheduled_fetch_values(); // force a query on the EMS devices to fetch latest data at a set interval (1 min)
     }
     // check for GPIO Errors - this is called once when booting

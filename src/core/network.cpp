@@ -82,7 +82,7 @@ void Network::begin() {
     WiFi.persistent(false);
     WiFi.setAutoReconnect(false);
     WiFi.mode(WIFI_STA);
-    WiFi.disconnect(true, true); // wipe old settings in NVS
+    WiFi.disconnect(true, true); // wipe old settings in NVS. Will give a warning on boot but can be ignored.
     WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN);
     WiFi.setHostname(hostname_.c_str());     // updates shared default_hostname buffer
     WiFi.enableSTA(true);                    // creates the STA netif
@@ -308,7 +308,11 @@ void Network::checkConnection() {
         network_ip_    = 0;
         has_ipv6_      = false;
         connect_retry_ = 0;
-        if (network_iface_ == NetIface::ETHERNET) {
+        // reset the active interface so findNetworks() treats the next link-up (even on the
+        // same interface) as a new connection and re-runs the setup, including startmDNS()
+        const NetIface lost_iface = network_iface_;
+        network_iface_            = NetIface::NONE;
+        if (lost_iface == NetIface::ETHERNET) {
             LOG_WARNING("Ethernet connection lost");
             return;
         }

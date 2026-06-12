@@ -1,6 +1,7 @@
 import { memo, useContext } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
 
+import Commands from 'app/main/Commands';
 import CustomEntities from 'app/main/CustomEntities';
 import Customizations from 'app/main/Customizations';
 import Dashboard from 'app/main/Dashboard';
@@ -65,6 +66,7 @@ const AuthenticatedRouting = memo(() => {
             <Route path="/settings/security/*" element={<Security />} />
 
             <Route path="/customizations" element={<Customizations />} />
+            <Route path="/commands" element={<Commands />} />
             <Route path="/scheduler" element={<Scheduler />} />
             <Route path="/customentities" element={<CustomEntities />} />
           </>

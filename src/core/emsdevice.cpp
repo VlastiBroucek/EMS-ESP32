@@ -145,6 +145,8 @@ const char * EMSdevice::device_type_2_device_name(const uint8_t device_type) {
         return F_(scheduler);
     case DeviceType::CUSTOM:
         return F_(custom);
+    case DeviceType::COMMAND:
+        return F_(commands);
     case DeviceType::BOILER:
         return F_(boiler);
     case DeviceType::THERMOSTAT:
@@ -296,6 +298,9 @@ uint8_t EMSdevice::device_name_2_device_type(const char * topic) {
     }
     if (!strcmp(lowtopic, F_(scheduler))) {
         return DeviceType::SCHEDULER;
+    }
+    if (!strcmp(lowtopic, F_(commands))) {
+        return DeviceType::COMMAND;
     }
     if (!strcmp(lowtopic, F_(system))) {
         return DeviceType::SYSTEM;

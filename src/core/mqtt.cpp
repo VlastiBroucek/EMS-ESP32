@@ -378,7 +378,7 @@ void Mqtt::start() {
     initialized_ = true;
 
     // add the 'publish' command ('call system publish' in console or via API)
-    Command::add(EMSdevice::DeviceType::SYSTEM, F_(publish), System::command_publish, FL_(publish_cmd));
+    Command::add(EMSdevice::DeviceType::SYSTEM, F_(publish), MAKE_CF_CB(System::command_publish), FL_(publish_cmd));
 
 #if defined(EMSESP_STANDALONE)
     Mqtt::on_connect(); // simulate an MQTT connection
@@ -510,6 +510,7 @@ void Mqtt::on_connect() {
     // send initial MQTT messages for some of our services
     EMSESP::system_.send_heartbeat(); // send heartbeat
     EMSESP::webCustomEntityService.publish(true);
+    EMSESP::webCommandService.publish(true);
     EMSESP::webSchedulerService.publish(true);
     EMSESP::analogsensor_.publish_values(true);
     EMSESP::temperaturesensor_.publish_values(true);

@@ -180,6 +180,8 @@ const Dashboard = memo(() => {
           return LL.ANALOG_SENSORS();
         case DeviceType.TEMPERATURESENSOR:
           return LL.TEMP_SENSORS();
+        case DeviceType.COMMAND:
+          return LL.COMMANDS();
         case DeviceType.SCHEDULER:
           return LL.SCHEDULER();
         default:

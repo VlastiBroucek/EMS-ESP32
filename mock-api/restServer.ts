@@ -241,8 +241,7 @@ const enum ScheduleFlag {
   SCHEDULE_DAY = 0,
   SCHEDULE_TIMER = 128,
   SCHEDULE_ONCHANGE = 129,
-  SCHEDULE_CONDITION = 130,
-  SCHEDULE_IMMEDIATE = 132
+  SCHEDULE_CONDITION = 130
 }
 
 const enum DeviceType {
@@ -251,6 +250,7 @@ const enum DeviceType {
   ANALOGSENSOR,
   SCHEDULER,
   CUSTOM,
+  COMMAND,
   BOILER,
   THERMOSTAT,
   MIXER,
@@ -271,6 +271,7 @@ const enum DeviceType {
 }
 
 const enum DeviceTypeUniqueID {
+  COMMAND_UID = 95,
   SCHEDULER_UID = 96,
   ANALOGSENSOR_UID = 97,
   TEMPERATURESENSOR_UID = 98,
@@ -374,6 +375,8 @@ function export_data(type: string) {
       return emsesp_customentities;
     case 'schedule':
       return emsesp_schedule;
+    case 'commands':
+      return emsesp_commands;
     case 'modules':
       return emsesp_modules;
     case 'allvalues':
@@ -409,9 +412,9 @@ function custom_support() {
   };
 }
 
-// run a schedule
-function executeSchedule(name: string) {
-  console.log('executing schedule', name);
+// run a command
+function executeCommand(name: string) {
+  console.log('executing command', name);
   return status(200);
 }
 
@@ -751,6 +754,7 @@ const EMSESP_RESET_CUSTOMIZATIONS_ENDPOINT =
   REST_ENDPOINT_ROOT + 'resetCustomizations';
 
 const EMSESP_SCHEDULE_ENDPOINT = REST_ENDPOINT_ROOT + 'schedule';
+const EMSESP_COMMANDS_ENDPOINT = REST_ENDPOINT_ROOT + 'commands';
 const EMSESP_CUSTOMENTITIES_ENDPOINT = REST_ENDPOINT_ROOT + 'customEntities';
 const EMSESP_MODULES_ENDPOINT = REST_ENDPOINT_ROOT + 'modules';
 const EMSESP_ACTION_ENDPOINT = REST_ENDPOINT_ROOT + 'action';
@@ -4147,6 +4151,48 @@ let emsesp_customentities = {
   ]
 };
 
+// COMMANDS
+let emsesp_commands = {
+  commands: [
+    {
+      id: 1,
+      cmd: 'hc1/mode',
+      value: 'day',
+      name: 'set_day_mode'
+    },
+    {
+      id: 2,
+      cmd: 'hc1/mode',
+      value: 'night',
+      name: 'set_night_mode'
+    },
+    {
+      id: 3,
+      cmd: 'thermostat/hc2/seltemp',
+      value: '20',
+      name: 'set_temp_20'
+    },
+    {
+      id: 4,
+      cmd: 'system/restart',
+      value: '',
+      name: 'restart_system'
+    },
+    {
+      id: 5,
+      cmd: 'boiler/selflowtemp',
+      value: '(custom/setpoint - boiler/outdoortemp) * 2.8 + 3',
+      name: 'heatingcurve'
+    },
+    {
+      id: 6,
+      cmd: 'system/message',
+      value: '"hello world"',
+      name: 'send_message'
+    }
+  ]
+};
+
 // SCHEDULE
 let emsesp_schedule = {
   schedule: [
@@ -4155,8 +4201,7 @@ let emsesp_schedule = {
       active: true,
       flags: 6,
       time: '07:30',
-      cmd: 'hc1/mode',
-      value: 'day',
+      cmd_name: 'set_day_mode',
       name: 'day_mode'
     },
     {
@@ -4164,8 +4209,7 @@ let emsesp_schedule = {
       active: true,
       flags: 31,
       time: '23:00',
-      cmd: 'hc1/mode',
-      value: 'night',
+      cmd_name: 'set_night_mode',
       name: 'night_mode'
     },
     {
@@ -4173,8 +4217,7 @@ let emsesp_schedule = {
       active: true,
       flags: 10,
       time: '00:00',
-      cmd: 'thermostat/hc2/seltemp',
-      value: '20',
+      cmd_name: 'set_temp_20',
       name: 'temp_20'
     },
     {
@@ -4182,8 +4225,7 @@ let emsesp_schedule = {
       active: false,
       flags: ScheduleFlag.SCHEDULE_TIMER,
       time: '04:00',
-      cmd: 'system/restart',
-      value: '',
+      cmd_name: 'restart_system',
       name: 'auto_restart'
     },
     {
@@ -4191,8 +4233,7 @@ let emsesp_schedule = {
       active: false,
       flags: ScheduleFlag.SCHEDULE_CONDITION,
       time: 'system/network info/rssi < -70',
-      cmd: 'system/restart',
-      value: '',
+      cmd_name: 'restart_system',
       name: 'bad_wifi'
     },
     {
@@ -4200,18 +4241,16 @@ let emsesp_schedule = {
       active: false,
       flags: ScheduleFlag.SCHEDULE_ONCHANGE,
       time: 'boiler/outdoortemp',
-      cmd: 'boiler/selflowtemp',
-      value: '(custom/setpoint - boiler/outdoortemp) * 2.8 + 3',
+      cmd_name: 'heatingcurve',
       name: 'heatingcurve'
     },
     {
       id: 7,
-      active: false,
-      flags: ScheduleFlag.SCHEDULE_IMMEDIATE,
+      active: true,
+      flags: ScheduleFlag.SCHEDULE_TIMER,
       time: '',
-      cmd: 'system/message',
-      value: '"hello world"',
-      name: 'send_message'
+      cmd_name: 'send_message',
+      name: 'on_boot'
     }
   ]
 };
@@ -4765,26 +4804,43 @@ router
       }
 
       // add the scheduler data
-      // filter emsesp_schedule with only if it has a name and create data in one pass
-      const namedSchedules = emsesp_schedule.schedule.filter((item) => item.name);
+      const namedSchedules = emsesp_schedule.schedule.filter(
+        (item: any) => item.name
+      );
       if (namedSchedules.length > 0) {
-        const scheduler_data = namedSchedules.map((item, index) => ({
+        const scheduler_data = namedSchedules.map((item: any, index: number) => ({
           id: DeviceTypeUniqueID.SCHEDULER_UID * 100 + index,
           dv: {
             id: '00' + item.name,
             c: item.name,
-            ...(item.flags === ScheduleFlag.SCHEDULE_IMMEDIATE
-              ? {}
-              : {
-                  v: item.active ? 'on' : 'off',
-                  l: ['off', 'on']
-                })
+            v: item.active ? 'on' : 'off',
+            l: ['off', 'on']
           }
         }));
         dashboard_object = {
           id: DeviceTypeUniqueID.SCHEDULER_UID,
           t: DeviceType.SCHEDULER,
           nodes: scheduler_data
+        };
+        dashboard_nodes.push(dashboard_object);
+      }
+
+      // add the command items (executable from dashboard)
+      const namedCommands = emsesp_commands.commands.filter(
+        (item: any) => item.name
+      );
+      if (namedCommands.length > 0) {
+        const command_data = namedCommands.map((item: any, index: number) => ({
+          id: DeviceTypeUniqueID.COMMAND_UID * 100 + index,
+          dv: {
+            id: '00' + item.name,
+            c: item.name
+          }
+        }));
+        dashboard_object = {
+          id: DeviceTypeUniqueID.COMMAND_UID,
+          t: DeviceType.COMMAND,
+          nodes: command_data
         };
         dashboard_nodes.push(dashboard_object);
       }
@@ -4876,6 +4932,15 @@ router
     console.log('Renaming device ID ' + id + ' to ' + content.name);
     return status(200);
   })
+
+  // Commands
+  .post(EMSESP_COMMANDS_ENDPOINT, async (request: any) => {
+    const content = await request.json();
+    emsesp_commands = content;
+    console.log('commands saved', emsesp_commands);
+    return status(200);
+  })
+  .get(EMSESP_COMMANDS_ENDPOINT, () => emsesp_commands)
 
   // Scheduler
   .post(EMSESP_SCHEDULE_ENDPOINT, async (request: any) => {
@@ -4977,14 +5042,16 @@ router
     }
     if (id === DeviceTypeUniqueID.SCHEDULER_UID) {
       // toggle scheduler
-      // find the schedule in emsesp_schedule via the name and toggle the active
       const objIndex = emsesp_schedule.schedule.findIndex(
-        (obj) => obj.name === command
+        (obj: any) => obj.name === command
       );
       if (objIndex !== -1) {
         emsesp_schedule.schedule[objIndex].active = value;
         console.log("Toggle schedule '" + command + "' to " + value);
       }
+    }
+    if (id === DeviceTypeUniqueID.COMMAND_UID) {
+      console.log("Execute command '" + command + "'");
     }
 
     // await delay(1000); // wait to show spinner
@@ -5246,9 +5313,9 @@ router
       } else if (action === 'upgradeImportantMessages') {
         // check upgrade important messages
         return upgradeImportantMessages(content.param);
-      } else if (action === 'executeSchedule') {
-        // execute schedule
-        return executeSchedule(content.param);
+      } else if (action === 'executeCommand') {
+        // execute command
+        return executeCommand(content.param);
       }
     }
     return status(404); // cmd not found

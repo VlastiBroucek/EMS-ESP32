@@ -145,8 +145,8 @@ StateUpdateResult WebCustomEntity::update(JsonObject root, WebCustomEntity & web
                 Command::add(
                     EMSdevice::DeviceType::CUSTOM,
                     webCustomEntity.customEntityItems.back().name,
-                    [webCustomEntity](const char * value, const int8_t id) {
-                        return EMSESP::webCustomEntityService.command_setvalue(value, id, webCustomEntity.customEntityItems.back().name);
+                    [name = std::string(webCustomEntity.customEntityItems.back().name)](const char * value, const int8_t id, JsonObject output) {
+                        return EMSESP::webCustomEntityService.command_setvalue(value, id, name.c_str());
                     },
                     FL_(entity_cmd),
                     CommandFlag::ADMIN_ONLY);
@@ -234,7 +234,7 @@ bool WebCustomEntityService::command_setvalue(const char * value, const int8_t i
             }
 
             publish_single(entityItem);
-            if (EMSESP::mqtt_.get_publish_onchange(0)) {
+            if (EMSESP::mqtt_.get_publish_onchange(EMSdevice::DeviceType::SYSTEM)) {
                 publish();
             }
             char cmd[COMMAND_MAX_LENGTH];
@@ -415,13 +415,13 @@ std::string WebCustomEntityService::get_metrics_prometheus() {
 
 // build the json for specific entity
 void WebCustomEntityService::get_value_json(JsonObject output, CustomEntityItem const & entity) {
-    output["name"]      = (const char *)entity.name;
-    output["fullname"]  = (const char *)entity.name;
-    output["storage"]   = entity.ram == 1 ? "ram" : entity.ram == 2 ? "nvs" : "ems";
-    output["type"]      = entity.value_type == DeviceValueType::BOOL ? "boolean" : entity.value_type == DeviceValueType::STRING ? "string" : F_(number);
-    output["readable"]  = true;
+    output["name"]     = (const char *)entity.name;
+    output["fullname"] = (const char *)entity.name;
+    output["storage"]  = entity.ram == 1 ? "ram" : entity.ram == 2 ? "nvs" : "ems";
+    output["type"]     = entity.value_type == DeviceValueType::BOOL ? "boolean" : entity.value_type == DeviceValueType::STRING ? "string" : F_(number);
+    // output["readable"]  = true;
     output["writeable"] = entity.writeable;
-    output["visible"]   = true;
+    // output["visible"]   = true;
 
     if (entity.ram == 0) {
         output["device_id"] = Helpers::hextoa(entity.device_id);
@@ -470,7 +470,7 @@ void WebCustomEntityService::publish(const bool force) {
                 publish_single(entityItem);
             }
             return;
-        } else if (!EMSESP::mqtt_.get_publish_onchange(0)) {
+        } else if (!EMSESP::mqtt_.get_publish_onchange(EMSdevice::DeviceType::SYSTEM)) {
             return; // wait for first time period
         }
     }
@@ -729,7 +729,7 @@ bool WebCustomEntityService::get_value(const std::shared_ptr<const Telegram> & t
                     entity.data = data.c_str();
                     if (Mqtt::publish_single()) {
                         publish_single(entity);
-                    } else if (EMSESP::mqtt_.get_publish_onchange(0)) {
+                    } else if (EMSESP::mqtt_.get_publish_onchange(EMSdevice::DeviceType::SYSTEM)) {
                         has_change = true;
                     }
                     char cmd[COMMAND_MAX_LENGTH];
@@ -751,7 +751,7 @@ bool WebCustomEntityService::get_value(const std::shared_ptr<const Telegram> & t
                 entity.value = value;
                 if (Mqtt::publish_single()) {
                     publish_single(entity);
-                } else if (EMSESP::mqtt_.get_publish_onchange(0)) {
+                } else if (EMSESP::mqtt_.get_publish_onchange(EMSdevice::DeviceType::SYSTEM)) {
                     has_change = true;
                 }
                 char cmd[COMMAND_MAX_LENGTH];
@@ -796,8 +796,8 @@ void WebCustomEntityService::load_test_data() {
         Command::add(
             EMSdevice::DeviceType::CUSTOM,
             webCustomEntity.customEntityItems.back().name,
-            [webCustomEntity](const char * value, const int8_t id) {
-                return EMSESP::webCustomEntityService.command_setvalue(value, id, webCustomEntity.customEntityItems.back().name);
+            [name = std::string(webCustomEntity.customEntityItems.back().name)](const char * value, const int8_t id, JsonObject output) {
+                return EMSESP::webCustomEntityService.command_setvalue(value, id, name.c_str());
             },
             FL_(entity_cmd),
             CommandFlag::ADMIN_ONLY);
@@ -832,8 +832,8 @@ void WebCustomEntityService::load_test_data() {
         Command::add(
             EMSdevice::DeviceType::CUSTOM,
             webCustomEntity.customEntityItems.back().name,
-            [webCustomEntity](const char * value, const int8_t id) {
-                return EMSESP::webCustomEntityService.command_setvalue(value, id, webCustomEntity.customEntityItems.back().name);
+            [name = std::string(webCustomEntity.customEntityItems.back().name)](const char * value, const int8_t id, JsonObject output) {
+                return EMSESP::webCustomEntityService.command_setvalue(value, id, name.c_str());
             },
             FL_(entity_cmd),
             CommandFlag::ADMIN_ONLY);
@@ -855,8 +855,8 @@ void WebCustomEntityService::load_test_data() {
         Command::add(
             EMSdevice::DeviceType::CUSTOM,
             webCustomEntity.customEntityItems.back().name,
-            [webCustomEntity](const char * value, const int8_t id) {
-                return EMSESP::webCustomEntityService.command_setvalue(value, id, webCustomEntity.customEntityItems.back().name);
+            [name = std::string(webCustomEntity.customEntityItems.back().name)](const char * value, const int8_t id, JsonObject output) {
+                return EMSESP::webCustomEntityService.command_setvalue(value, id, name.c_str());
             },
             FL_(entity_cmd),
             CommandFlag::ADMIN_ONLY);

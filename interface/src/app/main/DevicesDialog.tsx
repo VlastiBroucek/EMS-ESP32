@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import CancelIcon from '@mui/icons-material/Cancel';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import WarningIcon from '@mui/icons-material/Warning';
 import {
   Box,
@@ -64,12 +65,12 @@ const DevicesDialog = ({
     }
   }, [open, selectedItem]);
 
-  const { send: executeSchedule } = useRequest(
-    (id: string) => callAction({ action: 'executeSchedule', param: id }),
+  const { send: executeCommand } = useRequest(
+    (id: string) => callAction({ action: 'executeCommand', param: id }),
     { immediate: false }
   )
     .onSuccess(() => {
-      toast.success(LL.EXECUTE_SCHEDULE_SENT());
+      toast.success(LL.EXECUTE_COMMAND_SENT());
     })
     .onError((error) => {
       toast.error(String(error.error?.message || 'An error occurred'));
@@ -79,7 +80,7 @@ const DevicesDialog = ({
     try {
       setFieldErrors(undefined);
       if (editItem.v === undefined && editItem.c !== undefined) {
-        await executeSchedule(editItem.c);
+        await executeCommand(editItem.c);
       } else {
         await validate(validator, editItem);
       }
@@ -226,10 +227,12 @@ const DevicesDialog = ({
               {LL.CANCEL()}
             </Button>
             <Button
-              startIcon={<WarningIcon color="warning" />}
+              startIcon={
+                isCommand ? <PlayArrowIcon /> : <WarningIcon color="warning" />
+              }
               variant="outlined"
               onClick={doAction}
-              color="primary"
+              color={isCommand ? 'success' : 'primary'}
             >
               {buttonLabel}
             </Button>
