@@ -32,6 +32,7 @@
 #include <map>
 
 #include "firmwareVersion.h"
+#include "shuntingYard.h" // for compute() used by the message and sendmail commands
 
 #if defined(EMSESP_TEST)
 #include "../test/test.h"
@@ -194,15 +195,11 @@ bool System::command_sendmail(const char * value, const int8_t id) {
     // msg.headers.addCustom("Importance", PRIORITY);
     // msg.headers.addCustom("X-MSMail-Priority", PRIORITY);
     // msg.headers.addCustom("X-Priority", PRIORITY_NUM);
-    EMSESP::webSchedulerService.computed_value.clear();
-    EMSESP::webSchedulerService.raw_value = body.c_str();
-    for (uint16_t wait = 0; wait < 2000 && !EMSESP::webSchedulerService.raw_value.empty(); wait++) {
-        delay(1);
-    }
-    if (!EMSESP::webSchedulerService.computed_value.empty()) {
-        body = EMSESP::webSchedulerService.computed_value.c_str();
-        EMSESP::webSchedulerService.computed_value.clear();
-        EMSESP::webSchedulerService.computed_value.shrink_to_fit(); // free allocated memory
+    // run the body through the Shunting Yard calculator (entity substitution, expressions, optional {url} fetch)
+    // keep the original body if the calculator returns nothing
+    std::string computed_body = compute(body.c_str());
+    if (!computed_body.empty()) {
+        body = computed_body.c_str();
     }
     msg.text.body(body);
 
@@ -344,22 +341,16 @@ bool System::command_message(const char * value, const int8_t id, JsonObject out
         return false; // must have a string value
     }
 
-    EMSESP::webSchedulerService.computed_value.clear();
-    EMSESP::webSchedulerService.raw_value = value;
-    for (uint16_t wait = 0; wait < 2000 && !EMSESP::webSchedulerService.raw_value.empty(); wait++) {
-        delay(1);
-    }
-
-    if (EMSESP::webSchedulerService.computed_value.empty()) {
+    // process the message via the Shunting Yard calculator (entity substitution, expressions, optional {url} fetch)
+    std::string computed_value = compute(value);
+    if (computed_value.empty()) {
         LOG_WARNING("Message result is empty");
         return false;
     }
 
-    LOG_INFO("Message: %s", EMSESP::webSchedulerService.computed_value.c_str());  // send to log
-    Mqtt::queue_publish(F_(message), EMSESP::webSchedulerService.computed_value); // send to MQTT if enabled
-    output["api_data"] = EMSESP::webSchedulerService.computed_value;              // send to API
-    EMSESP::webSchedulerService.computed_value.clear();
-    EMSESP::webSchedulerService.computed_value.shrink_to_fit();
+    LOG_INFO("Message: %s", computed_value.c_str());  // send to log
+    Mqtt::queue_publish(F_(message), computed_value); // send to MQTT if enabled
+    output["api_data"] = computed_value;              // send to API
     return true;
 }
 
@@ -1284,6 +1275,9 @@ bool System::check_restore() {
                         }
                         // continue processing the rest of the sections
                         saveSettings(EMSESP_SETTINGS_FILE, section);
+                    }
+                    if (section_type == "commands") {
+                        saveSettings(EMSESP_COMMANDS_FILE, section);
                     }
                     if (section_type == "schedule") {
                         saveSettings(EMSESP_SCHEDULER_FILE, section);

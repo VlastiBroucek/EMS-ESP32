@@ -491,8 +491,8 @@ void WebCustomizationService::load_test_data() {
                 // find the device value and set the mask and custom name to match the above fake data
                 for (auto & dv : emsdevice->devicevalues_) {
                     if (strcmp(dv.short_name, "heatingactive") == 0) {
-                        dv.state           = DeviceValueState::DV_FAVORITE; // set as favorite
-                        dv.custom_fullname = "is my heating on?";
+                        dv.state = DeviceValueState::DV_FAVORITE; // set as favorite
+                        dv.set_custom_fullname("is my heating on?");
                     } else if (strcmp(dv.short_name, "tapwateractive") == 0) {
                         dv.state = DeviceValueState::DV_FAVORITE; // set as favorite
                     } else if (strcmp(dv.short_name, "selflowtemp") == 0) {
