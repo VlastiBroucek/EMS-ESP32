@@ -559,6 +559,7 @@ void EMSdevice::show_mqtt_handlers(uuid::console::Shell & shell) const {
 // register a callback function for a specific telegram type
 void EMSdevice::register_telegram_type(const uint16_t telegram_type_id, const char * telegram_type_name, bool fetch, const process_function_p f, uint8_t length) {
     telegram_functions_.emplace_back(telegram_type_id, telegram_type_name, fetch, false, length, f);
+    EMSESP::mark_entities_changed();
 }
 
 // add to device value library, also know now as a "device entity"
@@ -675,6 +676,7 @@ void EMSdevice::add_device_value(int8_t                tag,              // to b
     // add the device entity
     devicevalues_.emplace_back(
         device_type_, tag, value_p, type, options, options_single, numeric_operator, short_name, fullname, custom_fullname, uom, has_cmd, min, max, state);
+    EMSESP::mark_entities_changed();
 
     // add a new command if it has a function attached
     if (has_cmd) {
@@ -1281,9 +1283,9 @@ void EMSdevice::setCustomizationEntity(const std::string & entity_id) {
 
             // set the custom name if it has one, or clear it
             if (has_custom_name) {
-                dv.custom_fullname = entity_id.substr(custom_name_pos + 1);
+                dv.set_custom_fullname(entity_id.substr(custom_name_pos + 1));
             } else {
-                dv.custom_fullname = "";
+                dv.set_custom_fullname("");
             }
 
             auto min = dv.min;
@@ -1322,11 +1324,11 @@ void EMSdevice::getCustomizationEntities(std::vector<std::string> & entity_ids) 
                 break;
             }
         }
-        if (!is_set && (mask || !dv.custom_fullname.empty())) {
-            if (dv.custom_fullname.empty()) {
+        if (!is_set && (mask || dv.has_custom_fullname())) {
+            if (!dv.has_custom_fullname()) {
                 entity_ids.push_back(Helpers::hextoa(mask, false) + entity_name);
             } else {
-                entity_ids.push_back(Helpers::hextoa(mask, false) + entity_name + "|" + dv.custom_fullname);
+                entity_ids.push_back(Helpers::hextoa(mask, false) + entity_name + "|" + dv.custom_fullname());
             }
         }
     }

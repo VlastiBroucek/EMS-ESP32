@@ -550,6 +550,12 @@ class EMSdevice {
         telegram_functions_.reserve(elements);
     }
 
+    // release any reserved-but-unused capacity once the entity/telegram set has settled
+    void compact() {
+        devicevalues_.shrink_to_fit();
+        telegram_functions_.shrink_to_fit();
+    }
+
 #if defined(EMSESP_STANDALONE)
     struct TelegramFunctionDump {
         uint16_t     type_id_;

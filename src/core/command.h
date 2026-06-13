@@ -123,6 +123,11 @@ class Command {
         cmdfunctions_.reserve(num);
     }
 
+    // release any reserved-but-unused capacity once commands have settled
+    static void compact() {
+        cmdfunctions_.shrink_to_fit();
+    }
+
     static void                   show_all(uuid::console::Shell & shell);
     static Command::CmdFunction * find_command(const uint8_t device_type, const uint8_t device_id, const char * cmd, const uint8_t flag);
     static std::string            tagged_cmd(const std::string & cmd, const uint8_t flag);

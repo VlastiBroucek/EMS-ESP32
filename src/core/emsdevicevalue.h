@@ -23,6 +23,8 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 
+#include <memory>
+
 #include "helpers.h"          // for conversions
 #include "default_settings.h" // for enum types
 
@@ -188,8 +190,6 @@ class DeviceValue {
     // wider numeric range fields
     int16_t  min; // min range
     uint32_t max; // max range
-    // largest member last (cold path: only read during customization save/load and web display)
-    std::string custom_fullname; // optional, from customization
 
     DeviceValue(uint8_t               device_type,    // EMSdevice::DeviceType
                 int8_t                tag,            // DeviceValueTAG::*
@@ -219,6 +219,13 @@ class DeviceValue {
     std::string        get_fullname() const;
     static std::string get_name(const std::string & entity);
 
+    // raw stored custom name (including any >min<max suffix), empty if none. Stored on heap only when set.
+    const std::string & custom_fullname() const;
+    void                set_custom_fullname(const std::string & name);
+    bool                has_custom_fullname() const {
+        return (bool)custom_fullname_;
+    }
+
     // dv state flags
     void add_state(uint8_t s) {
         state |= s;
@@ -237,6 +244,11 @@ class DeviceValue {
     static const char * const * DeviceValueTAG_s[];
     static const char * const   DeviceValueTAG_mqtt[];
     static uint8_t              NUM_TAGS; // # tags
+
+  private:
+    // optional custom name from customization. Allocated on heap only when actually set,
+    // so unnamed entities (the vast majority) don't pay for an inline std::string.
+    std::unique_ptr<std::string> custom_fullname_;
 };
 
 }; // namespace emsesp

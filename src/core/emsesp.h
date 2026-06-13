@@ -239,6 +239,10 @@ class EMSESP {
     static void scan_devices();
     static void clear_all_devices();
 
+    // called whenever a device entity or telegram handler is registered, so we can
+    // later reclaim the (deliberately generous) reserved vector capacity once stable
+    static void mark_entities_changed();
+
     static std::vector<std::unique_ptr<EMSdevice>, AllocatorPSRAM<std::unique_ptr<EMSdevice>>> emsdevices;
     // services
     static Mqtt              mqtt_;
@@ -275,6 +279,9 @@ class EMSESP {
     static void        publish_response(const std::shared_ptr<const Telegram> & telegram);
     static void        publish_all_loop();
 
+    // one-time compaction of per-device/command vectors once registration has been stable
+    static void compact_entities_if_stable();
+
     void shell_prompt();
     void start_serial_console();
 
@@ -302,6 +309,11 @@ class EMSESP {
     static uint16_t wait_validate_;
     static bool     wait_km_;
     static uint32_t last_fetch_;
+
+    // entity/telegram registration tracking, used to trigger a one-time vector compaction
+    static constexpr uint32_t ENTITY_COMPACT_DELAY = 60000; // ms of stability before compacting
+    static uint32_t           last_entity_change_;          // uptime (ms) of last registration
+    static bool               entity_compaction_pending_;   // true while a compaction is owed
 
     // UUID stuff
     static constexpr auto &        serial_console_          = Serial;

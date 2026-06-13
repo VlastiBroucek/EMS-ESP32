@@ -48,6 +48,9 @@ uint16_t          EMSESP::wait_validate_    = 0;
 bool              EMSESP::wait_km_          = false;
 uint32_t          EMSESP::last_fetch_       = 0;
 
+uint32_t EMSESP::last_entity_change_        = 0;
+bool     EMSESP::entity_compaction_pending_ = false;
+
 AsyncWebServer webServer(80);
 
 #if defined(EMSESP_STANDALONE)
@@ -174,6 +177,37 @@ uint8_t EMSESP::device_id_from_cmd(const uint8_t device_type, const char * cmd, 
 void EMSESP::clear_all_devices() {
     // temporarily removed: clearing the list causes a crash, the associated commands and mqtt should also be removed.
     // emsdevices.clear(); // remove entries, but doesn't delete actual devices
+}
+
+// called from EMSdevice/Command whenever an entity or telegram handler is registered.
+// Devices reserve their value/telegram vectors generously (to avoid realloc storms while
+// heating circuits etc. are discovered incrementally), so once registration settles we
+// reclaim the unused capacity - see compact_entities_if_stable().
+void EMSESP::mark_entities_changed() {
+    last_entity_change_        = uuid::get_uptime();
+    entity_compaction_pending_ = true;
+}
+
+// once the entity/telegram set has been stable for ENTITY_COMPACT_DELAY, shrink the
+// per-device and command vectors to their actual size. Re-arms automatically if a new
+// device/circuit appears later (which just costs a single realloc).
+void EMSESP::compact_entities_if_stable() {
+    if (!entity_compaction_pending_) {
+        return; // nothing to do (cheap early-out on the hot path)
+    }
+    if ((uuid::get_uptime() - last_entity_change_) < ENTITY_COMPACT_DELAY) {
+        return; // still settling
+    }
+
+    for (const auto & emsdevice : emsdevices) {
+        if (emsdevice) {
+            emsdevice->compact();
+        }
+    }
+    Command::compact();
+
+    entity_compaction_pending_ = false;
+    LOG_DEBUG("Reclaimed unused entity vector capacity");
 }
 
 // return total number of devices excluding the Controller
@@ -1860,6 +1894,7 @@ void EMSESP::loop() {
         webModulesService.loop();   // loop through the external library modules
         webSchedulerService.loop(); // scheduler timing logic; command execution is offloaded to WebCommandService's worker task
         scheduled_fetch_values(); // force a query on the EMS devices to fetch latest data at a set interval (1 min)
+        compact_entities_if_stable(); // reclaim over-reserved entity vector capacity once device discovery settles
     }
     // check for GPIO Errors - this is called once when booting
     if (EMSESP::system_.systemStatus() == SYSTEM_STATUS::SYSTEM_STATUS_INVALID_GPIO) {
