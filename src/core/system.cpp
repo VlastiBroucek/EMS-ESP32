@@ -1276,6 +1276,9 @@ bool System::check_restore() {
                         // continue processing the rest of the sections
                         saveSettings(EMSESP_SETTINGS_FILE, section);
                     }
+                    if (section_type == "commands") {
+                        saveSettings(EMSESP_COMMANDS_FILE, section);
+                    }
                     if (section_type == "schedule") {
                         saveSettings(EMSESP_SCHEDULER_FILE, section);
                     }
