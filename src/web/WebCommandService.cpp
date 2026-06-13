@@ -141,14 +141,12 @@ bool WebCommandService::dispatchCommand(const char * name, const char * value) {
             if (isUrlCommand(ci->cmd.c_str())) {
                 return queueCommand(name, value);
             }
-            // system/message defers evaluation of its value (via the scheduler's raw_value),
-            // so executing it never blocks - keep it synchronous even if the value has a {url}
-            if (Helpers::toLower(ci->cmd.c_str()) != "system/message") {
-                // the effective value is the override if given, else the command's stored default
-                const std::string effective_value = value ? value : std::string(ci->value.c_str());
-                if (valueContainsUrl(effective_value)) {
-                    return queueCommand(name, value);
-                }
+            // internal command whose value embeds a {url} fetch (e.g. system/message) - the value is
+            // resolved by compute() at execution time and would block, so offload it to the worker task
+            // the effective value is the override if given, else the command's stored default
+            const std::string effective_value = value ? value : std::string(ci->value.c_str());
+            if (valueContainsUrl(effective_value)) {
+                return queueCommand(name, value);
             }
         }
     }
@@ -240,8 +238,8 @@ bool WebCommandService::executeCommand(const char * name, const std::string & co
     // run the value through the shunting-yard calculator so expressions like "custom/heatcnt + 1"
     // are resolved (entity references replaced by their values, then computed). Plain values pass
     // through unchanged. Applies to both URL and internal commands, like the old scheduler code
-    // which computed the value before executing. system/message evaluates its own argument later
-    // (deferred via the scheduler's raw_value), so pre-computing it would run it twice - pass raw.
+    // which computed the value before executing. system/message runs the shunting-yard on its own
+    // argument, so pre-computing it here would run it twice - pass it through raw.
     std::string computed_data = data;
     if (!data.empty() && cmd != "system/message") {
         computed_data = compute(data);

@@ -367,11 +367,6 @@ void WebSchedulerService::loop() {
     static uint32_t last_uptime_min = 0;
     static uint32_t last_uptime_sec = 0;
 
-    if (!raw_value.empty()) {
-        computed_value = compute(raw_value);
-        raw_value.clear();
-    }
-
     if (scheduleItems_->empty()) {
         return;
     }
