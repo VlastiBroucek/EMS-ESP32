@@ -306,7 +306,7 @@ uint8_t WebStatusService::upgradeImportantMessages(std::string & version) {
         return 0; // no upgrade (same version or downgrade)
     }
 
-    if (current_version < FirmwareVersion("3.9.0") && latest_version.major() == 3 && latest_version.minor() == 9) {
+    if (current_version < FirmwareVersion("3.9.0-dev.0") && latest_version.major() == 3 && latest_version.minor() == 9) {
         return 1; // upgrading to 3.9.x from anything older - new partition layout warning
     }
 
