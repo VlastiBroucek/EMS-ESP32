@@ -336,6 +336,7 @@ const Dashboard = memo(() => {
                                     size="small"
                                     aria-label={LL.RUN_COMMAND()}
                                     onClick={() => editDashboardValue(di)}
+                                    style={{ backgroundColor: 'transparent' }}
                                   >
                                     <PlayArrowIcon
                                       color="primary"
@@ -349,6 +350,7 @@ const Dashboard = memo(() => {
                                       LL.CHANGE_VALUE() + ' ' + LL.VALUE(0)
                                     }
                                     onClick={() => editDashboardValue(di)}
+                                    style={{ backgroundColor: 'transparent' }}
                                   >
                                     <EditIcon
                                       color="primary"

@@ -777,6 +777,7 @@ const Devices = memo(() => {
                           <IconButton
                             size="small"
                             onClick={() => showDeviceValue(dv)}
+                            style={{ backgroundColor: 'transparent' }}
                           >
                             {dv.v === '' ? (
                               <PlayArrowIcon color="primary" sx={{ fontSize: 16 }} />

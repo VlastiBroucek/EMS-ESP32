@@ -82,7 +82,7 @@ const CommandsDialog = ({
     } catch (error) {
       setFieldErrors((error as ValidationError).fieldErrors);
     } finally {
-      setHasChanges(false);
+      // setHasChanges(false);
     }
   };
 
