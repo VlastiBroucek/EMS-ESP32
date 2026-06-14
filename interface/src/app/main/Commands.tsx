@@ -83,7 +83,7 @@ const commandsTheme = {
   `
 };
 
-const CommandsPage = () => {
+const Commands = () => {
   const { LL } = useI18nContext();
   const [numChanges, setNumChanges] = useState<number>(0);
   const blocker = useBlocker(numChanges !== 0);
@@ -309,4 +309,4 @@ const CommandsPage = () => {
   );
 };
 
-export default CommandsPage;
+export default Commands;
