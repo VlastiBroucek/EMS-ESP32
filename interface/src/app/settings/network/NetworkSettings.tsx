@@ -25,7 +25,6 @@ import { API } from 'api/app';
 
 import { updateState, useRequest } from 'alova/client';
 import type { APIcall } from 'app/main/types';
-import type { ValidateFieldsError } from 'async-validator';
 import {
   BlockFormControlLabel,
   BlockNavigation,
@@ -42,6 +41,7 @@ import type { NetworkSettingsType } from 'types';
 import { updateValueDirty, useRest } from 'utils';
 import { ValidationError, validate } from 'validators';
 import { createNetworkSettingsValidator } from 'validators/network';
+import type { ValidateFieldsError } from 'validators/schema';
 
 import SystemMonitor from '../../status/SystemMonitor';
 import { WiFiConnectionContext } from './WiFiConnectionContext';

@@ -22,13 +22,13 @@ import {
 import { callAction } from '@/api/app';
 import { dialogStyle } from 'CustomTheme';
 import { useRequest } from 'alova/client';
-import type Schema from 'async-validator';
-import type { ValidateFieldsError } from 'async-validator';
 import { ValidatedTextField } from 'components';
 import { toast } from 'components/toast';
 import { useI18nContext } from 'i18n/i18n-react';
 import { numberValue, updateValue } from 'utils';
 import { ValidationError, validate } from 'validators';
+import type Schema from 'validators/schema';
+import type { ValidateFieldsError } from 'validators/schema';
 
 import { DeviceValueUOM, DeviceValueUOM_s } from './types';
 import type { DeviceValue } from './types';

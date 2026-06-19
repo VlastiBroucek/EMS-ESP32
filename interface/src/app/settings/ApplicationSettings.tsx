@@ -19,7 +19,6 @@ import { readSystemStatus } from 'api/system';
 
 import { useRequest } from 'alova/client';
 import SystemMonitor from 'app/status/SystemMonitor';
-import type { ValidateFieldsError } from 'async-validator';
 import {
   BlockFormControlLabel,
   BlockNavigation,
@@ -35,6 +34,7 @@ import { toast } from 'components/toast';
 import { useI18nContext } from 'i18n/i18n-react';
 import { numberValue, updateValueDirty, useRest } from 'utils';
 import { ValidationError, validate } from 'validators';
+import type { ValidateFieldsError } from 'validators/schema';
 
 import { API, getBoardProfile, readSettings, writeSettings } from '../../api/app';
 import { BOARD_PROFILES } from '../main/types';

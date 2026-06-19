@@ -6,7 +6,6 @@ import { Button } from '@mui/material';
 
 import * as SecurityApi from 'api/security';
 
-import type { ValidateFieldsError } from 'async-validator';
 import {
   BlockNavigation,
   ButtonRow,
@@ -20,6 +19,7 @@ import { useI18nContext } from 'i18n/i18n-react';
 import type { SecuritySettingsType } from 'types';
 import { updateValueDirty, useRest } from 'utils';
 import { SECURITY_SETTINGS_VALIDATOR, ValidationError, validate } from 'validators';
+import type { ValidateFieldsError } from 'validators/schema';
 
 const SecuritySettings = () => {
   const { LL } = useI18nContext();

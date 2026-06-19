@@ -16,7 +16,6 @@ import {
 
 import * as MqttApi from 'api/mqtt';
 
-import type { ValidateFieldsError } from 'async-validator';
 import {
   BlockFormControlLabel,
   BlockNavigation,
@@ -32,6 +31,7 @@ import { useI18nContext } from 'i18n/i18n-react';
 import type { MqttSettingsType } from 'types';
 import { numberValue, updateValueDirty, useRest } from 'utils';
 import { ValidationError, createMqttSettingsValidator, validate } from 'validators';
+import type { ValidateFieldsError } from 'validators/schema';
 
 import { callAction } from '../../api/app';
 

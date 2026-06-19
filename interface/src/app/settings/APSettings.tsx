@@ -6,7 +6,6 @@ import { Button, Checkbox, MenuItem } from '@mui/material';
 
 import * as APApi from 'api/ap';
 
-import type { ValidateFieldsError } from 'async-validator';
 import {
   BlockFormControlLabel,
   BlockNavigation,
@@ -22,6 +21,7 @@ import type { APSettingsType } from 'types';
 import { APProvisionMode } from 'types';
 import { numberValue, updateValueDirty, useRest } from 'utils';
 import { ValidationError, createAPSettingsValidator, validate } from 'validators';
+import type { ValidateFieldsError } from 'validators/schema';
 
 export const isAPEnabled = ({ provision_mode }: APSettingsType) =>
   provision_mode === APProvisionMode.AP_MODE_DISCONNECTED;

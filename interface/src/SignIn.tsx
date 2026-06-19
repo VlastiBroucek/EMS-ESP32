@@ -6,7 +6,6 @@ import type { Theme } from '@mui/material/styles';
 
 import * as AuthenticationApi from 'components/routing/authentication';
 import { useRequest } from 'alova/client';
-import type { ValidateFieldsError } from 'async-validator';
 import {
   LanguageSelector,
   ValidatedPasswordField,
@@ -19,6 +18,7 @@ import { useI18nContext } from 'i18n/i18n-react';
 import type { SignInRequest } from 'types';
 import { onEnterCallback, updateValue } from 'utils';
 import { SIGN_IN_REQUEST_VALIDATOR, ValidationError, validate } from 'validators';
+import type { ValidateFieldsError } from 'validators/schema';
 
 const SignIn = memo(() => {
   const authenticationContext = useContext(AuthenticationContext);

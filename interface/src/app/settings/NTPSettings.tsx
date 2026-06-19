@@ -22,7 +22,6 @@ import { readNTPSettings } from 'api/ntp';
 import { dialogStyle } from 'CustomTheme';
 import { useRequest } from 'alova/client';
 import { updateState } from 'alova/client';
-import type { ValidateFieldsError } from 'async-validator';
 import {
   BlockFormControlLabel,
   BlockNavigation,
@@ -38,6 +37,7 @@ import type { NTPSettingsType, Time } from 'types';
 import { formatLocalDateTime, updateValueDirty, useRest } from 'utils';
 import { ValidationError, validate } from 'validators';
 import { NTP_SETTINGS_VALIDATOR } from 'validators/ntp';
+import type { ValidateFieldsError } from 'validators/schema';
 
 import { TIME_ZONES, selectedTimeZone, useTimeZoneSelectItems } from './TZ';
 
