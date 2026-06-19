@@ -1,5 +1,4 @@
 import { memo, useCallback, useContext, useEffect, useState } from 'react';
-import { toast } from 'react-toastify';
 
 import CancelIcon from '@mui/icons-material/Cancel';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -37,6 +36,7 @@ import {
   ValidatedPasswordField,
   ValidatedTextField
 } from 'components';
+import { toast } from 'components/toast';
 import { useI18nContext } from 'i18n/i18n-react';
 import type { NetworkSettingsType } from 'types';
 import { updateValueDirty, useRest } from 'utils';

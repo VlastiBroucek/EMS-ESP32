@@ -1,10 +1,10 @@
 import { type FC, memo, useContext, useEffect, useRef } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
-import { toast } from 'react-toastify';
 
 import AuthenticatedRouting from 'AuthenticatedRouting';
 import SignIn from 'SignIn';
 import { RequireAuthenticated, RequireUnauthenticated } from 'components';
+import { toast } from 'components/toast';
 import { Authentication, AuthenticationContext } from 'contexts/authentication';
 import { useI18nContext } from 'i18n/i18n-react';
 

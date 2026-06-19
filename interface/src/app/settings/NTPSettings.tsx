@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { toast } from 'react-toastify';
 
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -33,6 +32,7 @@ import {
   ValidatedTextField,
   useLayoutTitle
 } from 'components';
+import { toast } from 'components/toast';
 import { useI18nContext } from 'i18n/i18n-react';
 import type { NTPSettingsType, Time } from 'types';
 import { formatLocalDateTime, updateValueDirty, useRest } from 'utils';

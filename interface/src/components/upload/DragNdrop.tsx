@@ -7,7 +7,6 @@ import {
   useState
 } from 'react';
 import { Link } from 'react-router';
-import { toast } from 'react-toastify';
 
 import CancelIcon from '@mui/icons-material/Cancel';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
@@ -28,6 +27,7 @@ import { callAction } from 'api/app';
 
 import { dialogStyle } from '@/CustomTheme';
 import { useRequest } from 'alova/client';
+import { toast } from 'components/toast';
 import { useI18nContext } from 'i18n/i18n-react';
 
 const DocumentUploader = styled(Box)<{ active?: boolean }>(({ theme, active }) => ({

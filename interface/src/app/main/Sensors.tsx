@@ -1,5 +1,4 @@
 import { useContext, useRef, useState } from 'react';
-import { toast } from 'react-toastify';
 
 import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOutlined';
 import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDownOutlined';
@@ -21,6 +20,7 @@ import { useTheme } from '@table-library/react-table-library/theme';
 import type { State } from '@table-library/react-table-library/types/common';
 import { useRequest } from 'alova/client';
 import { SectionContent, useLayoutTitle } from 'components';
+import { toast } from 'components/toast';
 import { AuthenticatedContext } from 'contexts/authentication';
 import { useI18nContext } from 'i18n/i18n-react';
 import { useInterval } from 'utils';

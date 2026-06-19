@@ -1,7 +1,6 @@
 import { memo, useContext, useEffect, useState } from 'react';
 import { IconContext } from 'react-icons/lib';
 import { Link } from 'react-router';
-import { toast } from 'react-toastify';
 
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import EditIcon from '@mui/icons-material/Edit';
@@ -30,6 +29,7 @@ import {
   SectionContent,
   useLayoutTitle
 } from 'components';
+import { toast } from 'components/toast';
 import { AuthenticatedContext } from 'contexts/authentication';
 import { useI18nContext } from 'i18n/i18n-react';
 import { useInterval, usePersistState } from 'utils';

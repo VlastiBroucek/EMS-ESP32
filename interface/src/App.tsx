@@ -1,8 +1,8 @@
 import { memo, useEffect, useState } from 'react';
-import { ToastContainer, Zoom } from 'react-toastify';
 
 import AppRouting from 'AppRouting';
 import CustomTheme from 'CustomTheme';
+import { Toaster } from 'components/toast';
 import TypesafeI18n from 'i18n/i18n-react';
 import type { Locales } from 'i18n/i18n-types';
 import { loadLocaleAsync } from 'i18n/i18n-util.async';
@@ -21,26 +21,6 @@ const AVAILABLE_LOCALES = [
   'tr',
   'cz'
 ] as Locales[];
-
-// Static toast configuration - no need to recreate on every render
-const TOAST_CONTAINER_PROPS = {
-  position: 'bottom-left' as const,
-  autoClose: 3000,
-  hideProgressBar: false,
-  newestOnTop: false,
-  closeOnClick: true,
-  rtl: false,
-  pauseOnFocusLoss: true,
-  draggable: false,
-  pauseOnHover: false,
-  transition: Zoom,
-  closeButton: false,
-  theme: 'dark' as const,
-  toastStyle: {
-    border: '1px solid #177ac9',
-    width: 'fit-content'
-  }
-};
 
 const App = memo(() => {
   const [wasLoaded, setWasLoaded] = useState(false);
@@ -64,7 +44,7 @@ const App = memo(() => {
     <TypesafeI18n locale={locale}>
       <CustomTheme>
         <AppRouting />
-        <ToastContainer {...TOAST_CONTAINER_PROPS} />
+        <Toaster />
       </CustomTheme>
     </TypesafeI18n>
   );

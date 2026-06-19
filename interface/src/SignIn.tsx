@@ -1,5 +1,4 @@
 import { memo, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { toast } from 'react-toastify';
 
 import ForwardIcon from '@mui/icons-material/Forward';
 import { Box, Button, Paper, Typography } from '@mui/material';
@@ -13,6 +12,7 @@ import {
   ValidatedPasswordField,
   ValidatedTextField
 } from 'components';
+import { toast } from 'components/toast';
 import { AuthenticationContext } from 'contexts/authentication';
 import { PROJECT_NAME } from 'env';
 import { useI18nContext } from 'i18n/i18n-react';

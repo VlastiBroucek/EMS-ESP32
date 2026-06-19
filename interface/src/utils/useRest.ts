@@ -1,9 +1,9 @@
 import { useCallback, useState } from 'react';
 import { useBlocker } from 'react-router';
-import { toast } from 'react-toastify';
 
 import type { AlovaGenerics, Method } from 'alova';
 import { useRequest } from 'alova/client';
+import { toast } from 'components/toast';
 import { useI18nContext } from 'i18n/i18n-react';
 
 export interface RestRequestOptions<D> {

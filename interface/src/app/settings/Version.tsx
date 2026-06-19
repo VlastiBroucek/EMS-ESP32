@@ -1,6 +1,5 @@
 import { memo, useContext, useMemo, useState } from 'react';
 import { Link } from 'react-router';
-import { toast } from 'react-toastify';
 
 import CancelIcon from '@mui/icons-material/Cancel';
 import CloseIcon from '@mui/icons-material/Close';
@@ -39,6 +38,7 @@ import {
   SingleUpload,
   useLayoutTitle
 } from 'components';
+import { toast } from 'components/toast';
 import { AuthenticatedContext } from 'contexts/authentication';
 import { useI18nContext } from 'i18n/i18n-react';
 import type { TranslationFunctions } from 'i18n/i18n-types';

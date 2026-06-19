@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { toast } from 'react-toastify';
 
 import AddIcon from '@mui/icons-material/Add';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -22,6 +21,7 @@ import { useRequest } from 'alova/client';
 import type Schema from 'async-validator';
 import type { ValidateFieldsError } from 'async-validator';
 import { ValidatedTextField } from 'components';
+import { toast } from 'components/toast';
 import { useI18nContext } from 'i18n/i18n-react';
 import { updateValue } from 'utils';
 import { ValidationError, validate } from 'validators';
