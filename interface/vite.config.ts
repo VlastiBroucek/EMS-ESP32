@@ -16,10 +16,18 @@ const CHUNK_SIZE_WARNING_LIMIT = 1024;
 const ASSETS_INLINE_LIMIT = 4096;
 
 // Common resolve aliases
+// `react` points at a local shim (preact/compat + a useOptimistic stub) because
+// react-router v8 statically imports useOptimistic from "react". See src/preact-react-shim.ts for details.
+const REACT_SHIM = path.resolve(import.meta.dirname, 'src/preact-react-shim.ts');
+// `react/jsx-runtime` is listed before `react` so the more specific alias wins
+// (a bare `react` alias would otherwise also match `react/jsx-runtime`).
+// NOTE: @preact/preset-vite is configured with `reactAliasesEnabled: false`
+// so these aliases (not the preset's `react -> preact/compat`) are authoritative.
 const RESOLVE_ALIASES = {
-  react: 'preact/compat',
+  'react/jsx-runtime': 'preact/jsx-runtime',
+  'react-dom/test-utils': 'preact/test-utils',
   'react-dom': 'preact/compat',
-  'react/jsx-runtime': 'preact/jsx-runtime'
+  react: REACT_SHIM
 };
 
 // Common resolve extensions - prioritize TypeScript/React files for Windows compatibility
@@ -89,42 +97,30 @@ const bundleSizeReporter = (): Plugin => {
 };
 
 // Common preact plugin config
-const createPreactPlugin = (devToolsEnabled: boolean) =>
-  preact({
+const createPreactPlugin = (devToolsEnabled: boolean): PluginOption[] => {
+  const plugins = preact({
     devToolsEnabled,
-    prefreshEnabled: false
+    prefreshEnabled: false,
+    // Disable the preset's built-in `react -> preact/compat` aliases so our
+    // RESOLVE_ALIASES (which routes `react` through the useOptimistic shim) win.
+    reactAliasesEnabled: false
   });
-
-// Patch preact/compat to export stub React 19 APIs (use, useOptimistic) so that
-// react-router v7 doesn't trigger IMPORT_IS_UNDEFINED warnings from Rolldown.
-// Rolldown tracks the constant strings used in `React[REACT_USE]` /
-// `React[USE_OPTIMISTIC]` lookups inside react-router and resolves them
-// statically, so simply relying on a runtime guard is not enough — we need
-// matching (stub) exports on the aliased preact/compat module.
-const preactCompatPatchPlugin = (): Plugin => ({
-  name: 'preact-compat-react19-patch',
-  transform(code, id) {
-    if (id.includes('preact') && id.includes('compat.module.js')) {
-      return {
-        code:
-          code +
-          '\nexport var use = undefined;\nexport var useOptimistic = undefined;\n',
-        map: null
-      };
-    }
-    return undefined;
-  }
-});
+  // The preset always registers its devtools-only plugins (`preact:devtools`
+  // and `preact:transform-hook-names`); the flag only gates their work, not
+  // their presence. When disabled they're per-module no-ops that still run a
+  // hook on every module and dominate [PLUGIN_TIMINGS], so drop them entirely.
+  const devToolsOnly = new Set(['preact:devtools', 'preact:transform-hook-names']);
+  return devToolsEnabled
+    ? plugins
+    : plugins.filter((p) => !p || !devToolsOnly.has(p.name));
+};
 
 // Common base plugins
 const createBasePlugins = (
   devToolsEnabled: boolean,
   includeBundleReporter = true
 ): PluginOption[] => {
-  const plugins: PluginOption[] = [
-    createPreactPlugin(devToolsEnabled),
-    preactCompatPatchPlugin()
-  ];
+  const plugins: PluginOption[] = [...createPreactPlugin(devToolsEnabled)];
   if (includeBundleReporter) {
     plugins.push(bundleSizeReporter());
   }
