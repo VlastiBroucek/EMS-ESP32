@@ -1,8 +1,9 @@
 import { memo, useEffect, useState } from 'react';
+import { Outlet } from 'react-router';
 
-import AppRouting from 'AppRouting';
 import CustomTheme from 'CustomTheme';
 import { Toaster } from 'components/toast';
+import { Authentication } from 'contexts/authentication';
 import TypesafeI18n from 'i18n/i18n-react';
 import type { Locales } from 'i18n/i18n-types';
 import { loadLocaleAsync } from 'i18n/i18n-util.async';
@@ -43,7 +44,9 @@ const App = memo(() => {
   return (
     <TypesafeI18n locale={locale}>
       <CustomTheme>
-        <AppRouting />
+        <Authentication>
+          <Outlet />
+        </Authentication>
         <Toaster />
       </CustomTheme>
     </TypesafeI18n>

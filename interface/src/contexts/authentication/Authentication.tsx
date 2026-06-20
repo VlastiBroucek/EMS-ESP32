@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { FC } from 'react';
-import { redirect } from 'react-router';
+import { useNavigate } from 'react-router';
 
 import { callAction } from 'api/app';
 import { ACCESS_TOKEN } from 'api/endpoints';
@@ -18,6 +18,7 @@ import { AuthenticationContext } from './context';
 
 const Authentication: FC<RequiredChildrenProps> = ({ children }) => {
   const { LL } = useI18nContext();
+  const navigate = useNavigate();
 
   const [initialized, setInitialized] = useState<boolean>(false);
   const [me, setMe] = useState<Me>();
@@ -60,7 +61,7 @@ const Authentication: FC<RequiredChildrenProps> = ({ children }) => {
     setMe(undefined);
     setVersions(undefined);
     if (doRedirect) {
-      redirect('/');
+      void navigate('/', { replace: true });
     }
   };
 
