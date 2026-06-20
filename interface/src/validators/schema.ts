@@ -90,7 +90,8 @@ const runValidator = async (
 const runRule = async (
   rule: RuleItem,
   field: string,
-  value: unknown
+  value: unknown,
+  requiredMessage?: string
 ): Promise<string | undefined> => {
   // Custom validators own their empty-value handling and run unconditionally.
   if (typeof rule.validator === 'function') {
@@ -100,7 +101,9 @@ const runRule = async (
   const empty = isEmpty(value);
 
   if (rule.required && empty) {
-    return rule.message ?? `${field} is required`;
+    return (
+      rule.message ?? requiredMessage?.replace('%s', field) ?? `${field} is required`
+    );
   }
 
   // Non-required built-in rules don't validate empty values.
@@ -135,9 +138,17 @@ const runRule = async (
 
 export default class Schema {
   private readonly rules: Rules;
+  private requiredMessage?: string;
 
   constructor(descriptor: Rules) {
     this.rules = descriptor;
+  }
+
+  // Mirrors async-validator's `messages()`. Only the `required` template (with
+  // a `%s` placeholder for the field name) is consumed by this minimal schema.
+  messages(messages: { required?: string }): this {
+    this.requiredMessage = messages.required;
+    return this;
   }
 
   // Mirrors async-validator's callback form. Always resolves (never rejects);
@@ -157,7 +168,7 @@ export default class Schema {
       const value = source[field];
 
       for (const rule of ruleList) {
-        const message = await runRule(rule, field, value);
+        const message = await runRule(rule, field, value, this.requiredMessage);
         if (message !== undefined) {
           const error: ValidateError = { message, field, fieldValue: value };
           (fields[field] ??= []).push(error);
