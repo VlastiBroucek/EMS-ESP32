@@ -9,7 +9,7 @@ import type { Locales } from 'i18n/i18n-types';
 import { loadLocaleAsync } from 'i18n/i18n-util.async';
 import { detectLocale, navigatorDetector } from 'typesafe-i18n/detectors';
 
-const AVAILABLE_LOCALES = [
+const ALL_LOCALES = [
   'de',
   'en',
   'it',
@@ -23,6 +23,20 @@ const AVAILABLE_LOCALES = [
   'cz'
 ] as Locales[];
 
+// Optional build-time allow-list (e.g. VITE_APP_LOCALES="en,de,nl"). When unset,
+// every locale is available. `en` is always kept as the fallback locale, and the
+// progmem generator embeds the matching subset into firmware flash.
+const localeAllowList = (import.meta.env.VITE_APP_LOCALES ?? '')
+  .split(',')
+  .map((locale) => locale.trim())
+  .filter(Boolean);
+
+const AVAILABLE_LOCALES: Locales[] = localeAllowList.length
+  ? ALL_LOCALES.filter(
+      (locale) => locale === 'en' || localeAllowList.includes(locale)
+    )
+  : ALL_LOCALES;
+
 const App = memo(() => {
   const [wasLoaded, setWasLoaded] = useState(false);
   const [locale, setLocale] = useState<Locales>('en');
@@ -30,7 +44,12 @@ const App = memo(() => {
   useEffect(() => {
     const initializeLocale = async () => {
       const browserLocale = detectLocale('en', AVAILABLE_LOCALES, navigatorDetector);
-      const newLocale = (localStorage.getItem('lang') || browserLocale) as Locales;
+      const stored = localStorage.getItem('lang');
+      // Ignore a stored locale that isn't available (e.g. trimmed from this build).
+      const newLocale =
+        stored && AVAILABLE_LOCALES.includes(stored as Locales)
+          ? (stored as Locales)
+          : browserLocale;
       localStorage.setItem('lang', newLocale);
       setLocale(newLocale);
       await loadLocaleAsync(newLocale);
