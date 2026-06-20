@@ -1,14 +1,31 @@
 import { memo, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 
+import CloseIcon from '@mui/icons-material/Close';
 import Alert from '@mui/material/Alert';
 import Grow from '@mui/material/Grow';
+import IconButton from '@mui/material/IconButton';
 import LinearProgress from '@mui/material/LinearProgress';
 import Stack from '@mui/material/Stack';
 
-import { type ToastItem, getSnapshot, removeToast, subscribe } from './toastStore';
+import {
+  type ToastItem,
+  type ToastSeverity,
+  getSnapshot,
+  removeToast,
+  subscribe
+} from './toastStore';
 
 const AUTO_CLOSE_MS = 3000;
 const TICK_MS = 50;
+
+// Semantic accent colors users already expect:
+// success → green, error → red, warning → amber, info → blue.
+const ACCENT: Record<ToastSeverity, string> = {
+  success: '#16a34a',
+  error: '#dc2626',
+  warning: '#f59e0b',
+  info: '#2563eb'
+};
 
 // Single toast row: owns its auto-dismiss timer + countdown progress bar, pauses
 // while the window is unfocused (matching react-toastify's pauseOnFocusLoss).
@@ -37,38 +54,60 @@ const ToastRow = memo(({ item }: { item: ToastItem }) => {
     };
   }, []);
 
+  const accent = ACCENT[item.severity];
+
   return (
     <Grow in={open} onExited={() => removeToast(item.id)}>
       <Alert
         severity={item.severity}
-        variant="filled"
+        variant="standard"
         onClick={() => setOpen(false)}
+        action={
+          <IconButton
+            size="small"
+            aria-label="close"
+            onClick={(e) => {
+              e.stopPropagation();
+              setOpen(false);
+            }}
+            sx={{ color: '#9ca3af', '&:hover': { color: '#374151' } }}
+          >
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        }
         sx={{
+          position: 'relative',
           width: 'fit-content',
+          minWidth: 300,
           maxWidth: 360,
-          minHeight: 64,
           cursor: 'pointer',
-          border: '1px solid #177ac9',
-          boxShadow: 6,
           overflow: 'hidden',
+          borderRadius: '8px',
+          bgcolor: '#f3f4f6',
+          color: '#1f2937',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.18)',
+          borderLeft: `4px solid ${accent}`,
           alignItems: 'center',
-          '& .MuiAlert-icon': { py: 0 },
-          '& .MuiAlert-message': { py: 0, textAlign: 'center', fontSize: '1rem' }
+          '& .MuiAlert-icon': { color: accent, alignItems: 'center' },
+          // '& .MuiAlert-message': {
+          //   py: '8px',
+          //   color: '#1f2937'
+          // },
+          '& .MuiAlert-action': { alignItems: 'center', pt: 0, mr: '-4px' }
         }}
       >
         {item.message}
         <LinearProgress
           variant="determinate"
           value={(remaining / AUTO_CLOSE_MS) * 100}
-          color="inherit"
           sx={{
             position: 'absolute',
             left: 0,
             right: 0,
             bottom: 0,
             height: 3,
-            opacity: 0.7,
-            backgroundColor: 'transparent'
+            backgroundColor: 'transparent',
+            '& .MuiLinearProgress-bar': { backgroundColor: accent, opacity: 0.55 }
           }}
         />
       </Alert>
