@@ -84,10 +84,9 @@ const DevicesDialog = ({
       } else {
         await validate(validator, editItem);
       }
+      onSave(editItem);
     } catch (error) {
       setFieldErrors((error as ValidationError).fieldErrors);
-    } finally {
-      onSave(editItem);
     }
   };
 

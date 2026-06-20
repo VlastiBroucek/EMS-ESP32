@@ -140,10 +140,9 @@ const ApplicationSettings = () => {
     try {
       setFieldErrors(undefined);
       await validate(createSettingsValidator(data), data);
+      await saveData();
     } catch (error) {
       setFieldErrors((error as ValidationError).fieldErrors);
-    } finally {
-      await saveData();
     }
   };
 
