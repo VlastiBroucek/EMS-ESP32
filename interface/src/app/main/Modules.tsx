@@ -1,6 +1,5 @@
 import { memo, useState } from 'react';
 import { useBlocker } from 'react-router';
-import { toast } from 'react-toastify';
 
 import CancelIcon from '@mui/icons-material/Cancel';
 import CircleIcon from '@mui/icons-material/Circle';
@@ -25,6 +24,7 @@ import {
   SectionContent,
   useLayoutTitle
 } from 'components';
+import { toast } from 'components/toast';
 import { useI18nContext } from 'i18n/i18n-react';
 
 import { readModules, writeModules } from '../../api/app';

@@ -9,3 +9,4 @@ allowBuilds:
 minimumReleaseAgeExclude:
   - '@types/node@25.9.2'
   - '@types/react@19.2.17'
+  - react-router@8.0.1

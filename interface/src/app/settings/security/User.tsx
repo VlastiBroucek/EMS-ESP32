@@ -14,8 +14,6 @@ import {
 } from '@mui/material';
 
 import { dialogStyle } from 'CustomTheme';
-import type Schema from 'async-validator';
-import type { ValidateFieldsError } from 'async-validator';
 import {
   BlockFormControlLabel,
   ValidatedPasswordField,
@@ -25,6 +23,8 @@ import { useI18nContext } from 'i18n/i18n-react';
 import type { UserType } from 'types';
 import { updateValue } from 'utils';
 import { ValidationError, validate } from 'validators';
+import type Schema from 'validators/schema';
+import type { ValidateFieldsError } from 'validators/schema';
 
 interface UserFormProps {
   creating: boolean;

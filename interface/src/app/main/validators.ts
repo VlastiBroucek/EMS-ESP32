@@ -1,5 +1,5 @@
-import Schema from 'async-validator';
-import type { InternalRuleItem } from 'async-validator';
+import Schema from 'validators/schema';
+import type { InternalRuleItem } from 'validators/schema';
 import { IP_OR_HOSTNAME_VALIDATOR } from 'validators/shared';
 
 import type {

@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { toast } from 'react-toastify';
 
 import CancelIcon from '@mui/icons-material/Cancel';
 import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
@@ -20,7 +19,6 @@ import { readSystemStatus } from 'api/system';
 
 import { useRequest } from 'alova/client';
 import SystemMonitor from 'app/status/SystemMonitor';
-import type { ValidateFieldsError } from 'async-validator';
 import {
   BlockFormControlLabel,
   BlockNavigation,
@@ -32,9 +30,11 @@ import {
   ValidatedTextField,
   useLayoutTitle
 } from 'components';
+import { toast } from 'components/toast';
 import { useI18nContext } from 'i18n/i18n-react';
 import { numberValue, updateValueDirty, useRest } from 'utils';
 import { ValidationError, validate } from 'validators';
+import type { ValidateFieldsError } from 'validators/schema';
 
 import { API, getBoardProfile, readSettings, writeSettings } from '../../api/app';
 import { BOARD_PROFILES } from '../main/types';
@@ -140,10 +140,9 @@ const ApplicationSettings = () => {
     try {
       setFieldErrors(undefined);
       await validate(createSettingsValidator(data), data);
+      await saveData();
     } catch (error) {
       setFieldErrors((error as ValidationError).fieldErrors);
-    } finally {
-      await saveData();
     }
   };
 

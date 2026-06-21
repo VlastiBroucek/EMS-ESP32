@@ -23,12 +23,12 @@ import {
 } from '@mui/material';
 
 import { dialogStyle } from 'CustomTheme';
-import type Schema from 'async-validator';
-import type { ValidateFieldsError } from 'async-validator';
 import { BlockFormControlLabel, ValidatedTextField } from 'components';
 import { useI18nContext } from 'i18n/i18n-react';
 import { numberValue, updateValue } from 'utils';
 import { ValidationError, validate } from 'validators';
+import type Schema from 'validators/schema';
+import type { ValidateFieldsError } from 'validators/schema';
 
 import { DeviceValueType, DeviceValueTypeNames, DeviceValueUOM_s } from './types';
 import type { EntityItem } from './types';

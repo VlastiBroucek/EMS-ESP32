@@ -1,6 +1,5 @@
 import { memo, useContext, useState } from 'react';
 import type { ReactElement } from 'react';
-import { toast } from 'react-toastify';
 
 import CommentIcon from '@mui/icons-material/CommentTwoTone';
 import DownloadIcon from '@mui/icons-material/GetApp';
@@ -25,6 +24,7 @@ import type { SxProps, Theme } from '@mui/material/styles';
 
 import { useRequest } from 'alova/client';
 import { SectionContent, useLayoutTitle } from 'components';
+import { toast } from 'components/toast';
 import { AuthenticatedContext } from 'contexts/authentication';
 import { useI18nContext } from 'i18n/i18n-react';
 import { saveFile } from 'utils';

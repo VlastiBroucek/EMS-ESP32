@@ -1,5 +1,4 @@
 import { memo, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { toast } from 'react-toastify';
 
 import DownloadIcon from '@mui/icons-material/GetApp';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
@@ -26,6 +25,7 @@ import {
   SectionContent,
   useLayoutTitle
 } from 'components';
+import { toast } from 'components/toast';
 import { useI18nContext } from 'i18n/i18n-react';
 import type { LogEntry, LogSettings } from 'types';
 import { LogLevel } from 'types';

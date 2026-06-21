@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { FC } from 'react';
-import { redirect } from 'react-router';
-import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router';
 
 import { callAction } from 'api/app';
 import { ACCESS_TOKEN } from 'api/endpoints';
@@ -10,6 +9,7 @@ import * as AuthenticationApi from 'components/routing/authentication';
 import { useRequest } from 'alova/client';
 import { LoadingSpinner } from 'components';
 import { verifyAuthorization } from 'components/routing/authentication';
+import { toast } from 'components/toast';
 import { useI18nContext } from 'i18n/i18n-react';
 import type { Me, VersionsResponse } from 'types';
 import type { RequiredChildrenProps } from 'utils';
@@ -18,6 +18,7 @@ import { AuthenticationContext } from './context';
 
 const Authentication: FC<RequiredChildrenProps> = ({ children }) => {
   const { LL } = useI18nContext();
+  const navigate = useNavigate();
 
   const [initialized, setInitialized] = useState<boolean>(false);
   const [me, setMe] = useState<Me>();
@@ -60,7 +61,7 @@ const Authentication: FC<RequiredChildrenProps> = ({ children }) => {
     setMe(undefined);
     setVersions(undefined);
     if (doRedirect) {
-      redirect('/');
+      void navigate('/', { replace: true });
     }
   };
 

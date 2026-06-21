@@ -1,5 +1,5 @@
-import Schema from 'async-validator';
 import type { NetworkSettingsType } from 'types';
+import Schema from 'validators/schema';
 
 import { HOSTNAME_VALIDATOR, IP_ADDRESS_VALIDATOR } from './shared';
 

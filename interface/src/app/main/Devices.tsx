@@ -8,7 +8,6 @@ import {
 } from 'react';
 import { IconContext } from 'react-icons';
 import { Link, useNavigate } from 'react-router';
-import { toast } from 'react-toastify';
 
 import CommentsDisabledOutlinedIcon from '@mui/icons-material/CommentsDisabledOutlined';
 import ConstructionIcon from '@mui/icons-material/Construction';
@@ -64,6 +63,7 @@ import {
   SectionContent,
   useLayoutTitle
 } from 'components';
+import { toast } from 'components/toast';
 import { AuthenticatedContext } from 'contexts/authentication';
 import { useI18nContext } from 'i18n/i18n-react';
 import { useInterval } from 'utils';

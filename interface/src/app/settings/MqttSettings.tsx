@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { toast } from 'react-toastify';
 
 import CancelIcon from '@mui/icons-material/Cancel';
 import SettingsBackupRestoreIcon from '@mui/icons-material/SettingsBackupRestore';
@@ -17,7 +16,6 @@ import {
 
 import * as MqttApi from 'api/mqtt';
 
-import type { ValidateFieldsError } from 'async-validator';
 import {
   BlockFormControlLabel,
   BlockNavigation,
@@ -28,10 +26,12 @@ import {
   ValidatedTextField,
   useLayoutTitle
 } from 'components';
+import { toast } from 'components/toast';
 import { useI18nContext } from 'i18n/i18n-react';
 import type { MqttSettingsType } from 'types';
 import { numberValue, updateValueDirty, useRest } from 'utils';
 import { ValidationError, createMqttSettingsValidator, validate } from 'validators';
+import type { ValidateFieldsError } from 'validators/schema';
 
 import { callAction } from '../../api/app';
 

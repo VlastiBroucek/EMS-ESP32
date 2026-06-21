@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useBlocker, useLocation } from 'react-router';
-import { toast } from 'react-toastify';
 
 import CancelIcon from '@mui/icons-material/Cancel';
 import EditIcon from '@mui/icons-material/Edit';
@@ -46,6 +45,7 @@ import {
   SectionContent,
   useLayoutTitle
 } from 'components';
+import { toast } from 'components/toast';
 import { useI18nContext } from 'i18n/i18n-react';
 
 import {

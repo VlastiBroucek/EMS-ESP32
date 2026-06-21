@@ -1,5 +1,4 @@
 import { memo, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { toast } from 'react-toastify';
 
 import ForwardIcon from '@mui/icons-material/Forward';
 import { Box, Button, Paper, Typography } from '@mui/material';
@@ -7,18 +6,19 @@ import type { Theme } from '@mui/material/styles';
 
 import * as AuthenticationApi from 'components/routing/authentication';
 import { useRequest } from 'alova/client';
-import type { ValidateFieldsError } from 'async-validator';
 import {
   LanguageSelector,
   ValidatedPasswordField,
   ValidatedTextField
 } from 'components';
+import { toast } from 'components/toast';
 import { AuthenticationContext } from 'contexts/authentication';
 import { PROJECT_NAME } from 'env';
 import { useI18nContext } from 'i18n/i18n-react';
 import type { SignInRequest } from 'types';
 import { onEnterCallback, updateValue } from 'utils';
 import { SIGN_IN_REQUEST_VALIDATOR, ValidationError, validate } from 'validators';
+import type { ValidateFieldsError } from 'validators/schema';
 
 const SignIn = memo(() => {
   const authenticationContext = useContext(AuthenticationContext);
