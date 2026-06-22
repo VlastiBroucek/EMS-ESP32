@@ -25,6 +25,9 @@ pnpm build-webUI
 cd ..
 npx cspell "**"
 
+# build files that go into docs folder
 # platformio run -e build_modbus
 # platformio run -e build_standalone
+
+# run tests
 # platformio run -e native-test -t exec

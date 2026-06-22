@@ -318,10 +318,10 @@ function updateMask(entity: any, de: any, dd: any) {
       const old_custom_name = dd.nodes[dd_objIndex].cn;
       console.log(
         'comparing names, old (' +
-          old_custom_name +
-          ') with new (' +
-          new_custom_name +
-          ')'
+        old_custom_name +
+        ') with new (' +
+        new_custom_name +
+        ')'
       );
       if (old_custom_name !== new_custom_name) {
         changed = true;
@@ -438,9 +438,9 @@ function upgradeImportantMessages(version: string) {
 
   console.log(
     'upgradeImportantMessageType: version=' +
-      version +
-      ' type=' +
-      upgradeImportantMessageType_n
+    version +
+    ' type=' +
+    upgradeImportantMessageType_n
   );
   return { upgradeImportantMessageType: upgradeImportantMessageType_n };
 }
@@ -487,17 +487,17 @@ function get_versions() {
 
   console.log(
     'getVersions: current=' +
-      THIS_VERSION +
-      ' stable=' +
-      LATEST_STABLE_VERSION +
-      ' (upgradeable=' +
-      (STABLE_VERSION_IS_UPGRADEABLE ? 'YES' : 'NO') +
-      ') dev=' +
-      LATEST_DEV_VERSION +
-      ' (upgradeable=' +
-      (DEV_VERSION_IS_UPGRADEABLE ? 'YES' : 'NO') +
-      ')' +
-      (MOCK_OFFLINE ? ' [offline]' : '')
+    THIS_VERSION +
+    ' stable=' +
+    LATEST_STABLE_VERSION +
+    ' (upgradeable=' +
+    (STABLE_VERSION_IS_UPGRADEABLE ? 'YES' : 'NO') +
+    ') dev=' +
+    LATEST_DEV_VERSION +
+    ' (upgradeable=' +
+    (DEV_VERSION_IS_UPGRADEABLE ? 'YES' : 'NO') +
+    ')' +
+    (MOCK_OFFLINE ? ' [offline]' : '')
   );
   return data;
 }
@@ -4232,7 +4232,7 @@ let emsesp_schedule = {
       id: 5,
       active: false,
       flags: ScheduleFlag.SCHEDULE_CONDITION,
-      time: 'system/network info/rssi < -70',
+      time: 'system/network/rssi < -70',
       cmd_name: 'restart_system',
       name: 'bad_wifi'
     },
