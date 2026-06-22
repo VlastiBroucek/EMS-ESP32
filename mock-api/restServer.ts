@@ -4232,7 +4232,7 @@ let emsesp_schedule = {
       id: 5,
       active: false,
       flags: ScheduleFlag.SCHEDULE_CONDITION,
-      time: 'system/network info/rssi < -70',
+      time: 'system/network/rssi < -70',
       cmd_name: 'restart_system',
       name: 'bad_wifi'
     },

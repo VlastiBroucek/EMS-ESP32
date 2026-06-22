@@ -17,17 +17,17 @@ void WiFiScanner::scanNetworks(AsyncWebServerRequest * request) {
 
     if (WiFi.scanComplete() != -1) {
         WiFi.scanDelete();
-        WiFi.scanNetworks(true);
+        WiFi.scanNetworks(true, false, true, 250);
     }
 }
 
 void WiFiScanner::listNetworks(AsyncWebServerRequest * request) {
-    const int numNetworks = WiFi.scanComplete();
-    if (numNetworks > -1) {
+    const int16_t numNetworks = WiFi.scanComplete();
+    if (numNetworks != -1) {
         auto *     response = new emsesp::PsramAsyncJsonResponse(false);
         JsonObject root     = response->getRoot();
         JsonArray  networks = root["networks"].to<JsonArray>();
-        for (uint8_t i = 0; i < numNetworks; i++) {
+        for (int16_t i = 0; i < numNetworks; i++) {
             JsonObject network         = networks.add<JsonObject>();
             network["rssi"]            = WiFi.RSSI(i);
             network["ssid"]            = WiFi.SSID(i);
@@ -37,9 +37,7 @@ void WiFiScanner::listNetworks(AsyncWebServerRequest * request) {
         }
         response->setLength();
         request->send(response);
-    } else if (numNetworks == -1) {
-        request->send(202); // special code to indicate scan in progress
     } else {
-        scanNetworks(request);
+        request->send(202); // special code to indicate scan in progress
     }
 }
