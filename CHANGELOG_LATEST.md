@@ -14,9 +14,12 @@ For more details go to [emsesp.org](https://emsesp.org/).
 
 - signed value for solarInfuence [#3077](https://github.com/emsesp/EMS-ESP32/issues/3077)
 - TLS support with 4MB boards without PSRAM
+- Prevent system crash during WiFi network discovery on ESP32-S3 hardware [#3128](https://github.com/emsesp/EMS-ESP32/pull/3128)
+
 
 ## Changed
 
 - various memory optimizations [#3083](https://github.com/emsesp/EMS-ESP32/issues/3083)
 - Scheduler name is now mandatory
 - network fallback to AP only after start [#3090](https://github.com/emsesp/EMS-ESP32/issues/3090)
+- replaced Web async-validator with custom validator and toast with native snackbar to reduce bundle size
