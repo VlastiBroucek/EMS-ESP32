@@ -17,8 +17,7 @@ void WiFiScanner::scanNetworks(AsyncWebServerRequest * request) {
 
     if (WiFi.scanComplete() != -1) {
         WiFi.scanDelete();
-        WiFi.scanNetworks(true);
-    }
+        WiFi.scanNetworks(true, false, true, 250);    }
 }
 
 void WiFiScanner::listNetworks(AsyncWebServerRequest * request) {
@@ -40,6 +39,9 @@ void WiFiScanner::listNetworks(AsyncWebServerRequest * request) {
     } else if (numNetworks == -1) {
         request->send(202); // special code to indicate scan in progress
     } else {
-        scanNetworks(request);
-    }
+        auto * response = new AsyncJsonResponse(false);
+        JsonObject root = response->getRoot();
+        root["networks"].to<JsonArray>();
+        response->setLength();
+        request->send(response);    }
 }
