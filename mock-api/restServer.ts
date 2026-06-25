@@ -146,9 +146,9 @@ let LATEST_DEV_VERSION = '3.9.0-dev.1';
 
 // scenarios for testing versioning
 // let version_test = 0; // on latest stable, or switch to dev
-// let version_test = 1; // on latest dev, or switch back to stable
+let version_test = 1; // on latest dev, or switch back to stable
 // let version_test = 2; // upgrade an older stable to latest stable or switch to latest dev
-let version_test = 3; // upgrade dev to latest, or switch to stable
+// let version_test = 3; // upgrade dev to latest, or switch to stable
 // let version_test = 4; // downgrade to an older dev, or switch back to stable
 
 switch (version_test as number) {
