@@ -14,8 +14,9 @@ For more details go to [emsesp.org](https://emsesp.org/).
 
 - signed value for solarInfuence [#3077](https://github.com/emsesp/EMS-ESP32/issues/3077)
 - TLS support with 4MB boards without PSRAM
-- Prevent system crash during WiFi network discovery on ESP32-S3 hardware [#3128](https://github.com/emsesp/EMS-ESP32/pull/3128)
+- prevent system crash during WiFi network discovery on ESP32-S3 hardware [#3128](https://github.com/emsesp/EMS-ESP32/pull/3128)
 - check arithmetric operations on strings [#3127](https://github.com/emsesp/EMS-ESP32/discussions/3127)
+- fix setting date/time on Junkers thermostats
 
 ## Changed
 

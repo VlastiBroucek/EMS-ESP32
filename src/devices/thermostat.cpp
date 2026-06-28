@@ -3077,7 +3077,6 @@ bool Thermostat::set_datetime(const char * value, const int8_t id) {
         data[6] = (tm_->tm_wday + 6) % 7;            // Bosch counts from Mo, time from Su
         data[7] = (id == 0) ? 2 : tm_->tm_isdst + 2; // set DST and flag for ext. clock
         if (model() == EMSdevice::EMS_DEVICE_FLAG_JUNKERS) {
-            data[6]++; // Junkers use 1-7;
             data[7] = 0;
         }
     } else if (dt.length() == 23) {
@@ -3099,6 +3098,10 @@ bool Thermostat::set_datetime(const char * value, const int8_t id) {
     if (data[1] == 0 || data[1] > 12 || data[2] > 23 || data[3] == 0 || data[3] > 31 || data[4] > 59 || data[5] > 59 || data[6] > 6 || data[7] > 3) {
         LOG_WARNING("Invalid date/time: %02d.%02d.2%03d-%02d:%02d:%02d-%d-%d", data[3], data[1], data[0], data[2], data[4], data[5], data[6], data[7]);
         return false;
+    }
+
+    if (model() == EMSdevice::EMS_DEVICE_FLAG_JUNKERS) {
+        data[6]++; // Junkers use 1-7 for day of the week
     }
 
     // LOG_INFO("Setting date and time: %02d.%02d.2%03d-%02d:%02d:%02d-%d-%d", data[3], data[1], data[0], data[2], data[4], data[5], data[6], data[7]);
