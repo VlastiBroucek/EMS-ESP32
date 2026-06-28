@@ -4,8 +4,8 @@ allowBuilds:
   gifsicle: false
   jpegtran-bin: false
   mozjpeg: false
-  optipng-bin: false
-  pngquant-bin: false
+  optipng-bin: true
+  pngquant-bin: true
 minimumReleaseAgeExclude:
   - '@types/node@25.9.2'
   - '@types/react@19.2.17'
