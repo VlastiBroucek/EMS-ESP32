@@ -1884,16 +1884,16 @@ void EMSESP::loop() {
     if (EMSESP::system_.systemStatus() != SYSTEM_STATUS::SYSTEM_STATUS_PENDING_UPLOAD
         && EMSESP::system_.systemStatus() != SYSTEM_STATUS::SYSTEM_STATUS_UPLOADING) {
         // loop through the services
-        webStatusService.loop();    // periodic refresh of cached versions.json
-        rxservice_.loop();          // process any incoming Rx telegrams
-        shower_.loop();             // check for shower on/off
-        temperaturesensor_.loop();  // read sensor temperatures
-        analogsensor_.loop();       // read analog sensor values
-        publish_all_loop();         // with HA messages in parts to avoid flooding the MQTT queue
-        mqtt_.loop();               // sends out anything in the MQTT queue
-        webModulesService.loop();   // loop through the external library modules
-        webSchedulerService.loop(); // scheduler timing logic; command execution is offloaded to WebCommandService's worker task
-        scheduled_fetch_values(); // force a query on the EMS devices to fetch latest data at a set interval (1 min)
+        webStatusService.loop();      // periodic refresh of cached versions.json
+        rxservice_.loop();            // process any incoming Rx telegrams
+        shower_.loop();               // check for shower on/off
+        temperaturesensor_.loop();    // read sensor temperatures
+        analogsensor_.loop();         // read analog sensor values
+        publish_all_loop();           // with HA messages in parts to avoid flooding the MQTT queue
+        mqtt_.loop();                 // sends out anything in the MQTT queue
+        webModulesService.loop();     // loop through the external library modules
+        webSchedulerService.loop();   // scheduler timing logic; command execution is offloaded to WebCommandService's worker task
+        scheduled_fetch_values();     // force a query on the EMS devices to fetch latest data at a set interval (1 min)
         compact_entities_if_stable(); // reclaim over-reserved entity vector capacity once device discovery settles
     }
     // check for GPIO Errors - this is called once when booting
