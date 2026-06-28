@@ -34,7 +34,8 @@ class Roomctrl {
     static bool is_remote(const uint8_t hc) {
         return (hc < 4 && remotetemp_[hc] != EMS_VALUE_INT16_NOTSET);
     }
-    static void set_timeout(uint8_t t);
+    static void    set_timeout(uint8_t t);
+    static int16_t calc_dew(int16_t temp, uint8_t hum);
 
   private:
     static constexpr uint32_t SEND_INTERVAL = 15000; // 15 sec
@@ -50,7 +51,6 @@ class Roomctrl {
     static void    nack_write();
     static void    ack_write();
     static void    replyF7(uint8_t addr, uint8_t dst, uint8_t offset, uint8_t typehh, uint8_t typeh, uint8_t typel, uint8_t hc);
-    static int16_t calc_dew(int16_t temp, uint8_t hum);
 
     static bool     switch_off_[HCS];
     static uint32_t send_time_[HCS];

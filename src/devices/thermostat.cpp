@@ -816,16 +816,16 @@ void Thermostat::process_RemoteTemp(const std::shared_ptr<const Telegram> & tele
 // e.g. "38 10 FF 00 03 7B 08 24 00 4B"
 void Thermostat::process_RemoteHumidity(const std::shared_ptr<const Telegram> & telegram) {
     // has_update(telegram, dewtemperature_, 0); // this is int8
-    has_update(telegram, humidity_, 1);
-    has_update(telegram, dewtemperature_, 2); // this is int16
+
     // some thermostats use short telegram with int8 dewpoint, https://github.com/emsesp/EMS-ESP32/issues/1491
-    if (telegram->offset == 0 && telegram->message_length < 4) {
-        int8_t dew = dewtemperature_ / 10;
-        telegram->read_value(dew, 0);
-        if (dew != EMS_VALUE_INT8_NOTSET && dewtemperature_ != dew * 10) {
-            dewtemperature_ = dew * 10;
-            has_update(dewtemperature_);
-        }
+    // but it's not a dewpoint in offset 0, removed, see https://github.com/emsesp/EMS-ESP32/issues/3135
+    has_update(telegram, humidity_, 1);
+    // has_update(telegram, dewtemperature_, 2); // this is int16
+    int16_t dew = EMS_VALUE_INT16_NOTSET;
+    if (telegram->read_value(dew, 2)) {
+        has_update(dewtemperature_, dew);
+    } else if (telegram->offset == 0 && telegram->message_length < 4) {
+        has_update(dewtemperature_, Roomctrl::calc_dew(tempsensor1_, humidity_));
     }
 }
 
