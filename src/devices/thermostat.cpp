@@ -1465,14 +1465,21 @@ void Thermostat::process_HPMode(std::shared_ptr<const Telegram> telegram) {
 }
 
 // 0x467 ff HP settings
+// thermostat(0x10) -W-> Me(0x0B), ?(0x0467), data: 0A 15 00 01 04 (from #1187)
+// thermostat(0x10) W me(0x0B), HPSet(0x0467), data: 14 13 02 01 02 (from #3144)
 void Thermostat::process_HPSet(std::shared_ptr<const Telegram> telegram) {
     auto hc = heating_circuit(telegram);
     if (hc == nullptr) {
         return;
     }
-    has_update(telegram, hc->dewoffset, 4);     // 7-35°C
-    has_update(telegram, hc->roomtempdiff, 3);  // 1-10K
-    has_update(telegram, hc->hpminflowtemp, 1); // 2-10K
+    if (hc->control == 3 || hc->control == 6) {     // control with humidity
+        has_update(telegram, hc->hpminflowtemp, 0); // 7-35°C
+    } else {
+        has_update(telegram, hc->hpminflowtemp, 1); // 7-35°C
+    }
+    // has_update(telegram, hc->roomtempoffset, 2); // 1-10K // not implemented, mentioned in #3144
+    has_update(telegram, hc->roomtempdiff, 3); // 1-10K
+    has_update(telegram, hc->dewoffset, 4);    // 2-10K
 }
 
 // type 0x41 - data from the RC30 thermostat(0x10) - 14 bytes long
@@ -1925,7 +1932,11 @@ bool Thermostat::set_hpminflowtemp(const char * value, const int8_t id) {
     }
     int v;
     if (Helpers::value2temperature(value, v)) {
-        write_command(hp_typeids[hc->hc()], 1, v, hp_typeids[hc->hc()]);
+        if (hc->control == 3 || hc->control == 6) { // remotes with humidity
+            write_command(hp_typeids[hc->hc()], 0, v, hp_typeids[hc->hc()]);
+        } else {
+            write_command(hp_typeids[hc->hc()], 1, v, hp_typeids[hc->hc()]);
+        }
         return true;
     }
     return false;
