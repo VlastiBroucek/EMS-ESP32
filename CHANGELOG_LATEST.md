@@ -15,6 +15,7 @@ For more details go to [emsesp.org](https://emsesp.org/).
 - check arithmetric operations on strings [#3127](https://github.com/emsesp/EMS-ESP32/discussions/3127)
 - prevent system crash during WiFi network discovery on ESP32-S3 hardware [#3128](https://github.com/emsesp/EMS-ESP32/pull/3128)
 - fix setting date/time on Junkers thermostats
+- offset of hpminflowtemp [3144](https://github.com/emsesp/EMS-ESP32/issues/3144)
 
 ## Changed
 
