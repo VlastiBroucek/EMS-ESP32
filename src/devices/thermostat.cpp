@@ -1472,7 +1472,7 @@ void Thermostat::process_HPSet(std::shared_ptr<const Telegram> telegram) {
     }
     has_update(telegram, hc->dewoffset, 4);     // 7-35°C
     has_update(telegram, hc->roomtempdiff, 3);  // 1-10K
-    has_update(telegram, hc->hpminflowtemp, 0); // 2-10K
+    has_update(telegram, hc->hpminflowtemp, 1); // 2-10K
 }
 
 // type 0x41 - data from the RC30 thermostat(0x10) - 14 bytes long
@@ -1925,7 +1925,7 @@ bool Thermostat::set_hpminflowtemp(const char * value, const int8_t id) {
     }
     int v;
     if (Helpers::value2temperature(value, v)) {
-        write_command(hp_typeids[hc->hc()], 0, v, hp_typeids[hc->hc()]);
+        write_command(hp_typeids[hc->hc()], 1, v, hp_typeids[hc->hc()]);
         return true;
     }
     return false;
