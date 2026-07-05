@@ -1737,9 +1737,27 @@ void Thermostat::process_RCTime(std::shared_ptr<const Telegram> telegram) {
     }
 
     // check clock
-    time_t now   = time(nullptr);
-    tm *   tm_   = localtime(&now);
-    bool   tset_ = tm_->tm_year > 110;                       // year 2010 and up, time is valid
+    time_t now = time(nullptr);
+    tm *   tm_;
+    bool   sync = true;
+    EMSESP::esp32React.getNTPSettingsService()->read([&](const NTPSettings & settings) {
+        switch (settings.thermostat_option) {
+        default:
+            sync = false;
+            break;
+        case 1:
+            tm_ = localtime(&now);
+            break;
+        case 2:
+            setenv("TZ", settings.tzFormatT.c_str(), 1);
+            tzset();
+            tm_ = localtime(&now);
+            setenv("TZ", settings.tzFormat.c_str(), 1);
+            tzset();
+            break;
+        }
+    });
+    bool tset_   = tm_->tm_year > 110;                       // year 2010 and up, time is valid
     tm_->tm_year = (telegram->message_data[0] & 0x7F) + 100; // IVT
     tm_->tm_mon  = telegram->message_data[1] - 1;
     tm_->tm_mday = telegram->message_data[3];
@@ -1756,11 +1774,12 @@ void Thermostat::process_RCTime(std::shared_ptr<const Telegram> telegram) {
     has_update(dateTime_, newdatetime, sizeof(dateTime_));
 
     bool   ivtclock     = (telegram->message_data[0] & 0x80) == 0x80; // dont sync ivt-clock, #439
-    bool   junkersclock = model() == EMSdevice::EMS_DEVICE_FLAG_JUNKERS;
+    // bool   junkersclock = model() == EMSdevice::EMS_DEVICE_FLAG_JUNKERS;
     time_t ttime        = mktime(tm_); // thermostat time
     // correct thermostat clock if we have valid ntp time, and could write the command
-    if (!ivtclock && !junkersclock && tset_ && EMSESP::system_.ntp_connected() && !EMSESP::system_.readonly_mode() && has_command(&dateTime_)) {
-        double difference = difftime(now, ttime);
+    // if (sync && !ivtclock && !junkersclock && tset_ && EMSESP::system_.ntp_connected() && !EMSESP::system_.readonly_mode() && has_command(&dateTime_)) {
+    if (sync && !ivtclock && tset_ && EMSESP::system_.ntp_connected() && !EMSESP::system_.readonly_mode() && has_command(&dateTime_)) {
+        int difference = difftime(now, ttime);
         if (difference > 15 || difference < -15) {
             if (setTimeRetry < 3) {
                 if (!use_dst) {
@@ -3064,7 +3083,21 @@ bool Thermostat::set_datetime(const char * value, const int8_t id) {
     uint8_t data[9];
     if (dt == "ntp") {
         time_t now = time(nullptr);
-        tm *   tm_ = localtime(&now);
+        tm *   tm_;
+        EMSESP::esp32React.getNTPSettingsService()->read([&](const NTPSettings & settings) {
+            switch (settings.thermostat_option) {
+            default:
+                tm_ = localtime(&now);
+                break;
+            case 2:
+                setenv("TZ", settings.tzFormatT.c_str(), 1);
+                tzset();
+                tm_ = localtime(&now);
+                setenv("TZ", settings.tzFormat.c_str(), 1);
+                tzset();
+                break;
+            }
+        });
         if (tm_->tm_year < 110) { // no valid time
             return false;
         }
@@ -3080,10 +3113,7 @@ bool Thermostat::set_datetime(const char * value, const int8_t id) {
         data[5] = tm_->tm_sec;
         data[6] = (tm_->tm_wday + 6) % 7;            // Bosch counts from Mo, time from Su
         data[7] = (id == 0) ? 2 : tm_->tm_isdst + 2; // set DST and flag for ext. clock
-        if (model() == EMSdevice::EMS_DEVICE_FLAG_JUNKERS) {
-            data[7] = 0;
-        }
-    } else if (dt.length() == 23) {
+    } else if (dt.length() == 23 || dt.length() == 21) {
         data[0] = (dt[7] - '0') * 100 + (dt[8] - '0') * 10 + (dt[9] - '0'); // year
         data[1] = (dt[3] - '0') * 10 + (dt[4] - '0');                       // month
         data[2] = (dt[11] - '0') * 10 + (dt[12] - '0');                     // hour
@@ -3091,10 +3121,23 @@ bool Thermostat::set_datetime(const char * value, const int8_t id) {
         data[4] = (dt[14] - '0') * 10 + (dt[15] - '0');                     // min
         data[5] = (dt[17] - '0') * 10 + (dt[18] - '0');                     // sec
         data[6] = (dt[20] - '0');                                           // day of week, Mo:0
-        data[7] = (dt[22] - '0') + 2;                                       // DST and flag
-        if (model() == EMSdevice::EMS_DEVICE_FLAG_JUNKERS) {
-            data[7] = 0;
-        }
+        data[7] = dt.length() == 21 ? 2 : (dt[22] - '0') + 2;               // DST and flag
+    } else if (dt.length() == 19 || dt.length() == 16) {
+        time_t now   = time(nullptr);
+        tm *   tm_   = localtime(&now);
+        data[0]      = (dt[7] - '0') * 100 + (dt[8] - '0') * 10 + (dt[9] - '0'); // year
+        tm_->tm_year = 100 + data[0];
+        data[1]      = (dt[3] - '0') * 10 + (dt[4] - '0'); // month
+        tm_->tm_mon  = data[1] - 1;
+        tm_->tm_hour = data[2] = (dt[11] - '0') * 10 + (dt[12] - '0');                        // hour
+        tm_->tm_mday = data[3] = (dt[0] - '0') * 10 + (dt[1] - '0');                          // day
+        tm_->tm_min = data[4] = (dt[14] - '0') * 10 + (dt[15] - '0');                         // min
+        tm_->tm_sec = data[5] = dt.length() == 16 ? 0 : (dt[17] - '0') * 10 + (dt[18] - '0'); // sec
+        tm_->tm_isdst         = -1;
+        auto t                = mktime(tm_);
+        tm_                   = localtime(&t);
+        data[6]               = (tm_->tm_wday + 6) % 7; // Bosch counts from Mo, time from Su
+        data[7]               = tm_->tm_isdst + 2;      // set DST and flag for ext. clock
     } else {
         LOG_WARNING("Set date: invalid data, wrong length");
         return false;
@@ -3105,7 +3148,8 @@ bool Thermostat::set_datetime(const char * value, const int8_t id) {
     }
 
     if (model() == EMSdevice::EMS_DEVICE_FLAG_JUNKERS) {
-        data[6]++; // Junkers use 1-7 for day of the week
+        data[6]++;   // Junkers use 1-7 for day of the week
+        data[7] = 0; // no dst setting
     }
 
     // LOG_INFO("Setting date and time: %02d.%02d.2%03d-%02d:%02d:%02d-%d-%d", data[3], data[1], data[0], data[2], data[4], data[5], data[6], data[7]);

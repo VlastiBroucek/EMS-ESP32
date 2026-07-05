@@ -16,6 +16,9 @@ export interface NTPSettingsType {
   server: string;
   tz_label: string;
   tz_format: string;
+  thermostat_option: number;
+  tz_label_t: string;
+  tz_format_t: string;
 }
 
 export interface Time {

@@ -21,3 +21,4 @@ For more details go to [emsesp.org](https://emsesp.org/).
 
 - call compute value direct, enlarge TCP stack [#3127](https://github.com/emsesp/EMS-ESP32/discussions/3127)
 - Dewtemperature for Easycontrol calculated by ems-esp [3135](https://github.com/emsesp/EMS-ESP32/issues/3135)
+- add option for sync thermostat to ntp, allow different time zones [3148](https://github.com/emsesp/EMS-ESP32/discussions/3148), defaults to no sync.
