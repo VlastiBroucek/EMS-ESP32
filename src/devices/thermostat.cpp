@@ -1747,7 +1747,7 @@ void Thermostat::process_RCTime(std::shared_ptr<const Telegram> telegram) {
             tzset();
         }
     });
-    tm *   tm_   = localtime(&now);
+    tm * tm_     = localtime(&now);
     bool tset_   = tm_->tm_year > 110;                       // year 2010 and up, time is valid
     tm_->tm_year = (telegram->message_data[0] & 0x7F) + 100; // IVT
     tm_->tm_mon  = telegram->message_data[1] - 1;
@@ -1765,9 +1765,9 @@ void Thermostat::process_RCTime(std::shared_ptr<const Telegram> telegram) {
     has_update(dateTime_, newdatetime, sizeof(dateTime_));
 
     bool ivtclock = (telegram->message_data[0] & 0x80) == 0x80; // dont sync ivt-clock, #439
-    // bool   junkersclock = model() == EMSdevice::EMS_DEVICE_FLAG_JUNKERS;
-    time_t ttime  = mktime(tm_); // make thermostat time
-    // set back emsesp timezone
+    tm_->tm_isdst = -1;                                         // determine dst
+    time_t ttime  = mktime(tm_);                                // make thermostat time
+    // change back emsesp timezone
     EMSESP::esp32React.getNTPSettingsService()->read([&](const NTPSettings & settings) {
         if (settings.thermostat_sync == 2) {
             setenv("TZ", settings.tzFormat.c_str(), 1);
@@ -1794,10 +1794,6 @@ void Thermostat::process_RCTime(std::shared_ptr<const Telegram> telegram) {
     }
 #ifndef EMSESP_STANDALONE
     if (!tset_ && tm_->tm_year > 110) { // emsesp clock not set, but thermostat clock
-        if (ivtclock) {
-            tm_->tm_isdst = -1;          // determine dst
-            ttime         = mktime(tm_); // thermostat time
-        }
         struct timeval newnow = {.tv_sec = ttime, .tv_usec = 0};
 #if CONFIG_IDF_TARGET_ESP32C3
         // unknown how to set time on C3
@@ -3126,10 +3122,22 @@ bool Thermostat::set_datetime(const char * value, const int8_t id) {
         tm_->tm_min = data[4] = (dt[14] - '0') * 10 + (dt[15] - '0');                         // min
         tm_->tm_sec = data[5] = dt.length() == 16 ? 0 : (dt[17] - '0') * 10 + (dt[18] - '0'); // sec
         tm_->tm_isdst         = -1;
-        auto t                = mktime(tm_);
-        tm_                   = localtime(&t);
-        data[6]               = (tm_->tm_wday + 6) % 7; // Bosch counts from Mo, time from Su
-        data[7]               = tm_->tm_isdst + 2;      // set DST and flag for ext. clock
+        // use thermostat time zone to determine day of week and daylight saving
+        EMSESP::esp32React.getNTPSettingsService()->read([&](const NTPSettings & settings) {
+            if (settings.thermostat_sync == 2) {
+                setenv("TZ", settings.tzFormatT.c_str(), 1);
+                tzset();
+                auto t = mktime(tm_);
+                tm_    = localtime(&t);
+                setenv("TZ", settings.tzFormat.c_str(), 1);
+                tzset();
+            } else {
+                auto t = mktime(tm_);
+                tm_    = localtime(&t);
+            }
+        });
+        data[6] = (tm_->tm_wday + 6) % 7; // Bosch counts from Mo, time from Su
+        data[7] = tm_->tm_isdst + 2;      // set DST and flag for ext. clock
     } else {
         LOG_WARNING("Set date: invalid data, wrong length");
         return false;
