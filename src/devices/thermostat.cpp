@@ -1737,26 +1737,17 @@ void Thermostat::process_RCTime(std::shared_ptr<const Telegram> telegram) {
     }
 
     // check clock
-    time_t now = time(nullptr);
-    tm *   tm_;
-    bool   sync = true;
+    time_t now  = time(nullptr);
+    bool   sync = false;
+    // change to thermostat timezone if different
     EMSESP::esp32React.getNTPSettingsService()->read([&](const NTPSettings & settings) {
-        switch (settings.thermostat_sync) {
-        default:
-            sync = false;
-            break;
-        case 1:
-            tm_ = localtime(&now);
-            break;
-        case 2:
+        sync = settings.thermostat_sync != 0;
+        if (settings.thermostat_sync == 2) {
             setenv("TZ", settings.tzFormatT.c_str(), 1);
             tzset();
-            tm_ = localtime(&now);
-            setenv("TZ", settings.tzFormat.c_str(), 1);
-            tzset();
-            break;
         }
     });
+    tm *   tm_   = localtime(&now);
     bool tset_   = tm_->tm_year > 110;                       // year 2010 and up, time is valid
     tm_->tm_year = (telegram->message_data[0] & 0x7F) + 100; // IVT
     tm_->tm_mon  = telegram->message_data[1] - 1;
@@ -1775,19 +1766,25 @@ void Thermostat::process_RCTime(std::shared_ptr<const Telegram> telegram) {
 
     bool ivtclock = (telegram->message_data[0] & 0x80) == 0x80; // dont sync ivt-clock, #439
     // bool   junkersclock = model() == EMSdevice::EMS_DEVICE_FLAG_JUNKERS;
-    time_t ttime = mktime(tm_); // thermostat time
+    time_t ttime  = mktime(tm_); // make thermostat time
+    // set back emsesp timezone
+    EMSESP::esp32React.getNTPSettingsService()->read([&](const NTPSettings & settings) {
+        if (settings.thermostat_sync == 2) {
+            setenv("TZ", settings.tzFormat.c_str(), 1);
+            tzset();
+        }
+    });
     // correct thermostat clock if we have valid ntp time, and could write the command
-    // if (sync && !ivtclock && !junkersclock && tset_ && EMSESP::system_.ntp_connected() && !EMSESP::system_.readonly_mode() && has_command(&dateTime_)) {
     if (sync && !ivtclock && tset_ && EMSESP::system_.ntp_connected() && !EMSESP::system_.readonly_mode() && has_command(&dateTime_)) {
         int difference = difftime(now, ttime);
         if (difference > 15 || difference < -15) {
             if (setTimeRetry < 3) {
                 if (!use_dst) {
                     set_datetime("ntp", 0); // set from NTP without dst
-                    LOG_INFO("thermostat time correction from ntp, ignoring dst");
+                    LOG_INFO("thermostat time correction %d seconds from ntp, ignoring dst", difference);
                 } else {
                     set_datetime("ntp", -1); // set from NTP
-                    LOG_INFO("thermostat time correction from ntp");
+                    LOG_INFO("thermostat time correction %d seconds from ntp", difference);
                 }
                 setTimeRetry++;
             }
@@ -3083,19 +3080,14 @@ bool Thermostat::set_datetime(const char * value, const int8_t id) {
     uint8_t data[9];
     if (dt == "ntp") {
         time_t now = time(nullptr);
-        tm *   tm_;
+        tm *   tm_ = localtime(&now);
         EMSESP::esp32React.getNTPSettingsService()->read([&](const NTPSettings & settings) {
-            switch (settings.thermostat_sync) {
-            default:
-                tm_ = localtime(&now);
-                break;
-            case 2:
+            if (settings.thermostat_sync == 2) {
                 setenv("TZ", settings.tzFormatT.c_str(), 1);
                 tzset();
                 tm_ = localtime(&now);
                 setenv("TZ", settings.tzFormat.c_str(), 1);
                 tzset();
-                break;
             }
         });
         if (tm_->tm_year < 110) { // no valid time

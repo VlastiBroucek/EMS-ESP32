@@ -19,6 +19,10 @@
 #define FACTORY_NTP_TIME_ZONE_FORMAT "GMT0BST,M3.5.0/1,M10.5.0"
 #endif
 
+#ifndef FACTORY_NTP_THERMOSTAT_SYNC
+#define FACTORY_NTP_THERMOSTAT_SYNC 0
+#endif
+
 #ifndef FACTORY_NTP_SERVER
 #define FACTORY_NTP_SERVER "time.google.com"
 #endif

@@ -101,7 +101,7 @@ StateUpdateResult NTPSettings::update(JsonObject root, NTPSettings & settings) {
     settings.tzLabel         = root["tz_label"] | FACTORY_NTP_TIME_ZONE_LABEL;
     settings.tzFormat        = root["tz_format"] | FACTORY_NTP_TIME_ZONE_FORMAT;
     settings.thermostat_sync = root["thermostat_sync"] | FACTORY_NTP_THERMOSTAT_SYNC;
-    settings.tzLabelT        = root["tz_label_t"] | settings.tzLabel;
-    settings.tzFormatT       = root["tz_format_t"] | settings.tzFormat;
+    settings.tzLabelT        = root["tz_label_t"] | FACTORY_NTP_TIME_ZONE_LABEL;
+    settings.tzFormatT       = root["tz_format_t"] | FACTORY_NTP_TIME_ZONE_FORMAT;
     return StateUpdateResult::CHANGED;
 }
