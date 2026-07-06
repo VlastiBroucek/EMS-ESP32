@@ -11,14 +11,15 @@ For more details go to [emsesp.org](https://emsesp.org/).
 ## Fixed
 
 - signed value for solarInfuence [#3077](https://github.com/emsesp/EMS-ESP32/issues/3077)
-- set bin file upload limit to 1M again [3086](https://github.com/emsesp/EMS-ESP32/issues/3086)
+- set bin file upload limit to 1M again [#3086](https://github.com/emsesp/EMS-ESP32/issues/3086)
 - check arithmetric operations on strings [#3127](https://github.com/emsesp/EMS-ESP32/discussions/3127)
 - prevent system crash during WiFi network discovery on ESP32-S3 hardware [#3128](https://github.com/emsesp/EMS-ESP32/pull/3128)
 - fix setting date/time on Junkers thermostats
-- offset of hpminflowtemp [3144](https://github.com/emsesp/EMS-ESP32/issues/3144)
+- offset of hpminflowtemp [#3144](https://github.com/emsesp/EMS-ESP32/issues/3144)
+- water circulation command [#3149](https://github.com/emsesp/EMS-ESP32/pull/3149)
 
 ## Changed
 
 - call compute value direct, enlarge TCP stack [#3127](https://github.com/emsesp/EMS-ESP32/discussions/3127)
-- Dewtemperature for Easycontrol calculated by ems-esp [3135](https://github.com/emsesp/EMS-ESP32/issues/3135)
-- add option for sync thermostat to ntp, allow different time zones [3148](https://github.com/emsesp/EMS-ESP32/discussions/3148), **defaults to no sync**.
+- Dewtemperature for Easycontrol calculated by ems-esp [#3135](https://github.com/emsesp/EMS-ESP32/issues/3135)
+- add option for sync thermostat to ntp, allow different time zones [#3148](https://github.com/emsesp/EMS-ESP32/discussions/3148), **defaults to no sync**.

@@ -93,7 +93,7 @@ void Connect::register_device_values_room(std::shared_ptr<Connect::RoomCircuit> 
     register_device_value(
         tag, &room->seltemp_, DeviceValueType::UINT8, DeviceValueNumOp::DV_NUMOP_DIV2, FL_(selRoomTemp), DeviceValueUOM::DEGREES, MAKE_CF_CB(set_seltemp), 5, 30);
     register_device_value(tag, &room->mode_, DeviceValueType::ENUM, FL_(enum_mode2), FL_(mode), DeviceValueUOM::NONE, MAKE_CF_CB(set_mode));
-    register_device_value(tag, &room->coolmode_, DeviceValueType::BOOL, FL_(cooling), DeviceValueUOM::NONE, MAKE_CF_CB(set_coolmode));
+    register_device_value(tag, &room->coolmode_, DeviceValueType::BOOL, FL_(coolingOn), DeviceValueUOM::NONE, MAKE_CF_CB(set_coolmode));
     register_device_value(tag, &room->name_, DeviceValueType::STRING, FL_(name), DeviceValueUOM::NONE, MAKE_CF_CB(set_name));
     register_device_value(tag, &room->childlock_, DeviceValueType::BOOL, FL_(childlock), DeviceValueUOM::NONE, MAKE_CF_CB(set_childlock));
     register_device_value(tag, &room->icon_, DeviceValueType::ENUM, FL_(enum_icons), FL_(icon), DeviceValueUOM::NONE, MAKE_CF_CB(set_icon));

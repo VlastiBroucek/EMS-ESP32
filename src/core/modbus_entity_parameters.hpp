@@ -564,9 +564,10 @@ const std::initializer_list<Modbus::EntityModbusInfo> Modbus::modbus_register_ma
     REGISTER_MAPPING(dt::CONNECT, TAG_TYPE_SRC, FL_(dewTemperature), 2, 1), // dewtemperature
     REGISTER_MAPPING(dt::CONNECT, TAG_TYPE_SRC, FL_(selRoomTemp), 3, 1), // seltemp
     REGISTER_MAPPING(dt::CONNECT, TAG_TYPE_SRC, FL_(mode), 4, 1), // mode
-    REGISTER_MAPPING(dt::CONNECT, TAG_TYPE_SRC, FL_(name), 5, 26), // name
-    REGISTER_MAPPING(dt::CONNECT, TAG_TYPE_SRC, FL_(childlock), 31, 1), // childlock
-    REGISTER_MAPPING(dt::CONNECT, TAG_TYPE_SRC, FL_(icon), 32, 1), // icon
+    REGISTER_MAPPING(dt::CONNECT, TAG_TYPE_SRC, FL_(coolingOn), 5, 1), // coolingon
+    REGISTER_MAPPING(dt::CONNECT, TAG_TYPE_SRC, FL_(name), 6, 26), // name
+    REGISTER_MAPPING(dt::CONNECT, TAG_TYPE_SRC, FL_(childlock), 32, 1), // childlock
+    REGISTER_MAPPING(dt::CONNECT, TAG_TYPE_SRC, FL_(icon), 33, 1), // icon
     REGISTER_MAPPING(dt::ALERT, TAG_TYPE_DEVICE_DATA, FL_(setFlowTemp), 0, 1), // setflowtemp
     REGISTER_MAPPING(dt::ALERT, TAG_TYPE_DEVICE_DATA, FL_(setBurnPow), 1, 1), // setburnpow
     REGISTER_MAPPING(dt::EXTENSION, TAG_TYPE_DEVICE_DATA, FL_(flowTempVf), 0, 1), // flowtempvf
