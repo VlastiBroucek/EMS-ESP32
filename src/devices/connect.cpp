@@ -45,7 +45,7 @@ Connect::Connect(uint8_t device_type, uint8_t device_id, uint8_t product_id, con
         register_telegram_type(0x1230 + i, "Roomparams", false, MAKE_PF_CB(process_roomThermostatParam));         // fetch for active circuits
         register_telegram_type(0x1244 + i, "Roomdata", false, MAKE_PF_CB(process_roomThermostatData));            // broadcasted
     }
-    register_telegram_type(0xDB65, "Roomschedule", true, MAKE_PF_CB(process_roomSchedule));
+    register_telegram_type(0x0B65, "Roomschedule", true, MAKE_PF_CB(process_roomSchedule));
     // 0x2040, broadcast 36 bytes:
     // data: 0E 60 00 DF 0D AF 0A 46 0A 46 02 9A 1C 53 1C 53 12 AD 12 AD 00 00 13 C2
     // data: 1F 37 1F 37 00 00 00 00 18 97 11 27 (offset 24)
@@ -88,11 +88,12 @@ void Connect::process_RCTime(std::shared_ptr<const Telegram> telegram) {
 void Connect::register_device_values_room(std::shared_ptr<Connect::RoomCircuit> room) {
     auto tag = DeviceValueTAG::TAG_SRC1 + room->room();
     register_device_value(tag, &room->temp_, DeviceValueType::INT16, DeviceValueNumOp::DV_NUMOP_DIV10, FL_(roomTemp), DeviceValueUOM::DEGREES);
-    register_device_value(tag, &room->humidity_, DeviceValueType::INT8, FL_(airHumidity), DeviceValueUOM::PERCENT);
+    register_device_value(tag, &room->humidity_, DeviceValueType::UINT8, FL_(airHumidity), DeviceValueUOM::PERCENT);
     register_device_value(tag, &room->dewtemp_, DeviceValueType::INT16, DeviceValueNumOp::DV_NUMOP_DIV10, FL_(dewTemperature), DeviceValueUOM::DEGREES);
     register_device_value(
         tag, &room->seltemp_, DeviceValueType::UINT8, DeviceValueNumOp::DV_NUMOP_DIV2, FL_(selRoomTemp), DeviceValueUOM::DEGREES, MAKE_CF_CB(set_seltemp), 5, 30);
     register_device_value(tag, &room->mode_, DeviceValueType::ENUM, FL_(enum_mode2), FL_(mode), DeviceValueUOM::NONE, MAKE_CF_CB(set_mode));
+    register_device_value(tag, &room->coolmode_, DeviceValueType::BOOL, FL_(cooling), DeviceValueUOM::NONE, MAKE_CF_CB(set_coolmode));
     register_device_value(tag, &room->name_, DeviceValueType::STRING, FL_(name), DeviceValueUOM::NONE, MAKE_CF_CB(set_name));
     register_device_value(tag, &room->childlock_, DeviceValueType::BOOL, FL_(childlock), DeviceValueUOM::NONE, MAKE_CF_CB(set_childlock));
     register_device_value(tag, &room->icon_, DeviceValueType::ENUM, FL_(enum_icons), FL_(icon), DeviceValueUOM::NONE, MAKE_CF_CB(set_icon));
@@ -133,16 +134,8 @@ void Connect::process_roomThermostat(std::shared_ptr<const Telegram> telegram) {
     if (!Mqtt::ha_enabled() || (Helpers::hasValue(rc->mode_) && Helpers::hasValue(rc->icon_))) {
         has_update(telegram, rc->seltemp_, 3);
     }
-
     // calculate dew temperature
-    if (rc->humidity_ >= 0 && rc->humidity_ <= 100) {
-        const float k2 = 17.62;
-        const float k3 = 243.12;
-        const float t  = (float)rc->temp_ / 10;
-        const float h  = (float)rc->humidity_ / 100;
-        int16_t     dt = (10 * k3 * (((k2 * t) / (k3 + t)) + log(h)) / (((k2 * k3) / (k3 + t)) - log(h)));
-        has_update(rc->dewtemp_, dt);
-    }
+    has_update(rc->dewtemp_, Roomctrl::calc_dew(rc->temp_, rc->humidity_));
 }
 
 // gateway(0x48) W gateway(0x50), ?(0x0B42), data: 01 // icon in offset 0
@@ -172,6 +165,9 @@ void Connect::process_roomThermostatSettings(std::shared_ptr<const Telegram> tel
     // has_update(telegram, rc->mode_, 0); // modes: auto, heat, cool, off
     // has_update(telegram, rc->tempautotemp_, 1); // FF means off
     // has_update(telegram, rc->manualtemp_, 3);
+    has_update(telegram, rc->coolmode_, 4); // 01-cooling, 00-heating
+    // has_update(telegram, rc->coolautotemp_, 5);
+    // has_update(telegram, rc->cooltemp_, 6);
     has_update(telegram, rc->childlock_, 7);
 }
 
@@ -226,10 +222,13 @@ bool Connect::set_seltemp(const char * value, const int8_t id) {
         return false;
     }
     float v;
-    if (Helpers::value2float(value, v)) {
+    if (Helpers::value2temperature(value, v)) {
         // depends on mode, auto (2 for enum_mode2, 0 for enum_mode8) set in offset 1
-        write_command(0xBB5 + rc->room(), rc->mode_ == 2 ? 1 : 3, v == -1 ? 0xFF : uint8_t(v * 2));
-        // write_command(0xBB5 + rc->room(), rc->mode_ == 0 ? 1 : 3, v == -1 ? 0xFF : uint8_t(v * 2));
+        if (rc->coolmode_ == 1) {
+            write_command(0xBB5 + rc->room(), rc->mode_ == 2 ? 5 : 6, v == -1 ? 0xFF : uint8_t(v * 2));
+        } else {
+            write_command(0xBB5 + rc->room(), rc->mode_ == 2 ? 1 : 3, v == -1 ? 0xFF : uint8_t(v * 2));
+        }
         return true;
     }
     return false;
@@ -255,6 +254,19 @@ bool Connect::set_name(const char * value, const int8_t id) {
         len -= part;
     }
     return true;
+}
+
+bool Connect::set_coolmode(const char * value, const int8_t id) {
+    auto rc = room_circuit(id - DeviceValueTAG::TAG_SRC1);
+    if (rc == nullptr) {
+        return false;
+    }
+    bool b;
+    if (Helpers::value2bool(value, b)) {
+        write_command(0xBB5 + rc->room(), 4, b ? 1 : 0, 0xBB5 + rc->room());
+        return true;
+    }
+    return false;
 }
 
 bool Connect::set_childlock(const char * value, const int8_t id) {
