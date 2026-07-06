@@ -71,7 +71,7 @@ const NTPSettings = () => {
     () => (data ? selectedTimeZone(data.tz_label, data.tz_format) : undefined),
     [data?.tz_label, data?.tz_format]
   );
-const selectedTzValueT = useMemo(
+  const selectedTzValueT = useMemo(
     () => (data ? selectedTimeZone(data.tz_label_t, data.tz_format_t) : undefined),
     [data?.tz_label_t, data?.tz_format_t]
   );
@@ -154,8 +154,8 @@ const selectedTzValueT = useMemo(
     },
     [updateFormValue]
   );
-  
-const changeTimeZoneT = useCallback(
+
+  const changeTimeZoneT = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       void updateState(readNTPSettings(), (settings: NTPSettingsType) => ({
         ...settings,
@@ -215,11 +215,11 @@ const changeTimeZoneT = useCallback(
             <Grid>
               <ValidatedTextField
                 fieldErrors={fieldErrors || {}}
-                name="thermostat_option"
+                name="thermostat_sync"
                 label="Sync EMS-Thermostat"
                 variant="outlined"
                 sx={{ width: '30ch' }}
-                value={data.thermostat_option}
+                value={data.thermostat_sync}
                 onChange={updateFormValue}
                 margin="normal"
                 select
@@ -230,7 +230,7 @@ const changeTimeZoneT = useCallback(
               </ValidatedTextField >
             </Grid>
             <Grid>
-              {data.thermostat_option === 2 && (
+              {data.thermostat_sync === 2 && (
                 <ValidatedTextField
                   fieldErrors={fieldErrors || {}}
                   name="tz_label_t"

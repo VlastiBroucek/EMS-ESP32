@@ -1741,7 +1741,7 @@ void Thermostat::process_RCTime(std::shared_ptr<const Telegram> telegram) {
     tm *   tm_;
     bool   sync = true;
     EMSESP::esp32React.getNTPSettingsService()->read([&](const NTPSettings & settings) {
-        switch (settings.thermostat_option) {
+        switch (settings.thermostat_sync) {
         default:
             sync = false;
             break;
@@ -1773,9 +1773,9 @@ void Thermostat::process_RCTime(std::shared_ptr<const Telegram> telegram) {
     strftime(newdatetime, sizeof(dateTime_), "%d.%m.%Y %H:%M", tm_);
     has_update(dateTime_, newdatetime, sizeof(dateTime_));
 
-    bool   ivtclock     = (telegram->message_data[0] & 0x80) == 0x80; // dont sync ivt-clock, #439
+    bool ivtclock = (telegram->message_data[0] & 0x80) == 0x80; // dont sync ivt-clock, #439
     // bool   junkersclock = model() == EMSdevice::EMS_DEVICE_FLAG_JUNKERS;
-    time_t ttime        = mktime(tm_); // thermostat time
+    time_t ttime = mktime(tm_); // thermostat time
     // correct thermostat clock if we have valid ntp time, and could write the command
     // if (sync && !ivtclock && !junkersclock && tset_ && EMSESP::system_.ntp_connected() && !EMSESP::system_.readonly_mode() && has_command(&dateTime_)) {
     if (sync && !ivtclock && tset_ && EMSESP::system_.ntp_connected() && !EMSESP::system_.readonly_mode() && has_command(&dateTime_)) {
@@ -3085,7 +3085,7 @@ bool Thermostat::set_datetime(const char * value, const int8_t id) {
         time_t now = time(nullptr);
         tm *   tm_;
         EMSESP::esp32React.getNTPSettingsService()->read([&](const NTPSettings & settings) {
-            switch (settings.thermostat_option) {
+            switch (settings.thermostat_sync) {
             default:
                 tm_ = localtime(&now);
                 break;

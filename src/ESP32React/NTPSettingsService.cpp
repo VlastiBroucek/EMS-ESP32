@@ -86,22 +86,22 @@ void NTPSettingsService::ntp_received(struct timeval * tv) {
 }
 
 void NTPSettings::read(NTPSettings & settings, JsonObject root) {
-    root["enabled"]           = settings.enabled;
-    root["server"]            = settings.server;
-    root["tz_label"]          = settings.tzLabel;
-    root["tz_format"]         = settings.tzFormat;
-    root["thermostat_option"] = settings.thermostat_option;
-    root["tz_label_t"]        = settings.tzLabelT;
-    root["tz_format_t"]       = settings.tzFormatT;
+    root["enabled"]         = settings.enabled;
+    root["server"]          = settings.server;
+    root["tz_label"]        = settings.tzLabel;
+    root["tz_format"]       = settings.tzFormat;
+    root["thermostat_sync"] = settings.thermostat_sync;
+    root["tz_label_t"]      = settings.tzLabelT;
+    root["tz_format_t"]     = settings.tzFormatT;
 }
 
 StateUpdateResult NTPSettings::update(JsonObject root, NTPSettings & settings) {
-    settings.enabled           = root["enabled"] | FACTORY_NTP_ENABLED;
-    settings.server            = root["server"] | FACTORY_NTP_SERVER;
-    settings.tzLabel           = root["tz_label"] | FACTORY_NTP_TIME_ZONE_LABEL;
-    settings.tzFormat          = root["tz_format"] | FACTORY_NTP_TIME_ZONE_FORMAT;
-    settings.thermostat_option = root["thermostat_option"] | 0;
-    settings.tzLabelT          = root["tz_label_t"] | settings.tzLabel;
-    settings.tzFormatT         = root["tz_format_t"] | settings.tzFormat;
+    settings.enabled         = root["enabled"] | FACTORY_NTP_ENABLED;
+    settings.server          = root["server"] | FACTORY_NTP_SERVER;
+    settings.tzLabel         = root["tz_label"] | FACTORY_NTP_TIME_ZONE_LABEL;
+    settings.tzFormat        = root["tz_format"] | FACTORY_NTP_TIME_ZONE_FORMAT;
+    settings.thermostat_sync = root["thermostat_sync"] | FACTORY_NTP_THERMOSTAT_SYNC;
+    settings.tzLabelT        = root["tz_label_t"] | settings.tzLabel;
+    settings.tzFormatT       = root["tz_format_t"] | settings.tzFormat;
     return StateUpdateResult::CHANGED;
 }
