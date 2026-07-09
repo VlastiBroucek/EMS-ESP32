@@ -65,6 +65,7 @@ class Connect : public EMSdevice {
     void process_roomThermostatParam(std::shared_ptr<const Telegram> telegram);
     void process_roomThermostatData(std::shared_ptr<const Telegram> telegram);
     void process_roomSchedule(std::shared_ptr<const Telegram> telegram);
+    void process_roomConfig(std::shared_ptr<const Telegram> telegram);
     bool set_mode(const char * value, const int8_t id);
     bool set_seltemp(const char * value, const int8_t id);
     bool set_name(const char * value, const int8_t id);
