@@ -472,10 +472,6 @@ void WebSchedulerService::condition() {
     }
 }
 
-std::string WebSchedulerService::compute_value(const char * value) {
-    return compute(value);
-}
-
 // process any scheduled jobs
 void WebSchedulerService::loop() {
     // initialize static value on startup
