@@ -377,7 +377,7 @@ void Roomctrl::temperature(uint8_t addr, uint8_t dst, uint8_t hc) {
 
 // send telegram 0x047B only for RC100H
 void Roomctrl::humidity(uint8_t addr, uint8_t dst, uint8_t hc) {
-    int16_t dew  = calc_dew(remotetemp_[hc], remotehum_[hc]);
+    int16_t dew  = Helpers::calc_dew(remotetemp_[hc], remotehum_[hc]);
     int8_t  dew8 = EMS_VALUE_INT8_NOTSET;
     if (dew != EMS_VALUE_INT16_NOTSET) {
         dew8 = static_cast<int8_t>((dew >= 0 ? dew + 5 : dew - 5) / 10);
@@ -391,8 +391,8 @@ void Roomctrl::humidity(uint8_t addr, uint8_t dst, uint8_t hc) {
     data[5]  = 0x7B + hc;
     data[6]  = static_cast<uint8_t>(dew8);
     data[7]  = remotehum_[hc];
-    data[8]  = static_cast<uint8_t>(static_cast<uint16_t>(dew) >> 8);
-    data[9]  = static_cast<uint8_t>(static_cast<uint16_t>(dew) & 0xFF);
+    data[8]  = static_cast<uint8_t>(dew >> 8);
+    data[9]  = static_cast<uint8_t>(dew & 0x00FF);
     data[10] = EMSbus::calculate_crc(data, 10); // append CRC
     EMSuart::transmit(data, 11);
 }
@@ -439,18 +439,5 @@ void Roomctrl::replyF7(uint8_t addr, uint8_t dst, uint8_t offset, uint8_t typehh
     data[9] = EMSbus::calculate_crc(data, 9); // append CRC
     EMSuart::transmit(data, 10);
 }
-
-int16_t Roomctrl::calc_dew(int16_t temp, uint8_t humi) {
-    if (humi == EMS_VALUE_UINT8_NOTSET || temp == EMS_VALUE_INT16_NOTSET) {
-        return EMS_VALUE_INT16_NOTSET;
-    }
-    const float k2 = 17.62;
-    const float k3 = 243.12;
-    const float t  = (float)temp / 10;
-    const float h  = (float)humi / 100;
-    int16_t     dt = (10 * k3 * (((k2 * t) / (k3 + t)) + log(h)) / (((k2 * k3) / (k3 + t)) - log(h)));
-    return dt;
-}
-
 
 } // namespace emsesp

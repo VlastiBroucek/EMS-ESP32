@@ -818,7 +818,8 @@ void Thermostat::process_RemoteHumidity(std::shared_ptr<const Telegram> telegram
     if (telegram->read_value(dew, 2)) {
         has_update(dewtemperature_, dew);
     } else if (telegram->offset == 0 && telegram->message_length < 4) {
-        has_update(dewtemperature_, Roomctrl::calc_dew(tempsensor1_, humidity_));
+        dew = Helpers::calc_dew(tempsensor1_, humidity_);
+        has_update(dewtemperature_, dew);
     }
 }
 
