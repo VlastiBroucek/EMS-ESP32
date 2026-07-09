@@ -5865,7 +5865,6 @@ device name,device type,product id,shortname,fullname,type [options...] \| (min/
 "MX400",connect,17,dewtemperature,dew point temperature,int16,C,false,sensor.connect_src1_dew_point_temperature,sensor.connect_src1_dewtemperature,13,36,1/10,-1,1
 "MX400",connect,17,seltemp,selected room temperature,uint8 (>=5<=30),C,true,number.connect_src1_selected_room_temperature,number.connect_src1_seltemp,13,36,1/2,-1,1
 "MX400",connect,17,mode,operating mode,enum [off\|manual\|auto] (>=0<=0), ,true,select.connect_src1_operating_mode,select.connect_src1_mode,13,36,1,-1,1
-"MX400",connect,17,coolingon,cooling on,boolean (>=0<=0), ,true,switch.connect_src1_cooling_on,switch.connect_src1_coolingon,13,36,1,-1,1
 "MX400",connect,17,name,name,string (>=0<=0), ,true,sensor.connect_src1_name,sensor.connect_src1_name,13,36,1,-1,0
 "MX400",connect,17,childlock,child lock,boolean (>=0<=0), ,true,switch.connect_src1_child_lock,switch.connect_src1_childlock,13,36,1,-1,1
 "MX400",connect,17,icon,icon,enum [none\|mdi:chef-hat\|mdi:sofa-single-outline\|mdi:bowl-mix-outline\|mdi:bed-single-outline\|mdi:bed-double-outline\|mdi:teddy-bear\|mdi:shower\|mdi:laptop\|mdi:door\|mdi:palette-outline\|mdi:washing-machine\|mdi:bookshelf] (>=0<=0), ,true,select.connect_src1_icon,select.connect_src1_icon,13,36,1,-1,1
