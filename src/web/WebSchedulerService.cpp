@@ -401,6 +401,7 @@ bool WebSchedulerService::command(const char * name, const std::string & command
             return true;
         }
         // we can add other json tests here
+        delete http;
     }
 
     doc.clear();

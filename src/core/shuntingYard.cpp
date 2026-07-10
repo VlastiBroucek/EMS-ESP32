@@ -782,8 +782,8 @@ std::string compute(const std::string & expr) {
                     expr_new.replace(f, e - f, result.c_str());
                 }
                 http->end();
-                delete http;
             }
+            delete http;
         }
         f = expr_new.find_first_of('{', e);
     }
