@@ -1030,4 +1030,17 @@ float Helpers::numericoperator2scalefactor(int8_t numeric_operator) {
         return -numeric_operator;
 }
 
+int16_t Helpers::calc_dew(int16_t temp, uint8_t humi) {
+    if (humi == EMS_VALUE_UINT8_NOTSET || temp == EMS_VALUE_INT16_NOTSET) {
+        return EMS_VALUE_INT16_NOTSET;
+    }
+    const float k2 = 17.62;
+    const float k3 = 243.12;
+    const float t  = (float)temp / 10;
+    const float h  = (float)humi / 100;
+    int16_t     dt = (10 * k3 * (((k2 * t) / (k3 + t)) + log(h)) / (((k2 * k3) / (k3 + t)) - log(h)));
+    return dt;
+}
+
+
 } // namespace emsesp

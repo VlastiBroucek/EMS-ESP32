@@ -1,4 +1,5 @@
 #include "WiFiScanner.h"
+#include <emsesp.h>
 
 WiFiScanner::WiFiScanner(AsyncWebServer * server, SecurityManager * securityManager) {
     securityManager->addEndpoint(server, SCAN_NETWORKS_SERVICE_PATH, AuthenticationPredicates::IS_ADMIN, [this](AsyncWebServerRequest * request) {

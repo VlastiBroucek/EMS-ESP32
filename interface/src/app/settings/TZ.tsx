@@ -483,3 +483,7 @@ export function useTimeZoneSelectItems() {
 export function timeZoneSelectItems() {
   return precomputedTimeZoneItems;
 }
+
+export function timeZoneSelectItemsT() {
+  return precomputedTimeZoneItems;
+}
