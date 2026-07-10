@@ -8151,7 +8151,6 @@ uint8
 uint8
 | src1.seltemp | selected room temperature | uint8 (&gt;=5&lt;=30) | C | true | SRC | 3 | 1 | 1/2 |
 | src1.mode | operating mode | enum |   | true | SRC | 4 | 1 | 1 |
-| src1.cooling | Kühlen | boolean |   | true | SRC | -1 | 1 | 1 |
 | src1.name | name | string |   | true | SRC | 5 | 26 | 1 |
 | src1.childlock | child lock | boolean |   | true | SRC | 31 | 1 | 1 |
 | src1.icon | icon | enum |   | true | SRC | 32 | 1 | 1 |
