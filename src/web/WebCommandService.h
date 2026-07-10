@@ -83,8 +83,8 @@ class WebCommandService : public StatefulService<WebCommands> {
     bool queueCommand(const char * name, const char * value = nullptr);
     bool dispatchCommand(const char * name, const char * value = nullptr);
 
-    static bool isUrlCommand(const std::string & command);    // true if the command definition is a HTTP/URL command
-    static bool valueContainsUrl(const std::string & value);  // true if a value embeds a {"url":...} compute() will fetch
+    static bool isUrlCommand(const std::string & command);   // true if the command definition is a HTTP/URL command
+    static bool valueContainsUrl(const std::string & value); // true if a value embeds a {"url":...} compute() will fetch
 
     const CommandItem * find(const char * name);
 

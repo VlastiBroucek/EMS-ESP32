@@ -146,9 +146,9 @@ let LATEST_DEV_VERSION = '3.9.0-dev.1';
 
 // scenarios for testing versioning
 // let version_test = 0; // on latest stable, or switch to dev
-// let version_test = 1; // on latest dev, or switch back to stable
+let version_test = 1; // on latest dev, or switch back to stable
 // let version_test = 2; // upgrade an older stable to latest stable or switch to latest dev
-let version_test = 3; // upgrade dev to latest, or switch to stable
+// let version_test = 3; // upgrade dev to latest, or switch to stable
 // let version_test = 4; // downgrade to an older dev, or switch back to stable
 
 switch (version_test as number) {
@@ -4147,6 +4147,21 @@ let emsesp_customentities = {
       value_type: 0,
       writeable: true,
       value: 21
+    },
+    {
+      id: 0,
+      ram: 1,
+      device_id: 0,
+      type_id: 0,
+      offset: 0,
+      factor: 1,
+      name: 'message',
+      uom: 0,
+      value_type: 9,
+      writeable: true,
+      hide: false,
+      value:
+        '{"stable":{"version":"3.8.2","date":"2026-05-12"},"dev":{"version":"3.8.3-dev.5","date":"2026-05-28T09:55:29Z"}}'
     }
   ]
 };
@@ -4189,6 +4204,18 @@ let emsesp_commands = {
       cmd: 'system/message',
       value: '"hello world"',
       name: 'send_message'
+    },
+    {
+      id: 7,
+      cmd: 'custom/message',
+      value: '{"url":"http://emsesp.org/versions.json"}',
+      name: 'get_versions'
+    },
+    {
+      id: 8,
+      cmd: 'system/sendmail',
+      value: '"test email with version " + custom/message',
+      name: 'sendmail'
     }
   ]
 };

@@ -334,9 +334,12 @@ std::deque<Token> shuntingYard(const std::deque<Token> & tokens) {
     return queue;
 }
 
-// check if string is a number
+// check if string is a number. Must contain at least one digit
 bool isnum(const std::string & s) {
-    if (!s.empty() && (s.find_first_not_of("0123456789.") == std::string::npos || (s[0] == '-' && s.find_first_not_of("0123456789.", 1) == std::string::npos))) {
+    if (s.empty() || s.find_first_of("0123456789") == std::string::npos) {
+        return false;
+    }
+    if (s.find_first_not_of("0123456789.") == std::string::npos || (s[0] == '-' && s.find_first_not_of("0123456789.", 1) == std::string::npos)) {
         return true;
     }
     return false;
@@ -499,6 +502,18 @@ std::string calculate(const std::string & expr) {
                 }
                 break;
             }
+            if (token.str[0] == 'h') {
+                // hex string to number
+                if (rhs.empty() || rhs.find_first_not_of("0123456789abcdefABCDEF") != std::string::npos) {
+                    return "";
+                }
+                stack.push_back(to_string(std::stoi(rhs, 0, 16)));
+                break;
+            }
+            // bail out on non-numeric operand
+            if (!isnum(rhs)) {
+                return "";
+            }
             auto rhd = std::stod(rhs);
             switch (token.str[0]) {
             default:
@@ -530,9 +545,6 @@ std::string calculate(const std::string & expr) {
                 break;
             case 'p':
                 stack.push_back(to_string(std::pow(rhd, 2)));
-                break;
-            case 'h':
-                stack.push_back(to_string(std::stoi(rhs, 0, 16)));
                 break;
             case 'x':
                 stack.push_back(to_hex(static_cast<int>(rhd)));
@@ -640,6 +652,10 @@ std::string calculate(const std::string & expr) {
             if (token.str[0] == '+' && (!isnum(rhs) || !isnum(lhs))) {
                 stack.push_back(lhs + rhs);
                 break;
+            }
+            // bail out on non-numeric operands
+            if (!isnum(lhs) || !isnum(rhs)) {
+                return "";
             }
             auto lhd = std::stod(lhs);
             auto rhd = std::stod(rhs);

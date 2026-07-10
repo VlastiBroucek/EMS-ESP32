@@ -207,12 +207,12 @@ class AnalogSensor {
     uint32_t sensorreads_ = 0;
 
 #ifndef EMSESP_STANDALONE
-    static void IRAM_ATTR freqIrq0();
-    static void IRAM_ATTR freqIrq1();
-    static void IRAM_ATTR freqIrq2();
+    static void IRAM_ATTR         freqIrq0();
+    static void IRAM_ATTR         freqIrq1();
+    static void IRAM_ATTR         freqIrq2();
     static volatile unsigned long edge[3];    // written from freqIrqN() ISRs, read from the main measure() loop (partly outside the critical section)
     static volatile unsigned long edgecnt[3]; // written from freqIrqN() ISRs, read from the main measure() loop (partly outside the critical section)
-    unsigned long         lastedge[3] = {0, 0, 0};
+    unsigned long                 lastedge[3] = {0, 0, 0};
 #endif
 };
 

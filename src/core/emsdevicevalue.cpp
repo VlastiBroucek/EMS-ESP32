@@ -351,10 +351,10 @@ bool DeviceValue::get_min_max(int16_t & dv_set_min, uint32_t & dv_set_max) {
 
 // extract custom min from custom_fullname
 bool DeviceValue::get_custom_min(int16_t & val) {
-    const auto & cf        = custom_fullname();
-    auto         min_pos   = cf.find('>');
-    bool         has_min   = (min_pos != std::string::npos);
-    uint8_t fahrenheit = !EMSESP::system_.fahrenheit() ? 0 : (uom == DeviceValueUOM::DEGREES) ? 2 : (uom == DeviceValueUOM::DEGREES_R) ? 1 : 0;
+    const auto & cf         = custom_fullname();
+    auto         min_pos    = cf.find('>');
+    bool         has_min    = (min_pos != std::string::npos);
+    uint8_t      fahrenheit = !EMSESP::system_.fahrenheit() ? 0 : (uom == DeviceValueUOM::DEGREES) ? 2 : (uom == DeviceValueUOM::DEGREES_R) ? 1 : 0;
     if (has_min) {
         int32_t v = Helpers::atoint(cf.substr(min_pos + 1).c_str());
         if (fahrenheit) {
@@ -370,10 +370,10 @@ bool DeviceValue::get_custom_min(int16_t & val) {
 
 // extract custom max from custom_fullname
 bool DeviceValue::get_custom_max(uint32_t & val) {
-    const auto & cf        = custom_fullname();
-    auto         max_pos   = cf.find('<');
-    bool         has_max   = (max_pos != std::string::npos);
-    uint8_t fahrenheit = !EMSESP::system_.fahrenheit() ? 0 : (uom == DeviceValueUOM::DEGREES) ? 2 : (uom == DeviceValueUOM::DEGREES_R) ? 1 : 0;
+    const auto & cf         = custom_fullname();
+    auto         max_pos    = cf.find('<');
+    bool         has_max    = (max_pos != std::string::npos);
+    uint8_t      fahrenheit = !EMSESP::system_.fahrenheit() ? 0 : (uom == DeviceValueUOM::DEGREES) ? 2 : (uom == DeviceValueUOM::DEGREES_R) ? 1 : 0;
     if (has_max) {
         int32_t v = Helpers::atoint(cf.substr(max_pos + 1).c_str());
         if (fahrenheit) {

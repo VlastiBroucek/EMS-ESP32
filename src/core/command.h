@@ -59,7 +59,7 @@ using cmd_function_p = std::function<bool(const char * data, const int8_t id, Js
 class Command {
   public:
     struct CmdFunction {
-        uint8_t              device_type_;     // DeviceType::
+        uint8_t              device_type_; // DeviceType::
         uint8_t              device_id_;
         uint8_t              flags_;           // mqtt flags for command subscriptions
         bool                 has_json_output_; // true if the command writes JSON output; such commands bypass the readonly check
@@ -116,8 +116,11 @@ class Command {
     static void
     add(const uint8_t device_type, const char * cmd, const cmd_function_p cb, const char * const * description, uint8_t flags = CommandFlag::CMD_FLAG_DEFAULT);
     // command that writes a JSON object as its output; bypasses the readonly check
-    static void
-    add_json(const uint8_t device_type, const char * cmd, const cmd_function_p cb, const char * const * description, uint8_t flags = CommandFlag::CMD_FLAG_DEFAULT);
+    static void add_json(const uint8_t        device_type,
+                         const char *         cmd,
+                         const cmd_function_p cb,
+                         const char * const * description,
+                         uint8_t              flags = CommandFlag::CMD_FLAG_DEFAULT);
 
     static void reserve(size_t num) {
         cmdfunctions_.reserve(num);

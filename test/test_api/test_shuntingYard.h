@@ -107,6 +107,19 @@ void shuntingYard_test25() {
     run_shuntingYard_test("hello world!", "'hello world!'");
 }
 
+// non-numeric operands must not crash. should return empty string
+void shuntingYard_test26() {
+    run_shuntingYard_test("", "info/x");
+}
+
+void shuntingYard_test27() {
+    run_shuntingYard_test("", "info-x");
+}
+
+void shuntingYard_test28() {
+    run_shuntingYard_test("", "-x");
+}
+
 void run_shuntingYard_tests() {
     RUN_TEST(shuntingYard_test1);
     RUN_TEST(shuntingYard_test2);
@@ -133,4 +146,7 @@ void run_shuntingYard_tests() {
     RUN_TEST(shuntingYard_test23);
     RUN_TEST(shuntingYard_test24);
     RUN_TEST(shuntingYard_test25);
+    RUN_TEST(shuntingYard_test26);
+    RUN_TEST(shuntingYard_test27);
+    RUN_TEST(shuntingYard_test28);
 }

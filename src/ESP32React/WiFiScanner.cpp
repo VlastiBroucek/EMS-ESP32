@@ -1,7 +1,5 @@
 #include "WiFiScanner.h"
 
-#include "../core/psram_async_json_response.h"
-
 WiFiScanner::WiFiScanner(AsyncWebServer * server, SecurityManager * securityManager) {
     securityManager->addEndpoint(server, SCAN_NETWORKS_SERVICE_PATH, AuthenticationPredicates::IS_ADMIN, [this](AsyncWebServerRequest * request) {
         scanNetworks(request);
