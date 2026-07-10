@@ -21,7 +21,6 @@
 #include "emsesp.h"
 
 #include "shuntingYard.h"
-// #include <regex>
 
 namespace emsesp {
 
@@ -334,8 +333,6 @@ std::deque<Token> shuntingYard(const std::deque<Token> & tokens) {
 
 // check if string is a number
 bool isnum(const std::string & s) {
-    // std::regex r("^[+-]?(\\d+\\.?\\d*)$");
-    // return std::regex_match(s, r);
     if (s.empty() || s.find_first_of("0123456789") == std::string::npos) {
         return false;
     }
