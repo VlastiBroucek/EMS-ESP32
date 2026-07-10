@@ -170,6 +170,25 @@ void Connect::process_roomThermostatSettings(std::shared_ptr<const Telegram> tel
     // has_update(telegram, rc->coolautotemp_, 5);
     // has_update(telegram, rc->cooltemp_, 6);
     has_update(telegram, rc->childlock_, 7);
+    uint8_t mh = 0xFF;
+    uint8_t mc = 0xFF;
+    telegram->read_value(mh, 0);
+    telegram->read_value(mc, 4);
+    if (mc == 3) {
+        rc->coolmode_ = 1;
+        rc->mode_     = 0;
+    } else if (mh == 3) {
+        rc->coolmode_ = 0;
+        rc->mode_     = 0;
+    } else if (mc == 1) {
+        rc->coolmode_ = 1;
+        rc->mode_     = 1;
+    } else if (mh == 1) {
+        rc->coolmode_ = 0;
+        rc->mode_     = 1;
+    } else {
+        rc->mode_ = 2;
+    }
 }
 
 // unknown telegrams, needs fetch
