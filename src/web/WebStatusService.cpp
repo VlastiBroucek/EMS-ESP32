@@ -247,6 +247,7 @@ void WebStatusService::action(AsyncWebServerRequest * request, JsonVariant json)
     if (!ok) {
         EMSESP::logger().err("Action '%s' failed", action.c_str());
         request->send(400); // bad request
+        delete response;
         return;
     }
 
