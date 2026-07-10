@@ -229,6 +229,14 @@ void Connect::process_roomConfig(std::shared_ptr<const Telegram> telegram) {
                 return;
             }
             uint8_t bits = telegram->message_data[3];
+            if (rc->mode_ == 2) {
+                if (bits & 0x02) {
+                    rc->coolmode_ = 0;
+                } else if (bits & 0x20) {
+                    rc->coolmode_ = 1;
+                }
+            }
+            /*
             switch (bits & 0x6A) {
             case 0: // cooling off
                 rc->mode_     = 0;
@@ -253,6 +261,7 @@ void Connect::process_roomConfig(std::shared_ptr<const Telegram> telegram) {
                 rc->coolmode_ = 0;
                 break;
             }
+            */
         }
     }
 }
