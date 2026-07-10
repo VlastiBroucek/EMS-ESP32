@@ -136,6 +136,15 @@ const NTPSettings = () => {
     updateFormValue(event);
   };
 
+  const changeTimeZoneT = (event: React.ChangeEvent<HTMLInputElement>) => {
+    void updateState(readNTPSettings(), (settings: NTPSettingsType) => ({
+      ...settings,
+      tz_label_t: event.target.value,
+      tz_format_t: TIME_ZONES[event.target.value]
+    }));
+    updateFormValue(event);
+  };
+
   const renderContent = () => {
     if (!data) {
       return <FormLoader onRetry={loadData} errorMessage={errorMessage || ''} />;
