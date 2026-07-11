@@ -39,6 +39,12 @@ WebAPIService::WebAPIService(AsyncWebServer * server, SecurityManager * security
 // POST|GET api/{device}
 // POST|GET api/{device}/{entity}
 void WebAPIService::webAPIService(AsyncWebServerRequest * request, JsonVariant json) {
+    static bool busy = false;
+    if (busy && request->method() == HTTP_GET) {
+        request->send(429); // too many requests
+        return;
+    }
+    busy = true;
     JsonDocument input_doc; // has no body JSON so create dummy as empty input object
     JsonObject   input;
     // if no body then treat it as a secure GET
@@ -53,6 +59,7 @@ void WebAPIService::webAPIService(AsyncWebServerRequest * request, JsonVariant j
         input["data"] = json.as<std::string>();
     }
     parse(request, input);
+    busy = false;
 }
 
 // for POSTS accepting plain text data
