@@ -374,13 +374,12 @@ std::string WebCommandService::get_metrics_prometheus() {
 void WebCommandService::get_value_json(JsonObject output, const CommandItem & ci) {
     output["name"] = (const char *)ci.name;
     // output["fullname"]  = (const char *)ci.name;
-    // output["type"]     = "command";
+    output["type"]     = "command";
     output["command"] = ci.cmd;
     output["value"]   = ci.value;
-    // bool hasName       = ci.name[0] != '\0';
-    // output["readable"]  = hasName;
-    // output["writeable"] = hasName;
-    // output["visible"]   = hasName;
+    output["readable"]  = true;
+    output["writeable"] = true;
+    output["visible"]   = true;
 }
 
 void WebCommandService::publish(const bool force) {
