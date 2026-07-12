@@ -923,7 +923,7 @@ const emsesp_coredata = {
   devices: [
     {
       id: 7,
-      t: 5,
+      t: 6,
       tn: 'Boiler',
       b: 'Nefit',
       n: 'Nefit Trendline HRC30/Generic Heatronic 3',
@@ -935,7 +935,7 @@ const emsesp_coredata = {
     },
     {
       id: 3,
-      t: 5,
+      t: 6,
       tn: 'Boiler',
       b: 'Buderus',
       n: 'Buderus GB125',
@@ -947,7 +947,7 @@ const emsesp_coredata = {
     },
     {
       id: 1,
-      t: 6,
+      t: 7,
       tn: 'Thermostat',
       b: 'Buderus',
       n: 'RC35',
@@ -959,7 +959,7 @@ const emsesp_coredata = {
     },
     {
       id: 2,
-      t: 6,
+      t: 7,
       tn: 'Thermostat',
       b: '',
       n: 'RC20',
@@ -971,7 +971,7 @@ const emsesp_coredata = {
     },
     {
       id: 4,
-      t: 6,
+      t: 7,
       tn: 'Thermostat',
       b: 'Nefit',
       n: 'Moduline 1000',
@@ -983,7 +983,7 @@ const emsesp_coredata = {
     },
     {
       id: 5,
-      t: 7,
+      t: 8,
       tn: 'Mixer Module',
       b: 'Buderus',
       n: 'MM10',
@@ -994,7 +994,7 @@ const emsesp_coredata = {
     },
     {
       id: 6,
-      t: 8,
+      t: 9,
       tn: 'Solar Module',
       b: 'Buderus',
       n: 'SM10',
@@ -1007,7 +1007,7 @@ const emsesp_coredata = {
     {
       id: 8,
       tn: 'Boiler/HP',
-      t: 5,
+      t: 10,
       b: '',
       n: 'Bosch Compress 7000i AW Heat Pump',
       d: 8,
@@ -1019,7 +1019,7 @@ const emsesp_coredata = {
     {
       id: 9,
       tn: 'Thermostat',
-      t: 6,
+      t: 7,
       b: '',
       n: 'RC100H',
       d: 56,
@@ -1031,7 +1031,7 @@ const emsesp_coredata = {
     {
       id: 10,
       tn: 'Thermostat',
-      t: 6,
+      t: 7,
       b: '',
       n: 'RC310',
       d: 16,
@@ -1043,7 +1043,7 @@ const emsesp_coredata = {
     {
       id: 11,
       tn: 'Ventilation',
-      t: 18,
+      t: 19,
       b: '',
       n: 'Vent4000CC',
       d: 81,
@@ -1051,6 +1051,18 @@ const emsesp_coredata = {
       v: '53.02',
       e: 10,
       url: 'ventilation'
+    },
+    {
+      id: 12,
+      tn: 'Gateway',
+      t: 11,
+      b: '',
+      n: 'KM300',
+      d: 72,
+      p: 231,
+      v: '01.20',
+      e: 0,
+      url: 'gateway'
     }
   ]
 };
@@ -4703,6 +4715,10 @@ router
 
   // Device Data
   .get(EMSESP_CORE_DATA_ENDPOINT, () => {
+    // remove gateway and connect devices
+    emsesp_coredata.devices = emsesp_coredata.devices.filter(
+      (item) => item.t !== 11 && item.t !== 12
+    );
     // sort by type, like its done in the C++ code
     let sorted_devices = [...emsesp_coredata.devices].sort((a, b) => a.t - b.t);
     // append emsesp_coredata to sorted_devices so Custom is always at the end of the list

@@ -88,12 +88,13 @@ class Module {}; // forward declaration
 //
 // MAKE_PF_CB(member) produces a non-capturing trampoline that decays to a
 // plain function pointer (EMSdevice::process_function_p). The outer IILE
-// (immediately-invoked lambda expression) captures `this` purely to deduce
-// the derived-class type via decltype; the inner lambda is non-capturing and
-// therefore convertible to a function pointer via the unary `+` operator.
+// (immediately-invoked lambda expression) uses `decltype(this)` in an
+// unevaluated context to deduce the derived-class type without capturing
+// `this`; the inner lambda is non-capturing and therefore convertible to a
+// function pointer via the unary `+` operator.
 // Result: zero heap (no std::function control block) and direct dispatch.
 #define MAKE_PF_CB(__f)                                                                                                                                        \
-    ([this]() {                                                                                                                                                \
+    ([]() {                                                                                                                                                    \
         using SelfT = std::remove_pointer_t<decltype(this)>;                                                                                                   \
         return +[](emsesp::EMSdevice * dev, const std::shared_ptr<const Telegram> & t) { static_cast<SelfT *>(dev)->__f(t); };                                 \
     }())
