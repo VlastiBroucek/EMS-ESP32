@@ -17,8 +17,9 @@ For more details go to [emsesp.org](https://emsesp.org/).
 - fix setting date/time on Junkers thermostats
 - offset of hpminflowtemp [#3144](https://github.com/emsesp/EMS-ESP32/issues/3144)
 - water circulation command [#3149](https://github.com/emsesp/EMS-ESP32/pull/3149)
-- start scheduler after customEntities, delay scheduler loop after startup, handling of `system/reset` command [#3146](https://github.com/emsesp/EMS-ESP32/issues/3146)
+- start scheduler after customEntities, delay scheduler loop after startup, handling of `system/restart` command [#3146](https://github.com/emsesp/EMS-ESP32/issues/3146)
 - possible memory leaks fixed.
+- repeated startup schedules compute value
 
 ## Changed
 
