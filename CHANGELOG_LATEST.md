@@ -25,3 +25,4 @@ For more details go to [emsesp.org](https://emsesp.org/).
 - network fallback to AP only after start [#3090](https://github.com/emsesp/EMS-ESP32/issues/3090)
 - replaced Web async-validator with custom validator and toast with native snackbar to reduce bundle size
 - Dewtemperature for Easycontrol calculated by ems-esp [3135](https://github.com/emsesp/EMS-ESP32/issues/3135)
+- Gateway and Connect devices are not shown in the Devices page [3126](https://github.com/emsesp/EMS-ESP32/discussions/3126)
