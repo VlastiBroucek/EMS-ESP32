@@ -538,10 +538,10 @@ void WebSchedulerService::loop() {
         last_uptime_min = uptime_min;
     }
 
-    // check calender, sync to RTC, only execute if year is valid
+    // check calender, sync to RTC, only execute if year is valid and uptime more than a minute
     time_t now = time(nullptr);
     tm *   tm  = localtime(&now);
-    if (tm->tm_min != last_tm_min && tm->tm_year > 120) {
+    if (tm->tm_min != last_tm_min && tm->tm_year > 120 && uuid::get_uptime_sec() > 60) {
         // find the real dow and minute from RTC
         uint8_t  real_dow = 1 << tm->tm_wday; // 1 is Sunday
         uint16_t real_min = tm->tm_hour * 60 + tm->tm_min;
