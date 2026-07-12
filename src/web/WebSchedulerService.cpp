@@ -484,6 +484,10 @@ void WebSchedulerService::loop() {
     if (scheduleItems_->empty()) {
         return;
     }
+    // do not execute any command in the first 60 secondes
+    if (uuid::get_uptime_sec() < 60) {
+        return;
+    }
 
     // check if we have onChange events
     while (!cmd_changed_.empty()) {
@@ -527,7 +531,8 @@ void WebSchedulerService::loop() {
             // retry startup commands not yet executed
             if (scheduleItem.active && scheduleItem.flags == SCHEDULEFLAG_SCHEDULE_TIMER && scheduleItem.elapsed_min == 0
                 && scheduleItem.retry_cnt < MAX_STARTUP_RETRIES) {
-                scheduleItem.retry_cnt = command(scheduleItem.name, scheduleItem.cmd.c_str(), scheduleItem.value.c_str()) ? 0xFF : scheduleItem.retry_cnt + 1;
+                scheduleItem.retry_cnt =
+                    command(scheduleItem.name, scheduleItem.cmd.c_str(), compute(scheduleItem.value.c_str())) ? 0xFF : scheduleItem.retry_cnt + 1;
             }
             // scheduled timer commands
             if (scheduleItem.active && scheduleItem.flags == SCHEDULEFLAG_SCHEDULE_TIMER && scheduleItem.elapsed_min > 0
