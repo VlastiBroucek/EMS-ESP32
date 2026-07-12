@@ -728,6 +728,8 @@ std::string compute(const std::string & expr) {
             }
             if (url.substr(0, 4) == "http") { // match http and https
                 HTTPClient * http = new HTTPClient;
+                http->setConnectTimeout(10000);
+                http->setTimeout(10000);
                 if (http->begin(url.c_str())) {
                     int httpResult = 0;
                     for (JsonPair p : doc[header_s].as<JsonObject>()) {

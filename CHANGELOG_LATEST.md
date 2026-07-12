@@ -27,3 +27,4 @@ For more details go to [emsesp.org](https://emsesp.org/).
 - Dewtemperature for Easycontrol calculated by ems-esp [#3135](https://github.com/emsesp/EMS-ESP32/issues/3135)
 - add option for sync thermostat to ntp, allow different time zones [#3148](https://github.com/emsesp/EMS-ESP32/discussions/3148), **defaults to sync**.
 - block too many GET requests [mentioned in #3104](https://github.com/emsesp/EMS-ESP32/issues/3104)
+- set 10 sec timeout for http requests [#3104](https://github.com/emsesp/EMS-ESP32/issues/3104)
