@@ -862,6 +862,7 @@ std::string compute(const std::string & expr) {
                             }
                             result = json.as<std::string>();
                         }
+                        expr_new.replace(f, e - f, result.c_str());
                     }
                 }
                 expr_new.replace(f, e - f, result);

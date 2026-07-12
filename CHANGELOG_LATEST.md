@@ -19,6 +19,9 @@ For more details go to [emsesp.org](https://emsesp.org/).
 - fix setting date/time on Junkers thermostats
 - offset of hpminflowtemp [#3144](https://github.com/emsesp/EMS-ESP32/issues/3144)
 - water circulation command [#3149](https://github.com/emsesp/EMS-ESP32/pull/3149)
+- start scheduler after customEntities, delay scheduler loop after startup, handling of `system/restart` command [#3146](https://github.com/emsesp/EMS-ESP32/issues/3146)
+- possible memory leaks fixed.
+- repeated startup schedules compute value
 
 ## Changed
 
@@ -27,4 +30,5 @@ For more details go to [emsesp.org](https://emsesp.org/).
 - network fallback to AP only after start [#3090](https://github.com/emsesp/EMS-ESP32/issues/3090)
 - replaced Web async-validator with custom validator and toast with native snackbar to reduce bundle size
 - Dewtemperature for Easycontrol calculated by ems-esp [#3135](https://github.com/emsesp/EMS-ESP32/issues/3135)
-- add option for sync thermostat to ntp, allow different time zones [#3148](https://github.com/emsesp/EMS-ESP32/discussions/3148), **defaults to no sync**.
+- add option for sync thermostat to ntp, allow different time zones [#3148](https://github.com/emsesp/EMS-ESP32/discussions/3148), **defaults to sync**.
+- block too many GET requests [mentioned in #3104](https://github.com/emsesp/EMS-ESP32/issues/3104)

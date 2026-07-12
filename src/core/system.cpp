@@ -1958,7 +1958,9 @@ bool System::get_value_info(JsonObject output, const char * cmd) {
         LOG_ERROR("empty system command");
         return false;
     }
-
+    if (!strcmp(cmd, "restart")) { // restart is a command, not an entity
+        return false;
+    }
     // check for hardcoded "info"/"value"
     if (!strcmp(cmd, F_(info)) || !strcmp(cmd, F_(values))) {
         return command_info("", 0, output);

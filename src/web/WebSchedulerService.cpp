@@ -370,6 +370,10 @@ void WebSchedulerService::loop() {
     if (scheduleItems_->empty()) {
         return;
     }
+    // do not execute any command in the first 60 secondes
+    if (uuid::get_uptime_sec() < 60) {
+        return;
+    }
 
     // check if we have onChange events
     while (!cmd_changed_.empty()) {
