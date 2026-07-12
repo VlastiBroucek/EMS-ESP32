@@ -355,8 +355,10 @@ bool WebSchedulerService::command(const char * name, const std::string & command
     JsonDocument doc;
     if (deserializeJson(doc, cmd) == DeserializationError::Ok) {
         HTTPClient * http = new HTTPClient;
+#ifndef EMSESP_STANDALONE
         http->setConnectTimeout(10000);
         http->setTimeout(10000);
+#endif
         std::string url = doc["url"] | "";
         // for a GET with parameters replace commands with values
         // don't search the complete url, it may contain a devicename in path
