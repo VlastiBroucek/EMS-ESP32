@@ -76,7 +76,9 @@ StateUpdateResult WebScheduler::update(JsonObject root, WebScheduler & webSchedu
     for (ScheduleItem & scheduleItem : webScheduler.scheduleItems) {
         char key[sizeof(scheduleItem.name) + 2];
         snprintf(key, sizeof(key), "s:%s", scheduleItem.name);
-        EMSESP::nvs_.remove(key);
+        if (EMSESP::nvs_.isKey(key)) {
+            EMSESP::nvs_.remove(key);
+        }
     }
     webScheduler.scheduleItems.clear();
     EMSESP::webSchedulerService.ha_reset();
