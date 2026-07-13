@@ -20,6 +20,7 @@ For more details go to [emsesp.org](https://emsesp.org/).
 - start scheduler after customEntities, delay scheduler loop after startup, handling of `system/restart` command [#3146](https://github.com/emsesp/EMS-ESP32/issues/3146)
 - possible memory leaks fixed.
 - repeated startup schedules compute value
+- call `system/message` called from scheduler processes compute twice
 
 ## Changed
 

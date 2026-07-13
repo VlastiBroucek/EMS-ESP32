@@ -347,7 +347,11 @@ uint8_t WebSchedulerService::count_entities(bool cmd_only) {
 // execute scheduled command
 bool WebSchedulerService::command(const char * name, const std::string & command, const std::string & data) {
     std::string cmd = Helpers::toLower(command);
-
+    if (cmd == "system/message") {
+        EMSESP::logger().info("Message: %s", data.c_str());  // send to log
+        Mqtt::queue_publish(F_(message), data); // send to MQTT if enabled
+        return true;
+    }
     // check http commands. e.g.
     // tasmota(get): http://<tasmotaIP>/cm?cmnd=power%20ON
     // shelly(get): http://<shellyIP>/relais/0?turn=on
