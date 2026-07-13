@@ -42,17 +42,8 @@ std::deque<Token> exprToTokens(const std::string & expr) {
                 i += (*p == '{') ? 1 : (*p == '}') ? -1 : 0;
                 ++p;
             }
-            if (*p) {
-                ++p;
-            }
-            // Use string_view to avoid unnecessary string copies
-            std::string_view s(b, p - b);
-            auto             n = s.find("\"\"");
-            while (n != std::string_view::npos) {
-                s.remove_prefix(n + 2);
-                n = s.find("\"\"");
-            }
-            tokens.emplace_back(Token::Type::String, std::string(s), -3);
+            const auto s = std::string(b, p);
+            tokens.emplace_back(Token::Type::String, s, -3);
             if (*p == '\0') {
                 --p;
             }
