@@ -64,8 +64,8 @@ void WebDataService::core_data(AsyncWebServerRequest * request) {
     // list is already sorted by device type
     JsonArray devices = root["devices"].to<JsonArray>();
     for (const auto & emsdevice : EMSESP::emsdevices) {
-        // ignore controller
-        if (emsdevice && (emsdevice->device_type() != EMSdevice::DeviceType::CONTROLLER || emsdevice->count_entities() > 0)) {
+        // ignore controller and gateway
+        if (emsdevice && (emsdevice->device_type() != EMSdevice::DeviceType::CONTROLLER && emsdevice->device_type() != EMSdevice::DeviceType::GATEWAY && emsdevice->count_entities() > 0)) {
             JsonObject obj = devices.add<JsonObject>();
             obj["id"]      = emsdevice->unique_id();                            // a unique id
             obj["tn"]      = emsdevice->device_type_2_device_name_translated(); // translated device type name

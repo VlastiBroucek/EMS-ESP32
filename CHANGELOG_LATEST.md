@@ -22,6 +22,7 @@ For more details go to [emsesp.org](https://emsesp.org/).
 - start scheduler after customEntities, delay scheduler loop after startup, handling of `system/restart` command [#3146](https://github.com/emsesp/EMS-ESP32/issues/3146)
 - possible memory leaks fixed.
 - repeated startup schedules compute value
+- shunting yard show json
 
 ## Changed
 
@@ -32,3 +33,4 @@ For more details go to [emsesp.org](https://emsesp.org/).
 - Dewtemperature for Easycontrol calculated by ems-esp [#3135](https://github.com/emsesp/EMS-ESP32/issues/3135)
 - add option for sync thermostat to ntp, allow different time zones [#3148](https://github.com/emsesp/EMS-ESP32/discussions/3148), **defaults to sync**.
 - block too many GET requests [mentioned in #3104](https://github.com/emsesp/EMS-ESP32/issues/3104)
+- Gateway and Connect devices are not shown in the Devices page [3126](https://github.com/emsesp/EMS-ESP32/discussions/3126)
