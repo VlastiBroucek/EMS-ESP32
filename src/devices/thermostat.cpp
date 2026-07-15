@@ -816,7 +816,6 @@ void Thermostat::process_RemoteTemp(const std::shared_ptr<const Telegram> & tele
 // e.g. "38 10 FF 00 03 7B 08 24 00 4B"
 void Thermostat::process_RemoteHumidity(const std::shared_ptr<const Telegram> & telegram) {
     // has_update(telegram, dewtemperature_, 0); // this is int8
-
     // some thermostats use short telegram with int8 dewpoint, https://github.com/emsesp/EMS-ESP32/issues/1491
     // but it's not a dewpoint in offset 0, removed, see https://github.com/emsesp/EMS-ESP32/issues/3135
     has_update(telegram, humidity_, 1);
@@ -825,7 +824,8 @@ void Thermostat::process_RemoteHumidity(const std::shared_ptr<const Telegram> & 
     if (telegram->read_value(dew, 2)) {
         has_update(dewtemperature_, dew);
     } else if (telegram->offset == 0 && telegram->message_length < 4) {
-        has_update(dewtemperature_, Roomctrl::calc_dew(tempsensor1_, humidity_));
+        dew = Helpers::calc_dew(tempsensor1_, humidity_);
+        has_update(dewtemperature_, dew);
     }
 }
 
@@ -1477,9 +1477,14 @@ void Thermostat::process_HPSet(const std::shared_ptr<const Telegram> & telegram)
     if (hc == nullptr) {
         return;
     }
-    has_update(telegram, hc->dewoffset, 4);     // 7-35°C
-    has_update(telegram, hc->roomtempdiff, 3);  // 1-10K
-    has_update(telegram, hc->hpminflowtemp, 0); // 2-10K
+    if (hc->control == 3 || hc->control == 6) {     // control with humidity
+        has_update(telegram, hc->hpminflowtemp, 0); // 7-35°C
+    } else {
+        has_update(telegram, hc->hpminflowtemp, 1); // 7-35°C
+    }
+    // has_update(telegram, hc->roomtempoffset, 2); // 1-10K // not implemented, mentioned in #3144
+    has_update(telegram, hc->roomtempdiff, 3); // 1-10K
+    has_update(telegram, hc->dewoffset, 4);    // 2-10K
 }
 
 // type 0x41 - data from the RC30 thermostat(0x10) - 14 bytes long
@@ -1737,9 +1742,18 @@ void Thermostat::process_RCTime(const std::shared_ptr<const Telegram> & telegram
     }
 
     // check clock
-    time_t now   = time(nullptr);
-    tm *   tm_   = localtime(&now);
-    bool   tset_ = tm_->tm_year > 110;                       // year 2010 and up, time is valid
+    time_t now  = time(nullptr);
+    bool   sync = false;
+    // change to thermostat timezone if different
+    EMSESP::esp32React.getNTPSettingsService()->read([&](const NTPSettings & settings) {
+        sync = settings.thermostat_sync != 0;
+        if (settings.thermostat_sync == 2) {
+            setenv("TZ", settings.tzFormatT.c_str(), 1);
+            tzset();
+        }
+    });
+    tm * tm_     = localtime(&now);
+    bool tset_   = tm_->tm_year > 110;                       // year 2010 and up, time is valid
     tm_->tm_year = (telegram->message_data[0] & 0x7F) + 100; // IVT
     tm_->tm_mon  = telegram->message_data[1] - 1;
     tm_->tm_mday = telegram->message_data[3];
@@ -1755,20 +1769,27 @@ void Thermostat::process_RCTime(const std::shared_ptr<const Telegram> & telegram
     strftime(newdatetime, sizeof(dateTime_), "%d.%m.%Y %H:%M", tm_);
     has_update(dateTime_, newdatetime, sizeof(dateTime_));
 
-    bool   ivtclock     = (telegram->message_data[0] & 0x80) == 0x80; // dont sync ivt-clock, #439
-    bool   junkersclock = model() == EMSdevice::EMS_DEVICE_FLAG_JUNKERS;
-    time_t ttime        = mktime(tm_); // thermostat time
+    bool ivtclock = (telegram->message_data[0] & 0x80) == 0x80; // dont sync ivt-clock, #439
+    tm_->tm_isdst = -1;                                         // determine dst
+    time_t ttime  = mktime(tm_);                                // make thermostat time
+    // change back emsesp timezone
+    EMSESP::esp32React.getNTPSettingsService()->read([&](const NTPSettings & settings) {
+        if (settings.thermostat_sync == 2) {
+            setenv("TZ", settings.tzFormat.c_str(), 1);
+            tzset();
+        }
+    });
     // correct thermostat clock if we have valid ntp time, and could write the command
-    if (!ivtclock && !junkersclock && tset_ && EMSESP::system_.ntp_connected() && !EMSESP::system_.readonly_mode() && has_command(&dateTime_)) {
-        double difference = difftime(now, ttime);
+    if (sync && !ivtclock && tset_ && EMSESP::system_.ntp_connected() && !EMSESP::system_.readonly_mode() && has_command(&dateTime_)) {
+        int difference = difftime(now, ttime);
         if (difference > 15 || difference < -15) {
             if (setTimeRetry < 3) {
                 if (!use_dst) {
                     set_datetime("ntp", 0); // set from NTP without dst
-                    LOG_INFO("thermostat time correction from ntp, ignoring dst");
+                    LOG_INFO("thermostat time correction %d seconds from ntp, ignoring dst", difference);
                 } else {
                     set_datetime("ntp", -1); // set from NTP
-                    LOG_INFO("thermostat time correction from ntp");
+                    LOG_INFO("thermostat time correction %d seconds from ntp", difference);
                 }
                 setTimeRetry++;
             }
@@ -1778,10 +1799,6 @@ void Thermostat::process_RCTime(const std::shared_ptr<const Telegram> & telegram
     }
 #ifndef EMSESP_STANDALONE
     if (!tset_ && tm_->tm_year > 110) { // emsesp clock not set, but thermostat clock
-        if (ivtclock) {
-            tm_->tm_isdst = -1;          // determine dst
-            ttime         = mktime(tm_); // thermostat time
-        }
         struct timeval newnow = {.tv_sec = ttime, .tv_usec = 0};
 #if CONFIG_IDF_TARGET_ESP32C3
         // unknown how to set time on C3
@@ -1932,7 +1949,11 @@ bool Thermostat::set_hpminflowtemp(const char * value, const int8_t id) {
     }
     int v;
     if (Helpers::value2temperature(value, v)) {
-        write_command(hp_typeids[hc->hc()], 0, v, hp_typeids[hc->hc()]);
+        if (hc->control == 3 || hc->control == 6) { // remotes with humidity
+            write_command(hp_typeids[hc->hc()], 0, v, hp_typeids[hc->hc()]);
+        } else {
+            write_command(hp_typeids[hc->hc()], 1, v, hp_typeids[hc->hc()]);
+        }
         return true;
     }
     return false;
@@ -3061,6 +3082,15 @@ bool Thermostat::set_datetime(const char * value, const int8_t id) {
     if (dt == "ntp") {
         time_t now = time(nullptr);
         tm *   tm_ = localtime(&now);
+        EMSESP::esp32React.getNTPSettingsService()->read([&](const NTPSettings & settings) {
+            if (settings.thermostat_sync == 2) {
+                setenv("TZ", settings.tzFormatT.c_str(), 1);
+                tzset();
+                tm_ = localtime(&now);
+                setenv("TZ", settings.tzFormat.c_str(), 1);
+                tzset();
+            }
+        });
         if (tm_->tm_year < 110) { // no valid time
             return false;
         }
@@ -3076,10 +3106,7 @@ bool Thermostat::set_datetime(const char * value, const int8_t id) {
         data[5] = tm_->tm_sec;
         data[6] = (tm_->tm_wday + 6) % 7;            // Bosch counts from Mo, time from Su
         data[7] = (id == 0) ? 2 : tm_->tm_isdst + 2; // set DST and flag for ext. clock
-        if (model() == EMSdevice::EMS_DEVICE_FLAG_JUNKERS) {
-            data[7] = 0;
-        }
-    } else if (dt.length() == 23) {
+    } else if (dt.length() == 23 || dt.length() == 21) {
         data[0] = (dt[7] - '0') * 100 + (dt[8] - '0') * 10 + (dt[9] - '0'); // year
         data[1] = (dt[3] - '0') * 10 + (dt[4] - '0');                       // month
         data[2] = (dt[11] - '0') * 10 + (dt[12] - '0');                     // hour
@@ -3087,10 +3114,35 @@ bool Thermostat::set_datetime(const char * value, const int8_t id) {
         data[4] = (dt[14] - '0') * 10 + (dt[15] - '0');                     // min
         data[5] = (dt[17] - '0') * 10 + (dt[18] - '0');                     // sec
         data[6] = (dt[20] - '0');                                           // day of week, Mo:0
-        data[7] = (dt[22] - '0') + 2;                                       // DST and flag
-        if (model() == EMSdevice::EMS_DEVICE_FLAG_JUNKERS) {
-            data[7] = 0;
-        }
+        data[7] = dt.length() == 21 ? 2 : (dt[22] - '0') + 2;               // DST and flag
+    } else if (dt.length() == 19 || dt.length() == 16) {
+        time_t now   = time(nullptr);
+        tm *   tm_   = localtime(&now);
+        data[0]      = (dt[7] - '0') * 100 + (dt[8] - '0') * 10 + (dt[9] - '0'); // year
+        tm_->tm_year = 100 + data[0];
+        data[1]      = (dt[3] - '0') * 10 + (dt[4] - '0'); // month
+        tm_->tm_mon  = data[1] - 1;
+        tm_->tm_hour = data[2] = (dt[11] - '0') * 10 + (dt[12] - '0');                        // hour
+        tm_->tm_mday = data[3] = (dt[0] - '0') * 10 + (dt[1] - '0');                          // day
+        tm_->tm_min = data[4] = (dt[14] - '0') * 10 + (dt[15] - '0');                         // min
+        tm_->tm_sec = data[5] = dt.length() == 16 ? 0 : (dt[17] - '0') * 10 + (dt[18] - '0'); // sec
+        tm_->tm_isdst         = -1;
+        // use thermostat time zone to determine day of week and daylight saving
+        EMSESP::esp32React.getNTPSettingsService()->read([&](const NTPSettings & settings) {
+            if (settings.thermostat_sync == 2) {
+                setenv("TZ", settings.tzFormatT.c_str(), 1);
+                tzset();
+                auto t = mktime(tm_);
+                tm_    = localtime(&t);
+                setenv("TZ", settings.tzFormat.c_str(), 1);
+                tzset();
+            } else {
+                auto t = mktime(tm_);
+                tm_    = localtime(&t);
+            }
+        });
+        data[6] = (tm_->tm_wday + 6) % 7; // Bosch counts from Mo, time from Su
+        data[7] = tm_->tm_isdst + 2;      // set DST and flag for ext. clock
     } else {
         LOG_WARNING("Set date: invalid data, wrong length");
         return false;
@@ -3101,7 +3153,8 @@ bool Thermostat::set_datetime(const char * value, const int8_t id) {
     }
 
     if (model() == EMSdevice::EMS_DEVICE_FLAG_JUNKERS) {
-        data[6]++; // Junkers use 1-7 for day of the week
+        data[6]++;   // Junkers use 1-7 for day of the week
+        data[7] = 0; // no dst setting
     }
 
     // LOG_INFO("Setting date and time: %02d.%02d.2%03d-%02d:%02d:%02d-%d-%d", data[3], data[1], data[0], data[2], data[4], data[5], data[6], data[7]);

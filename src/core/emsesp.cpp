@@ -1799,8 +1799,8 @@ void EMSESP::start() {
     // this will also handle any MQTT subscriptions
     webCustomizationService.begin(); // load the customizations
     webCommandService.begin();       // load the user commands
-    webSchedulerService.begin();     // load the scheduler events
     webCustomEntityService.begin();  // load the custom telegram reads
+    webSchedulerService.begin();     // load the scheduler events
 
     // perform any system upgrades
     if (!factory_settings) {

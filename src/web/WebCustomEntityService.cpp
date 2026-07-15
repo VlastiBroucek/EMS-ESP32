@@ -77,7 +77,9 @@ StateUpdateResult WebCustomEntity::update(JsonObject root, WebCustomEntity & web
         if (entityItem.ram == 2) { // NVS
             char key[sizeof(entityItem.name) + 2];
             snprintf(key, sizeof(key), "c:%s", entityItem.name);
-            EMSESP::nvs_.remove(key);
+            if (EMSESP::nvs_.isKey(key)) {
+                EMSESP::nvs_.remove(key);
+            }
         }
         if (entityItem.ram) { // save name/value pairs for change checking
             doc[entityItem.name] = entityItem.value;
@@ -419,9 +421,9 @@ void WebCustomEntityService::get_value_json(JsonObject output, CustomEntityItem 
     output["fullname"] = (const char *)entity.name;
     output["storage"]  = entity.ram == 1 ? "ram" : entity.ram == 2 ? "nvs" : "ems";
     output["type"]     = entity.value_type == DeviceValueType::BOOL ? "boolean" : entity.value_type == DeviceValueType::STRING ? "string" : F_(number);
-    // output["readable"]  = true;
+    output["readable"]  = true;
     output["writeable"] = entity.writeable;
-    // output["visible"]   = true;
+    output["visible"]   = true;
 
     if (entity.ram == 0) {
         output["device_id"] = Helpers::hextoa(entity.device_id);

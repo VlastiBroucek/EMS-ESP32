@@ -214,10 +214,9 @@ void WebSchedulerService::get_value_json(JsonObject output, const ScheduleItem &
         output["time"] = scheduleItem.time;
     }
     output["cmd_name"] = scheduleItem.cmd_name;
-    // bool hasName        = scheduleItem.name[0] != '\0';
-    // output["readable"]  = hasName;
-    // output["writeable"] = hasName;
-    // output["visible"]   = hasName;
+    output["readable"]  = true;
+    output["writeable"] = true;
+    output["visible"]   = true;
 }
 
 // publish single value
@@ -368,6 +367,10 @@ void WebSchedulerService::loop() {
     static uint32_t last_uptime_sec = 0;
 
     if (scheduleItems_->empty()) {
+        return;
+    }
+    // do not execute any command in the first 60 secondes
+    if (uuid::get_uptime_sec() < 60) {
         return;
     }
 

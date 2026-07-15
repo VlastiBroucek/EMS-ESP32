@@ -17,6 +17,12 @@ For more details go to [emsesp.org](https://emsesp.org/).
 - prevent system crash during WiFi network discovery on ESP32-S3 hardware [#3128](https://github.com/emsesp/EMS-ESP32/pull/3128)
 - check arithmetric operations on strings [#3127](https://github.com/emsesp/EMS-ESP32/discussions/3127)
 - fix setting date/time on Junkers thermostats
+- offset of hpminflowtemp [#3144](https://github.com/emsesp/EMS-ESP32/issues/3144)
+- water circulation command [#3149](https://github.com/emsesp/EMS-ESP32/pull/3149)
+- start scheduler after customEntities, delay scheduler loop after startup, handling of `system/restart` command [#3146](https://github.com/emsesp/EMS-ESP32/issues/3146)
+- possible memory leaks fixed.
+- repeated startup schedules compute value
+- shunting yard show json
 
 ## Changed
 
@@ -24,5 +30,7 @@ For more details go to [emsesp.org](https://emsesp.org/).
 - Scheduler name is now mandatory
 - network fallback to AP only after start [#3090](https://github.com/emsesp/EMS-ESP32/issues/3090)
 - replaced Web async-validator with custom validator and toast with native snackbar to reduce bundle size
-- Dewtemperature for Easycontrol calculated by ems-esp [3135](https://github.com/emsesp/EMS-ESP32/issues/3135)
+- Dewtemperature for Easycontrol calculated by ems-esp [#3135](https://github.com/emsesp/EMS-ESP32/issues/3135)
+- add option for sync thermostat to ntp, allow different time zones [#3148](https://github.com/emsesp/EMS-ESP32/discussions/3148), **defaults to sync**.
+- block too many GET requests [mentioned in #3104](https://github.com/emsesp/EMS-ESP32/issues/3104)
 - Gateway and Connect devices are not shown in the Devices page [3126](https://github.com/emsesp/EMS-ESP32/discussions/3126)
