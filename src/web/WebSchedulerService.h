@@ -89,7 +89,6 @@ class WebSchedulerService : public StatefulService<WebScheduler> {
     bool    onChange(const char * cmd);
 
     std::string get_metrics_prometheus();
-    std::string compute_value(const char * value);
 
 #if defined(EMSESP_TEST)
     void load_test_data();

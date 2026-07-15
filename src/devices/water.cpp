@@ -361,8 +361,11 @@ bool Water::set_wwCircTc(const char * value, const int8_t id) {
     if (!Helpers::value2bool(value, b)) {
         return false;
     }
-    write_command(0x7A5, 4, b ? 0xFF : 0x00, 0x7A5);
-    return true;
+    if (flags() == EMSdevice::EMS_DEVICE_FLAG_MMPLUS) {
+        write_command(0x33B + dhw_, 4, b ? 0x01 : 0x00, 0x33B + dhw_);
+    } else { // SM100
+        write_command(0x7A5, 4, b ? 0xFF : 0x00, 0x7A5);
+    }    return true;
 }
 
 bool Water::set_wwKeepWarm(const char * value, const int8_t id) {

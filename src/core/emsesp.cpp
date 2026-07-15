@@ -1800,8 +1800,8 @@ void EMSESP::start() {
     LOG_INFO("Library loaded: %d EMS devices, %d device entities, %s", device_library_.size(), EMSESP_TRANSLATION_COUNT, system_.languages_string().c_str());
 
     webCustomizationService.begin(); // load the customizations
-    webSchedulerService.begin();     // load the scheduler events
     webCustomEntityService.begin();  // load the custom telegram reads
+    webSchedulerService.begin();     // load the scheduler events
 
     // start telnet service if it's enabled
     // default idle is 10 minutes, default write timeout is 0 (automatic)

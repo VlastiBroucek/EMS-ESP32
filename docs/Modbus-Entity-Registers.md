@@ -8146,7 +8146,7 @@ uint8
 | datetime | date/time | string |   | false | DEVICE_DATA | 0 | 13 | 1 |
 | outdoortemp | outside temperature | int16 | C | false | DEVICE_DATA | 13 | 1 | 1/10 |
 | src1.currtemp | current room temperature | int16 | C | false | SRC | 0 | 1 | 1/10 |
-| src1.airhumidity | relative air humidity | int8 | % | false | SRC | 1 | 1 | 1 |
+| src1.airhumidity | relative air humidity | uint8 | % | false | SRC | 1 | 1 | 1 |
 | src1.dewtemperature | dew point temperature | int16 | C | false | SRC | 2 | 1 | 1/10 |
 uint8
 | src1.seltemp | selected room temperature | uint8 (&gt;=5&lt;=30) | C | true | SRC | 3 | 1 | 1/2 |

@@ -30,7 +30,7 @@
 
 #include <HTTPClient.h>
 #include <map>
-
+#include "shuntingYard.h" // for compute() used by the message
 #include "EMSESP_Version.h"
 
 #if defined(EMSESP_TEST)
@@ -222,7 +222,7 @@ bool System::command_message(const char * value, const int8_t id, JsonObject out
         LOG_WARNING("Message is empty");
         return false; // must have a string value
     }
-    std::string computed_value = EMSESP::webSchedulerService.compute_value(value);
+    std::string computed_value = compute(value);
     LOG_INFO("Message: %s", computed_value.c_str());  // send to log
     Mqtt::queue_publish(F_(message), computed_value); // send to MQTT if enabled
     output["api_data"] = computed_value;              // send to API
@@ -1952,7 +1952,9 @@ bool System::get_value_info(JsonObject output, const char * cmd) {
         LOG_ERROR("empty system command");
         return false;
     }
-
+    if (!strcmp(cmd, "restart")) { // restart is a command, not an entity
+        return false;
+    }
     // check for hardcoded "info"/"value"
     if (!strcmp(cmd, F_(info)) || !strcmp(cmd, F_(values))) {
         return command_info("", 0, output);
