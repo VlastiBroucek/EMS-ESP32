@@ -214,10 +214,9 @@ void WebSchedulerService::get_value_json(JsonObject output, const ScheduleItem &
         output["time"] = scheduleItem.time;
     }
     output["cmd_name"] = scheduleItem.cmd_name;
-    // bool hasName        = scheduleItem.name[0] != '\0';
-    // output["readable"]  = hasName;
-    // output["writeable"] = hasName;
-    // output["visible"]   = hasName;
+    output["readable"]  = true;
+    output["writeable"] = true;
+    output["visible"]   = true;
 }
 
 // publish single value
