@@ -1343,3 +1343,4 @@ optimisations
 IILE
 Sumr
 eraseap
+roomtempoffset

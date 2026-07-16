@@ -7,11 +7,11 @@ import {
   Box,
   Button,
   Checkbox,
-  Grid,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  Grid,
   MenuItem,
   TextField,
   Typography
@@ -40,7 +40,12 @@ import { ValidationError, validate } from 'validators';
 import { NTP_SETTINGS_VALIDATOR } from 'validators/ntp';
 import type { ValidateFieldsError } from 'validators/schema';
 
-import { TIME_ZONES, selectedTimeZone, useTimeZoneSelectItems, timeZoneSelectItemsT } from './TZ';
+import {
+  TIME_ZONES,
+  selectedTimeZone,
+  timeZoneSelectItemsT,
+  useTimeZoneSelectItems
+} from './TZ';
 
 const NTPSettings = () => {
   const {
@@ -202,9 +207,11 @@ const NTPSettings = () => {
                 select
               >
                 <MenuItem value={0}>{LL.OFF()}</MenuItem>
-                <MenuItem value={1}>{LL.ON()}</MenuItem >
-                <MenuItem value={2} >{LL.USE()} {LL.TIME_ZONE()}</MenuItem >
-              </ValidatedTextField >
+                <MenuItem value={1}>{LL.ON()}</MenuItem>
+                <MenuItem value={2}>
+                  {LL.USE()} {LL.TIME_ZONE()}
+                </MenuItem>
+              </ValidatedTextField>
             </Grid>
             <Grid>
               {data.thermostat_sync === 2 && (
