@@ -203,7 +203,7 @@ void WebSchedulerService::get_value_json(JsonObject output, const ScheduleItem &
     output["name"]     = (const char *)scheduleItem.name;
     output["fullname"] = (const char *)scheduleItem.name;
     output["type"]     = "boolean";
-    Mqtt::add_value_bool(output, "active", scheduleItem.active);
+    Mqtt::add_value_bool(output, "value", scheduleItem.active);
     if (scheduleItem.flags == SCHEDULEFLAG_SCHEDULE_CONDITION) {
         output["condition"] = scheduleItem.time;
     } else if (scheduleItem.flags == SCHEDULEFLAG_SCHEDULE_ONCHANGE) {
