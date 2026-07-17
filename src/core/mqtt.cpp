@@ -587,7 +587,7 @@ void Mqtt::ha_status() {
 
     // These come from the info MQTT topic - and handled in the publish_ha_sensor_config function
     publish_system_ha_sensor_config(DeviceValueType::STRING, "Version", "version", DeviceValueUOM::NONE);
-    publish_system_ha_sensor_config(DeviceValueType::STRING, "Boot time", "bootTime", DeviceValueUOM::TIMESTAMP);
+    publish_system_ha_sensor_config(DeviceValueType::STRING, "Boot time", "bootTime", DeviceValueUOM::UPTIME);
 }
 
 // add sub or pub task to the queue.
@@ -1178,7 +1178,7 @@ void Mqtt::add_ha_classes(JsonObject doc, const uint8_t device_type, const uint8
         doc[uom_ha] = "L/h";
     } else if (uom == DeviceValueUOM::L) {
         doc[uom_ha] = "L";
-    } else if (uom == DeviceValueUOM::TIMESTAMP) {
+    } else if (uom == DeviceValueUOM::TIMESTAMP || uom == DeviceValueUOM::UPTIME) {
         // do nothing
     } else if (uom != DeviceValueUOM::NONE) {
         auto uom_str = EMSdevice::uom_to_string(uom);
@@ -1279,6 +1279,10 @@ void Mqtt::add_ha_classes(JsonObject doc, const uint8_t device_type, const uint8
     case DeviceValueUOM::TIMESTAMP:
         doc[sc_ha] = sc_ha_measurement;
         doc[dc_ha] = "timestamp";
+        break;
+    case DeviceValueUOM::UPTIME:
+        doc[sc_ha] = sc_ha_measurement;
+        doc[dc_ha] = "uptime";
         break;
     case DeviceValueUOM::MV:
     case DeviceValueUOM::VOLTS:

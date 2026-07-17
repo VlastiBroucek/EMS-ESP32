@@ -81,6 +81,7 @@ class DeviceValue {
         HERTZ,        // 27 - Hz - frequency
         CONNECTIVITY, // 28 - used in HA - connectivity
         TIMESTAMP,    // 29 - used in HA - timestamp
+        UPTIME,       // 30 - used in HA - uptime for boot time
     };
 
     // TAG mapping - maps to DeviceValueTAG_s in emsdevicevalue.cpp
