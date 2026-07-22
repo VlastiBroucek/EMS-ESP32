@@ -5975,49 +5975,25 @@ device name,device type,product id,shortname,fullname,type [options...] \| (min/
 "MM200",water,161,circ,circulation active,boolean (>=0<=0), ,true,switch.water_dhw_circulation_active,switch.water_dhw_circ,19,9,1,-1,1
 "MM200",water,161,circmode,circulation pump mode,enum [off\|on\|auto\|own prog] (>=0<=0), ,true,select.water_dhw_circulation_pump_mode,select.water_dhw_circmode,19,9,1,-1,1
 "SM100, MS100",water,163,temp,current temperature,uint16,C,false,sensor.water_dhw_current_temperature,sensor.water_dhw_temp,19,9,1/10,-1,1
-"SM100, MS100",water,163,storagetemp1,storage intern temperature,uint16,C,false,sensor.water_dhw_storage_intern_temperature,sensor.water_dhw_storagetemp1,19,9,1/10,-1,1
-"SM100, MS100",water,163,coldtemp,cold water,uint16,C,false,sensor.water_dhw_cold_water,sensor.water_dhw_coldtemp,19,9,1/10,-1,1
-"SM100, MS100",water,163,temp5,temperature 5,uint16,C,false,sensor.water_dhw_temperature_5,sensor.water_dhw_temp5,19,9,1/10,-1,1
-"SM100, MS100",water,163,rettemp,return temperature,uint16,C,false,sensor.water_dhw_return_temperature,sensor.water_dhw_rettemp,19,9,1/10,-1,1
+"SM100, MS100",water,163,tempstatus,temperature switch in assigned dhw (MC1),int8, ,false,sensor.water_dhw_temperature_switch_in_assigned_dhw_(MC1),sensor.water_dhw_tempstatus,19,9,1,-1,1
 "SM100, MS100",water,163,pump,pump,boolean, ,false,binary_sensor.water_dhw_pump,binary_sensor.water_dhw_pump,19,9,1,-1,1
 "SM100, MS100",water,163,maxtemp,maximum temperature,uint8 (>=0<=0),C,true,number.water_dhw_maximum_temperature,number.water_dhw_maxtemp,19,9,1,-1,1
-"SM100, MS100",water,163,seltemp,selected temperature,uint8 (>=0<=0),C,true,number.water_dhw_selected_temperature,number.water_dhw_seltemp,19,9,1,-1,1
-"SM100, MS100",water,163,redtemp,reduced temperature,uint8 (>=0<=0),C,true,number.water_dhw_reduced_temperature,number.water_dhw_redtemp,19,9,1,-1,1
-"SM100, MS100",water,163,hottemp,extra hot temperature,uint8 (>=0<=0),C,true,number.water_dhw_extra_hot_temperature,number.water_dhw_hottemp,19,9,1,-1,1
-"SM100, MS100",water,163,dailytemp,daily temperature,uint8 (>=0<=0),C,true,number.water_dhw_daily_temperature,number.water_dhw_dailytemp,19,9,1,-1,1
+"SM100, MS100",water,163,difftemp,start differential temperature,int8 (>=0<=0),C,true,number.water_dhw_start_differential_temperature,number.water_dhw_difftemp,19,9,1,-1,1
 "SM100, MS100",water,163,disinfectiontemp,disinfection temperature,uint8 (>=0<=0),C,true,number.water_dhw_disinfection_temperature,number.water_dhw_disinfectiontemp,19,9,1,-1,1
+"SM100, MS100",water,163,redtemp,reduced temperature,uint8 (>=0<=0),C,true,number.water_dhw_reduced_temperature,number.water_dhw_redtemp,19,9,1,-1,1
+"SM100, MS100",water,163,requiredtemp,required temperature,uint8 (>=0<=0),C,true,number.water_dhw_required_temperature,number.water_dhw_requiredtemp,19,9,1,-1,1
 "SM100, MS100",water,163,circ,circulation active,boolean (>=0<=0), ,true,switch.water_dhw_circulation_active,switch.water_dhw_circ,19,9,1,-1,1
-"SM100, MS100",water,163,circmode,circulation pump mode,enum [off\|1x3min\|2x3min\|3x3min\|4x3min\|5x3min\|6x3min\|continuous] (>=0<=0), ,true,select.water_dhw_circulation_pump_mode,select.water_dhw_circmode,19,9,1,-1,1
-"SM100, MS100",water,163,circtc,circulation time controlled,boolean (>=0<=0), ,true,switch.water_dhw_circulation_time_controlled,switch.water_dhw_circtc,19,9,1,-1,1
-"SM100, MS100",water,163,keepwarm,keep warm,boolean (>=0<=0), ,true,switch.water_dhw_keep_warm,switch.water_dhw_keepwarm,19,9,1,-1,1
-"SM100, MS100",water,163,status2,status 2,enum [\|\|\|no heat\|\|\|heat request\|\|disinfecting\|hold], ,false,sensor.water_dhw_status_2,sensor.water_dhw_status2,19,9,1,-1,1
-"SM100, MS100",water,163,pumpmod,pump modulation,uint8,%,false,sensor.water_dhw_pump_modulation,sensor.water_dhw_pumpmod,19,9,1,-1,1
-"SM100, MS100",water,163,flow,flow rate,uint16,l/min,false,sensor.water_dhw_flow_rate,sensor.water_dhw_flow,19,9,1/10,-1,1
-"SM100, MS100",water,163,valvereturn,return valve,uint8 (>=0<=0),%,true,number.water_dhw_return_valve,number.water_dhw_valvereturn,19,9,1,-1,1
-"SM100, MS100",water,163,deltatret,temp. diff. return valve,uint8 (>=0<=0),K,true,number.water_dhw_temp._diff._return_valve,number.water_dhw_deltatret,19,9,1,-1,1
-"SM100, MS100",water,163,errordisp,error display,enum [off\|normal\|inverted] (>=0<=0), ,true,select.water_dhw_error_display,select.water_dhw_errordisp,19,9,1,-1,1
+"SM100, MS100",water,163,circmode,circulation pump mode,enum [off\|on\|auto\|own prog] (>=0<=0), ,true,select.water_dhw_circulation_pump_mode,select.water_dhw_circmode,19,9,1,-1,1
 "SM200, MS200",water,164,temp,current temperature,uint16,C,false,sensor.water_dhw_current_temperature,sensor.water_dhw_temp,19,9,1/10,-1,1
-"SM200, MS200",water,164,storagetemp1,storage intern temperature,uint16,C,false,sensor.water_dhw_storage_intern_temperature,sensor.water_dhw_storagetemp1,19,9,1/10,-1,1
-"SM200, MS200",water,164,coldtemp,cold water,uint16,C,false,sensor.water_dhw_cold_water,sensor.water_dhw_coldtemp,19,9,1/10,-1,1
-"SM200, MS200",water,164,temp5,temperature 5,uint16,C,false,sensor.water_dhw_temperature_5,sensor.water_dhw_temp5,19,9,1/10,-1,1
-"SM200, MS200",water,164,rettemp,return temperature,uint16,C,false,sensor.water_dhw_return_temperature,sensor.water_dhw_rettemp,19,9,1/10,-1,1
+"SM200, MS200",water,164,tempstatus,temperature switch in assigned dhw (MC1),int8, ,false,sensor.water_dhw_temperature_switch_in_assigned_dhw_(MC1),sensor.water_dhw_tempstatus,19,9,1,-1,1
 "SM200, MS200",water,164,pump,pump,boolean, ,false,binary_sensor.water_dhw_pump,binary_sensor.water_dhw_pump,19,9,1,-1,1
 "SM200, MS200",water,164,maxtemp,maximum temperature,uint8 (>=0<=0),C,true,number.water_dhw_maximum_temperature,number.water_dhw_maxtemp,19,9,1,-1,1
-"SM200, MS200",water,164,seltemp,selected temperature,uint8 (>=0<=0),C,true,number.water_dhw_selected_temperature,number.water_dhw_seltemp,19,9,1,-1,1
-"SM200, MS200",water,164,redtemp,reduced temperature,uint8 (>=0<=0),C,true,number.water_dhw_reduced_temperature,number.water_dhw_redtemp,19,9,1,-1,1
-"SM200, MS200",water,164,hottemp,extra hot temperature,uint8 (>=0<=0),C,true,number.water_dhw_extra_hot_temperature,number.water_dhw_hottemp,19,9,1,-1,1
-"SM200, MS200",water,164,dailytemp,daily temperature,uint8 (>=0<=0),C,true,number.water_dhw_daily_temperature,number.water_dhw_dailytemp,19,9,1,-1,1
+"SM200, MS200",water,164,difftemp,start differential temperature,int8 (>=0<=0),C,true,number.water_dhw_start_differential_temperature,number.water_dhw_difftemp,19,9,1,-1,1
 "SM200, MS200",water,164,disinfectiontemp,disinfection temperature,uint8 (>=0<=0),C,true,number.water_dhw_disinfection_temperature,number.water_dhw_disinfectiontemp,19,9,1,-1,1
+"SM200, MS200",water,164,redtemp,reduced temperature,uint8 (>=0<=0),C,true,number.water_dhw_reduced_temperature,number.water_dhw_redtemp,19,9,1,-1,1
+"SM200, MS200",water,164,requiredtemp,required temperature,uint8 (>=0<=0),C,true,number.water_dhw_required_temperature,number.water_dhw_requiredtemp,19,9,1,-1,1
 "SM200, MS200",water,164,circ,circulation active,boolean (>=0<=0), ,true,switch.water_dhw_circulation_active,switch.water_dhw_circ,19,9,1,-1,1
-"SM200, MS200",water,164,circmode,circulation pump mode,enum [off\|1x3min\|2x3min\|3x3min\|4x3min\|5x3min\|6x3min\|continuous] (>=0<=0), ,true,select.water_dhw_circulation_pump_mode,select.water_dhw_circmode,19,9,1,-1,1
-"SM200, MS200",water,164,circtc,circulation time controlled,boolean (>=0<=0), ,true,switch.water_dhw_circulation_time_controlled,switch.water_dhw_circtc,19,9,1,-1,1
-"SM200, MS200",water,164,keepwarm,keep warm,boolean (>=0<=0), ,true,switch.water_dhw_keep_warm,switch.water_dhw_keepwarm,19,9,1,-1,1
-"SM200, MS200",water,164,status2,status 2,enum [\|\|\|no heat\|\|\|heat request\|\|disinfecting\|hold], ,false,sensor.water_dhw_status_2,sensor.water_dhw_status2,19,9,1,-1,1
-"SM200, MS200",water,164,pumpmod,pump modulation,uint8,%,false,sensor.water_dhw_pump_modulation,sensor.water_dhw_pumpmod,19,9,1,-1,1
-"SM200, MS200",water,164,flow,flow rate,uint16,l/min,false,sensor.water_dhw_flow_rate,sensor.water_dhw_flow,19,9,1/10,-1,1
-"SM200, MS200",water,164,valvereturn,return valve,uint8 (>=0<=0),%,true,number.water_dhw_return_valve,number.water_dhw_valvereturn,19,9,1,-1,1
-"SM200, MS200",water,164,deltatret,temp. diff. return valve,uint8 (>=0<=0),K,true,number.water_dhw_temp._diff._return_valve,number.water_dhw_deltatret,19,9,1,-1,1
-"SM200, MS200",water,164,errordisp,error display,enum [off\|normal\|inverted] (>=0<=0), ,true,select.water_dhw_error_display,select.water_dhw_errordisp,19,9,1,-1,1
+"SM200, MS200",water,164,circmode,circulation pump mode,enum [off\|on\|auto\|own prog] (>=0<=0), ,true,select.water_dhw_circulation_pump_mode,select.water_dhw_circmode,19,9,1,-1,1
 "MP100",pool,204,pooltemp,pool temperature,int16,C,false,sensor.pool_pool_temperature,sensor.pool_pooltemp,20,0,1/10,-1,1
 "MP100",pool,204,poolshuntstatus,pool shunt status opening/closing,enum [stopped\|opening\|closing\|open\|close], ,false,sensor.pool_pool_shunt_status_opening/closing,sensor.pool_poolshuntstatus,20,0,1,-1,1
 "MP100",pool,204,poolshunt,pool shunt open/close (0% = pool / 100% = heat),uint8,%,false,sensor.pool_pool_shunt_open/close_(0%_=_pool_/_100%_=_heat),sensor.pool_poolshunt,20,0,1,-1,1
