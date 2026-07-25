@@ -318,10 +318,19 @@ bool WebCommandService::get_value_info(JsonObject output, const char * cmd) {
         return true;
     }
 
-    if (!strlen(cmd) || !strcmp(cmd, F_(values)) || !strcmp(cmd, F_(info))) {
+    if (!strlen(cmd) || !strcmp(cmd, F_(values))) {
         for (const CommandItem & ci : *commandItems_) {
             if (ci.name[0] != '\0') {
-                output[(const char *)ci.name] = ci.cmd;
+                output[(const char *)ci.name] = ci.value.c_str();
+            }
+        }
+        return true;
+    }
+
+    if (!strcmp(cmd, F_(info))) {
+        for (const CommandItem & ci : *commandItems_) {
+            if (ci.name[0] != '\0') {
+                output[(const char *)ci.name] = std::string(ci.cmd + ": " + ci.value);
             }
         }
         return true;
@@ -364,7 +373,7 @@ std::string WebCommandService::get_metrics_prometheus() {
         if (ci.name[0] == '\0') {
             continue;
         }
-        result += (std::string) "# HELP emsesp_cmd_" + ci.name + " " + ci.name + "\n";
+        result += (std::string) "# HELP emsesp_cmd_" + ci.name + " " + ci.name + ", readabe, writable, visible\n";
         result += (std::string) "# TYPE emsesp_cmd_" + ci.name + " gauge\n";
         result += (std::string) "emsesp_cmd_" + ci.name + " 1\n";
     }
@@ -394,7 +403,7 @@ void WebCommandService::publish(const bool force) {
     JsonObject   output = doc.to<JsonObject>();
     for (const CommandItem & ci : *commandItems_) {
         if (ci.name[0] != '\0' && !output[ci.name].is<JsonVariantConst>()) {
-            output[(const char *)ci.name] = ci.cmd;
+            output[(const char *)ci.name] = ci.value.c_str();
         }
     }
 
