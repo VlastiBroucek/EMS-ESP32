@@ -906,6 +906,16 @@ const ApplicationSettings = () => {
         <BlockFormControlLabel
           control={
             <Checkbox
+              checked={data.disable_reset}
+              onChange={updateFormValue}
+              name="disable_reset"
+            />
+          }
+          label={LL.DISABLE_RESET()}
+        />
+        <BlockFormControlLabel
+          control={
+            <Checkbox
               checked={data.boiler_heatingoff}
               onChange={updateFormValue}
               name="boiler_heatingoff"

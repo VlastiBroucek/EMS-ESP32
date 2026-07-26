@@ -340,6 +340,7 @@ const it: Translation = {
   AUTO_SCROLL: 'Scorrimento automatico',
   DASHBOARD: 'Pannello di controllo',
   DEVELOPER_MODE: 'Modalità sviluppatore',
+  DISABLE_RESET: 'Disabilita la ripristino di fabbrica',
   BYTES: 'Byte',
   BITMASK: 'Bitmask',
   DUPLICATE: 'Duplicato',

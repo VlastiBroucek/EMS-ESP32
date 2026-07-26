@@ -54,6 +54,7 @@ export interface Settings {
   email_recp: string;
   email_subject: string;
   developer_mode: boolean;
+  disable_reset: boolean;
 }
 
 export enum busConnectionStatus {

@@ -172,7 +172,8 @@ void WebStatusService::systemStatus(AsyncWebServerRequest * request) {
     }
 
     root["developer_mode"] = EMSESP::system_.developer_mode();
-
+    root["disable_reset"] = EMSESP::system_.disable_reset();
+    
     // Also used in SystemMonitor.tsx
     root["status"] = EMSESP::system_.systemStatus(); // send the status. See System.h for status codes
     if (EMSESP::system_.systemStatus() == SYSTEM_STATUS::SYSTEM_STATUS_PENDING_RESTART) {

@@ -340,6 +340,7 @@ const pl: BaseTranslation = {
   AUTO_SCROLL: 'Auto Scroll',
   DASHBOARD: 'Pulpit',
   DEVELOPER_MODE: 'Tryb programisty',
+  DISABLE_RESET: 'Wyłącz reset fabryczny',
   BYTES: 'Bajty',
   BITMASK: 'Bit Mask',
   DUPLICATE: 'Duplicate',

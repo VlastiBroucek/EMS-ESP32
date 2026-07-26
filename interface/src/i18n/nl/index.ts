@@ -340,6 +340,7 @@ const nl: Translation = {
   AUTO_SCROLL: 'Automatisch Scrollen',
   DASHBOARD: 'Dashboard',
   DEVELOPER_MODE: 'Ontwikkelaarsmodus',
+  DISABLE_RESET: 'Fabrieksinstellingen uitschakelen',
   BYTES: 'Bytes',
   BITMASK: 'Bit Mask',
   DUPLICATE: 'Duplicaat',
