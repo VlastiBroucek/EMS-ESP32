@@ -489,7 +489,8 @@ const Customizations = () => {
             </MenuItem>
             {devices.devices.map(
               (device: Device) =>
-                device.id < 90 && (
+                device.id < 90 &&
+                device.e !== 0 && (
                   <MenuItem key={device.id} value={device.id}>
                     {device.n}&nbsp;({device.tn})
                   </MenuItem>
