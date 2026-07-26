@@ -373,7 +373,7 @@ std::string WebCommandService::get_metrics_prometheus() {
         if (ci.name[0] == '\0') {
             continue;
         }
-        result += (std::string) "# HELP emsesp_cmd_" + ci.name + " " + ci.name + ", readabe, writable, visible\n";
+        result += (std::string) "# HELP emsesp_cmd_" + ci.name + " " + ci.name + ", readable, writable, visible\n";
         result += (std::string) "# TYPE emsesp_cmd_" + ci.name + " gauge\n";
         result += (std::string) "emsesp_cmd_" + ci.name + " 1\n";
     }

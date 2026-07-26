@@ -30,9 +30,9 @@
 #define EMSESP_LOCALE_TR "tr"
 #define EMSESP_LOCALE_IT "it"
 #define EMSESP_LOCALE_SK "sk"
-#define EMSESP_LOCALE_CZ "cz"
+#define EMSESP_LOCALE_CS "cs"
 
-// IMPORTANT! translations are in the order: en, de, nl, sv, pl, no, fr, tr, it, sk, cz
+// IMPORTANT! translations are in the order: en, de, nl, sv, pl, no, fr, tr, it, sk, cs
 //
 // if there is no translation, it will default to en
 
@@ -369,7 +369,7 @@ MAKE_WORD_TRANSLATION(bookshelf, "mdi:bookshelf", "mdi:bookshelf")
 // MQTT Discovery - this is special device entity for 'climate'
 MAKE_TRANSLATION(haclimate, "haclimate", "mqtt discovery current room temperature", "Discovery aktuelle Raumtemperatur", "Discovery huidige kamertemperatuur", "MQTT Discovery för aktuell rumstemperatur", "termostat w HA", "HA Avlest temp", "découverte mqtt température actuelle", "Güncel osa sıcaklığı", "verifica temperatura ambiente attuale", "mqtt discovery aktuálna teplota v miestnosti", "mqtt discovery aktuální pokojová teplota")
 
-// Entity translations: tag, mqtt, en, de, nl, sv, pl, no, fr, tr, it, sk, cz
+// Entity translations: tag, mqtt, en, de, nl, sv, pl, no, fr, tr, it, sk, cs
 // Boiler
 MAKE_TRANSLATION(chimneysweeper, "chimneysweeper", "chimney sweeper", "Schornsteinfeger", "schoorsteenveger", "Sotare", "tryb kominiarza", "feier", "ramoneur", "baca temizleyici", "spazzacamino", "kominár", "kominík")
 MAKE_TRANSLATION(reset, "reset", "reset", "Reset", "Reset", "Återställ", "kasowanie komunikatu", "nullstill", "reset", "Sıfırla", "Reset", "reset", "reset")

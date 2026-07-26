@@ -71,7 +71,7 @@ const char * const languages[] = {EMSESP_LOCALE_EN,
                                   EMSESP_LOCALE_TR,
                                   EMSESP_LOCALE_IT,
                                   EMSESP_LOCALE_SK,
-                                  EMSESP_LOCALE_CZ};
+                                  EMSESP_LOCALE_CS};
 #endif
 
 static constexpr uint8_t NUM_LANGUAGES = sizeof(languages) / sizeof(const char *);
@@ -1631,6 +1631,11 @@ bool System::check_upgrade() {
                     settings.ems_bus_id = EMSESP_DEFAULT_EMS_BUS_ID;
                     return StateUpdateResult::CHANGED;
                 }
+            }
+            // Migrate language from cz to cs
+            if (settings.locale == "cz") {
+                settings.locale = "cs";
+                return StateUpdateResult::CHANGED;
             }
             return StateUpdateResult::UNCHANGED;
         });

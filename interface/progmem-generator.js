@@ -50,7 +50,7 @@ static constexpr size_t WWW_ASSETS_COUNT = sizeof(WWW_ASSETS) / sizeof(WWW_ASSET
 // (e.g. "en,de,nl"). When set, locale chunks outside the list are NOT embedded
 // into firmware flash. `en` is always kept as the fallback. Unset => embed all.
 const ALL_LOCALES = [
-  'cz',
+  'cs',
   'de',
   'en',
   'fr',

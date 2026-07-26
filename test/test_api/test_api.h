@@ -95,7 +95,7 @@ void test_19() {
 }
 
 void test_20() {
-    auto expected_response = "[{\"name\":\"test_seltemp\",\"fullname\":\"test_seltemp\",\"storage\":\"ram\",\"type\":\"number\",\"writeable\":true,\"ent_cat\":\"diagnostic\",\"value\":\"14\"}]";
+    auto expected_response = "[{\"name\":\"test_seltemp\",\"fullname\":\"test_seltemp\",\"storage\":\"ram\",\"type\":\"number\",\"readable\":true,\"writeable\":true,\"visible\":true,\"ent_cat\":\"diagnostic\",\"value\":\"14\"}]";
     TEST_ASSERT_EQUAL_STRING(expected_response, call_url("/api/custom/test_seltemp"));
 }
 
@@ -105,7 +105,7 @@ void test_21() {
 }
 
 void test_22() {
-    auto expected_response = "[{\"name\":\"test_custom\",\"fullname\":\"test_custom\",\"storage\":\"ems\",\"type\":\"number\",\"writeable\":true,\"device_id\":\"0x08\",\"type_id\":\"0x18\",\"offset\":0,\"factor\":1,\"ent_cat\":\"diagnostic\",\"uom\":\"°C\",\"state_class\":\"measurement\",\"device_class\":\"temperature\",\"value\":0}]";
+    auto expected_response = "[{\"name\":\"test_custom\",\"fullname\":\"test_custom\",\"storage\":\"ems\",\"type\":\"number\",\"readable\":true,\"writeable\":true,\"visible\":true,\"device_id\":\"0x08\",\"type_id\":\"0x18\",\"offset\":0,\"factor\":1,\"ent_cat\":\"diagnostic\",\"uom\":\"°C\",\"state_class\":\"measurement\",\"device_class\":\"temperature\",\"value\":0}]";
     TEST_ASSERT_EQUAL_STRING(expected_response, call_url("/api/custom/test_custom"));
 }
 
@@ -230,7 +230,7 @@ void test_46() {
 }
 
 void test_47() {
-    auto expected_response = "[{\"name\":\"test_scheduler2\",\"fullname\":\"test_scheduler2\",\"type\":\"boolean\",\"active\":\"on\",\"timer\":\"01:00\",\"cmd_name\":\"send_message\"}]";
+    auto expected_response = "[{\"name\":\"test_scheduler2\",\"fullname\":\"test_scheduler2\",\"type\":\"boolean\",\"value\":\"on\",\"timer\":\"01:00\",\"cmd_name\":\"send_message\",\"readable\":true,\"writeable\":true,\"visible\":true}]";
     TEST_ASSERT_EQUAL_STRING(expected_response, call_url("/api/scheduler/test_scheduler2"));
 }
 
