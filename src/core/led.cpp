@@ -131,7 +131,7 @@ void LED::led_fast_flash() {
         set_led(led_flash_state_ ? Color::YELLOW : Color::OFF); // Yellow
     }
 
-    // after duration, turn off the LED
+    // after duration, turn off the LED, and call the format command
     if (current_time - led_flash_start_time_ >= led_flash_duration_) {
         set_led(Color::OFF);
         led_fast_flash_timer_ = false;

@@ -71,6 +71,7 @@ interface VersionData {
   partition: string;
   partitions: PartitionData[];
   developer_mode: boolean;
+  disable_reset: boolean;
 }
 
 // Memoized components for better performance
@@ -923,7 +924,7 @@ const Version = () => {
             >
               {LL.RESTART()}
             </Button>
-            {data.developer_mode && (
+            {!data.disable_reset && (
               <Button
                 startIcon={<SettingsBackupRestoreIcon />}
                 variant="outlined"

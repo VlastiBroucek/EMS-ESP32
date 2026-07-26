@@ -64,7 +64,8 @@ let settings = {
   modbus_port: 502,
   modbus_max_clients: 10,
   modbus_timeout: 10000,
-  developer_mode: true
+  developer_mode: true,
+  disable_reset: false
 };
 
 // EMS-ESP System Settings
@@ -129,6 +130,7 @@ let system_status = {
   ],
   // partitions: [],
   developer_mode: settings.developer_mode,
+  disable_reset: settings.disable_reset,
   model: '',
   board: '',
   // model: 'BBQKees Electronics EMS Gateway E32 V2 (E32 V2.0 P3/2024011)',
@@ -4721,6 +4723,7 @@ router
     settings = await request.json();
     console.log('application settings saved', settings);
     system_status.developer_mode = settings.developer_mode;
+    system_status.disable_reset = settings.disable_reset;
     return status(200); // no restart needed
     // return status(205); // reboot required
   })

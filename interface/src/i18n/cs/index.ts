@@ -340,6 +340,7 @@ const cs: Translation = {
   AUTO_SCROLL: 'Automatické rolování',
   DASHBOARD: 'Dashboard',
   DEVELOPER_MODE: 'Režim vývojáře',
+  DISABLE_RESET: 'Zakázat obnovení továrního nastavení',
   BYTES: 'Bajty',
   BITMASK: 'Bit Mask',
   DUPLICATE: 'Duplikát',
