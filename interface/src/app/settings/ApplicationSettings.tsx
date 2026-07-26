@@ -548,7 +548,7 @@ const ApplicationSettings = () => {
               margin="normal"
               select
             >
-              <MenuItem value="cz">Česky (CZ)</MenuItem>
+              <MenuItem value="cs">Česky (CZ)</MenuItem>
               <MenuItem value="de">Deutsch (DE)</MenuItem>
               <MenuItem value="en">English (EN)</MenuItem>
               <MenuItem value="fr">Français (FR)</MenuItem>

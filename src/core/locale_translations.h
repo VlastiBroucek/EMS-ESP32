@@ -30,9 +30,9 @@
 #define EMSESP_LOCALE_TR "tr"
 #define EMSESP_LOCALE_IT "it"
 #define EMSESP_LOCALE_SK "sk"
-#define EMSESP_LOCALE_CZ "cz"
+#define EMSESP_LOCALE_CS "cs"
 
-// IMPORTANT! translations are in the order: en, de, nl, sv, pl, no, fr, tr, it, sk, cz
+// IMPORTANT! translations are in the order: en, de, nl, sv, pl, no, fr, tr, it, sk, cs
 //
 // if there is no translation, it will default to en
 
