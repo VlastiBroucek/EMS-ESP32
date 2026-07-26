@@ -1063,6 +1063,18 @@ const emsesp_coredata = {
       v: '01.20',
       e: 0,
       url: 'gateway'
+    },
+    {
+      id: 13,
+      tn: 'Connect',
+      t: 12,
+      b: '',
+      n: 'Easy Connect',
+      d: 2,
+      p: 206,
+      v: '12.34',
+      e: 0,
+      url: 'connect'
     }
   ]
 };
@@ -4716,9 +4728,9 @@ router
   // Device Data
   .get(EMSESP_CORE_DATA_ENDPOINT, () => {
     // remove gateway and connect devices
-    emsesp_coredata.devices = emsesp_coredata.devices.filter(
-      (item) => item.t !== 11 && item.t !== 12
-    );
+    // emsesp_coredata.devices = emsesp_coredata.devices.filter(
+    //   (item) => item.t !== 11 && item.t !== 12
+    // );
     // sort by type, like its done in the C++ code
     let sorted_devices = [...emsesp_coredata.devices].sort((a, b) => a.t - b.t);
     // append emsesp_coredata to sorted_devices so Custom is always at the end of the list
