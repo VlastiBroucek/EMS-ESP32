@@ -61,6 +61,7 @@ export interface SystemStatus {
   }[];
   status: number; // System Status Codes which matches SYSTEM_STATUS in System.h
   developer_mode: boolean;
+  disable_reset: boolean;
   temperature?: number;
 }
 

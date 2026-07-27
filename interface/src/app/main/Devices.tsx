@@ -558,16 +558,26 @@ const Devices = memo(() => {
                       <CircularProgress sx={{ margin: 1 }} size={18} />
                     )}
                     {tableList.map((device: Device) => (
-                      <Row key={device.id} item={device}>
+                      <Row key={device.id} item={device} disabled={device.e === 0}>
                         <Cell>
                           <DeviceIcon type_id={device.t} />
                           &nbsp;&nbsp;
-                          {device.n}
-                          <span style={{ color: 'lightblue' }}>
-                            &nbsp;&nbsp;({device.e})
+                          <span style={{ color: device.e === 0 ? 'grey' : 'white' }}>
+                            {device.n}
                           </span>
+                          {device.e !== 0 && (
+                            <span style={{ color: 'lightblue' }}>
+                              &nbsp;&nbsp;({device.e})
+                            </span>
+                          )}
                         </Cell>
-                        <Cell stiff>{device.tn}</Cell>
+                        <Cell stiff>
+                          <ButtonTooltip
+                            title={`DeviceID: 0x${('00' + device.d.toString(16).toUpperCase()).slice(-2)}, ProductID: ${device.p}`}
+                          >
+                            <span>{device.tn}</span>
+                          </ButtonTooltip>
+                        </Cell>
                       </Row>
                     ))}
                   </Body>

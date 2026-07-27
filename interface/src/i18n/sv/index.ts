@@ -340,6 +340,7 @@ const sv: Translation = {
   AUTO_SCROLL: 'Autoskrolla',
   DASHBOARD: 'Kontrollpanel',
   DEVELOPER_MODE: 'Utvecklarläge',
+  DISABLE_RESET: 'Inaktivera fabriksåterställning',
   BYTES: 'Bytes',
   BITMASK: 'Bitmask',
   DUPLICATE: 'Dublett',

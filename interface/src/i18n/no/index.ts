@@ -340,6 +340,7 @@ const no: Translation = {
   AUTO_SCROLL: 'Automatisk rulling',
   DASHBOARD: 'Dashboard',
   DEVELOPER_MODE: 'Utvikler modus',
+  DISABLE_RESET: 'Deaktiver fabrikkinnstillinger',
   BYTES: 'Bytes',
   BITMASK: 'Bitmask',
   DUPLICATE: 'Duplikat',

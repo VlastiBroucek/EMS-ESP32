@@ -199,6 +199,14 @@ class System {
         developer_mode_ = developer_mode;
     }
 
+    bool disable_reset() {
+        return disable_reset_;
+    }
+
+    void disable_reset(bool disable_reset) {
+        disable_reset_ = disable_reset;
+    }
+
     // Boolean Format API/MQTT
     uint8_t bool_format() {
         return bool_format_;
@@ -438,6 +446,7 @@ class System {
     uint8_t     modbus_max_clients_;
     uint32_t    modbus_timeout_;
     bool        developer_mode_;
+    bool        disable_reset_;
     uint32_t    fstotal_;
     uint32_t    psram_;
     uint32_t    appused_;

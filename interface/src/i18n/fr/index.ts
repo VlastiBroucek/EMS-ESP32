@@ -340,6 +340,7 @@ const fr: Translation = {
   AUTO_SCROLL: 'Défilement automatique',
   DASHBOARD: 'Tableau de bord',
   DEVELOPER_MODE: 'Mode développeur',
+  DISABLE_RESET: 'Désactiver la réinitialisation de fabrique',
   BYTES: 'Octets',
   BITMASK: 'Masque de bits',
   DUPLICATE: 'Dupliquer',

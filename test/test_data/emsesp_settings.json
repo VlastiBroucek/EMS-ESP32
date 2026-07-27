@@ -131,6 +131,7 @@
     "modbus_max_clients": 10,
     "modbus_timeout": 300,
     "developer_mode": true,
+    "disable_reset": false,
     "email_enabled": false,
     "email_security": 2,
     "email_server": "smtp.example.net",

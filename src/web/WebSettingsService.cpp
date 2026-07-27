@@ -84,6 +84,7 @@ void WebSettings::read(WebSettings & settings, JsonObject root) {
     root["modbus_max_clients"]    = settings.modbus_max_clients;
     root["modbus_timeout"]        = settings.modbus_timeout;
     root["developer_mode"]        = settings.developer_mode;
+    root["disable_reset"]         = settings.disable_reset;
     root["email_enabled"]         = settings.email_enabled;
     root["email_security"]        = settings.email_security;
     root["email_server"]          = settings.email_server;
@@ -305,6 +306,9 @@ StateUpdateResult WebSettings::update(JsonObject root, WebSettings & settings) {
 
     settings.developer_mode = root["developer_mode"];
     EMSESP::system_.developer_mode(settings.developer_mode);
+
+    settings.disable_reset = root["disable_reset"];
+    EMSESP::system_.disable_reset(settings.disable_reset);
 
     settings.bool_dashboard = root["bool_dashboard"] | EMSESP_DEFAULT_BOOL_FORMAT;
     EMSESP::system_.bool_dashboard(settings.bool_dashboard);

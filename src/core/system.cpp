@@ -71,7 +71,7 @@ const char * const languages[] = {EMSESP_LOCALE_EN,
                                   EMSESP_LOCALE_TR,
                                   EMSESP_LOCALE_IT,
                                   EMSESP_LOCALE_SK,
-                                  EMSESP_LOCALE_CZ};
+                                  EMSESP_LOCALE_CS};
 #endif
 
 static constexpr uint8_t NUM_LANGUAGES = sizeof(languages) / sizeof(const char *);
@@ -677,6 +677,7 @@ void System::store_settings(WebSettings & settings) {
     locale_         = settings.locale;
     system_name_    = settings.system_name;
     developer_mode_ = settings.developer_mode;
+    disable_reset_ = settings.disable_reset;
 }
 
 // Starts up core services
@@ -761,6 +762,10 @@ void System::button_OnLongPress(PButton & b) {
 
 // button indefinite press
 void System::button_OnVLongPress(PButton & b) {
+    if (EMSESP::system_.disable_reset()) {
+        LOG_NOTICE("Factory reset disabled");
+        return;
+    }
     LOG_NOTICE("Button pressed - very long press - perform factory reset");
     EMSESP::led_.start_led_fast_flash(5); // Start LED flash timer for 5 seconds
 }
@@ -1631,6 +1636,11 @@ bool System::check_upgrade() {
                     settings.ems_bus_id = EMSESP_DEFAULT_EMS_BUS_ID;
                     return StateUpdateResult::CHANGED;
                 }
+            }
+            // Migrate language from cz to cs
+            if (settings.locale == "cz") {
+                settings.locale = "cs";
+                return StateUpdateResult::CHANGED;
             }
             return StateUpdateResult::UNCHANGED;
         });
@@ -2641,6 +2651,7 @@ bool System::command_info(const char * value, const int8_t id, JsonObject output
         node["modbusEnabled"]   = settings.modbus_enabled;
         node["forceHeatingOff"] = settings.boiler_heatingoff;
         node["developerMode"]   = settings.developer_mode;
+        node["disableReset"]    = settings.disable_reset;
     });
 
     // Devices - show EMS devices if we have any
@@ -2865,6 +2876,12 @@ bool System::command_txpause(const char * value, const int8_t id) {
 
 // format command - factory reset, removing all config files
 bool System::command_format(const char * value, const int8_t id) {
+
+    if (EMSESP::system_.disable_reset()) {
+        LOG_NOTICE("Factory reset disabled");
+        return false;
+    }
+
 #if !defined(EMSESP_STANDALONE) && !defined(EMSESP_TEST)
     // don't really format the filesystem in test or standalone mode
     if (LittleFS.format()) {

@@ -1,6 +1,6 @@
 import type { Translation } from '../i18n-types';
 
-const cz: Translation = {
+const cs: Translation = {
   LANGUAGE: 'Jazyk',
   RETRY: 'Zkusit znovu',
   LOADING: 'Načítání',
@@ -340,6 +340,7 @@ const cz: Translation = {
   AUTO_SCROLL: 'Automatické rolování',
   DASHBOARD: 'Dashboard',
   DEVELOPER_MODE: 'Režim vývojáře',
+  DISABLE_RESET: 'Zakázat obnovení továrního nastavení',
   BYTES: 'Bajty',
   BITMASK: 'Bit Mask',
   DUPLICATE: 'Duplikát',
@@ -370,4 +371,4 @@ const cz: Translation = {
   EXECUTE_COMMAND_SENT: 'Příkaz odeslán',
 };
 
-export default cz;
+export default cs;

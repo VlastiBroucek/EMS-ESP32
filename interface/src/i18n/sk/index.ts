@@ -340,6 +340,7 @@ const sk: Translation = {
   AUTO_SCROLL: 'Automatické rolovanie',
   DASHBOARD: 'Panel',
   DEVELOPER_MODE: 'Režim vývojára',
+  DISABLE_RESET: 'Zakázať továrenské nastavenia',
   BYTES: 'Bytov',
   BITMASK: 'Bitová maska',
   DUPLICATE: 'Duplicitné',

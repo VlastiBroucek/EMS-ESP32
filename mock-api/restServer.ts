@@ -64,7 +64,8 @@ let settings = {
   modbus_port: 502,
   modbus_max_clients: 10,
   modbus_timeout: 10000,
-  developer_mode: true
+  developer_mode: true,
+  disable_reset: false
 };
 
 // EMS-ESP System Settings
@@ -129,6 +130,7 @@ let system_status = {
   ],
   // partitions: [],
   developer_mode: settings.developer_mode,
+  disable_reset: settings.disable_reset,
   model: '',
   board: '',
   // model: 'BBQKees Electronics EMS Gateway E32 V2 (E32 V2.0 P3/2024011)',
@@ -1063,6 +1065,18 @@ const emsesp_coredata = {
       v: '01.20',
       e: 0,
       url: 'gateway'
+    },
+    {
+      id: 13,
+      tn: 'Connect',
+      t: 12,
+      b: '',
+      n: 'Easy Connect',
+      d: 2,
+      p: 206,
+      v: '12.34',
+      e: 0,
+      url: 'connect'
     }
   ]
 };
@@ -4709,6 +4723,7 @@ router
     settings = await request.json();
     console.log('application settings saved', settings);
     system_status.developer_mode = settings.developer_mode;
+    system_status.disable_reset = settings.disable_reset;
     return status(200); // no restart needed
     // return status(205); // reboot required
   })
@@ -4716,9 +4731,9 @@ router
   // Device Data
   .get(EMSESP_CORE_DATA_ENDPOINT, () => {
     // remove gateway and connect devices
-    emsesp_coredata.devices = emsesp_coredata.devices.filter(
-      (item) => item.t !== 11 && item.t !== 12
-    );
+    // emsesp_coredata.devices = emsesp_coredata.devices.filter(
+    //   (item) => item.t !== 11 && item.t !== 12
+    // );
     // sort by type, like its done in the C++ code
     let sorted_devices = [...emsesp_coredata.devices].sort((a, b) => a.t - b.t);
     // append emsesp_coredata to sorted_devices so Custom is always at the end of the list

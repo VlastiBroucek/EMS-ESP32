@@ -340,6 +340,7 @@ const de: Translation = {
   AUTO_SCROLL: 'Automatisches Scrollen',
   DASHBOARD: 'Dashboard',
   DEVELOPER_MODE: 'Entwicklermodus',
+  DISABLE_RESET: 'Werkseinstellungen deaktivieren',
   BYTES: 'Bytes',
   BITMASK: 'Bit Maske',
   DUPLICATE: 'Kopieren',

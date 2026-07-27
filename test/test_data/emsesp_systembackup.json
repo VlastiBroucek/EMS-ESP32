@@ -132,7 +132,8 @@
         "modbus_port": 502,
         "modbus_max_clients": 10,
         "modbus_timeout": 300,
-        "developer_mode": true
+        "developer_mode": true,
+        "disable_reset": false
       }
     },
     {

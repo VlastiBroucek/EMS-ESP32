@@ -340,6 +340,7 @@ const tr: Translation = {
   AUTO_SCROLL: 'Otomatik kaydırma',
   DASHBOARD: 'Kontrol Paneli',
   DEVELOPER_MODE: 'Geliştirici Modu',
+  DISABLE_RESET: 'Fabrika ayarlarını devre dışı bırak',
   BYTES: 'Bayt',
   BITMASK: 'Bit Maskesi',
   DUPLICATE: 'Çift',

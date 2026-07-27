@@ -20,7 +20,7 @@ const ALL_LOCALES = [
   'sk',
   'sv',
   'tr',
-  'cz'
+  'cs'
 ] as Locales[];
 
 // Optional build-time allow-list (e.g. VITE_APP_LOCALES="en,de,nl"). When unset,

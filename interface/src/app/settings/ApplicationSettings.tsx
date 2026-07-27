@@ -548,7 +548,7 @@ const ApplicationSettings = () => {
               margin="normal"
               select
             >
-              <MenuItem value="cz">Česky (CZ)</MenuItem>
+              <MenuItem value="cs">Česky (CS)</MenuItem>
               <MenuItem value="de">Deutsch (DE)</MenuItem>
               <MenuItem value="en">English (EN)</MenuItem>
               <MenuItem value="fr">Français (FR)</MenuItem>
@@ -902,6 +902,16 @@ const ApplicationSettings = () => {
             />
           }
           label={LL.DEVELOPER_MODE()}
+        />
+        <BlockFormControlLabel
+          control={
+            <Checkbox
+              checked={data.disable_reset}
+              onChange={updateFormValue}
+              name="disable_reset"
+            />
+          }
+          label={LL.DISABLE_RESET()}
         />
         <BlockFormControlLabel
           control={
