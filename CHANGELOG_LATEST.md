@@ -24,6 +24,7 @@ For more details go to [emsesp.org](https://emsesp.org/).
 - possible memory leaks fixed
 - repeated startup schedules compute value
 - shunting yard show json
+- water module SM100/200 as dhw1/dhw2 [#3164](https://github.com/emsesp/EMS-ESP32/issues/3164)
 
 ## Changed
 
