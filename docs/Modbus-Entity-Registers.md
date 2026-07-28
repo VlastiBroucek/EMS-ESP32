@@ -8356,70 +8356,40 @@ uint8
 | shortname | fullname | type | uom | writeable | tag type | register offset | register count | scale factor |
 |-|-|-|-|-|-|-|-|-|
 | dhw.temp | current temperature | uint16 | C | false | DHW | 1 | 1 | 1/10 |
-| dhw.storagetemp1 | storage intern temperature | uint16 | C | false | DHW | 16 | 1 | 1/10 |
-| dhw.coldtemp | cold water | uint16 | C | false | DHW | 17 | 1 | 1/10 |
-| dhw.temp5 | temperature 5 | uint16 | C | false | DHW | 18 | 1 | 1/10 |
-| dhw.rettemp | return temperature | uint16 | C | false | DHW | 19 | 1 | 1/10 |
+| dhw.tempstatus | temperature switch in assigned dhw (MC1) | int8 |   | false | DHW | 11 | 1 | 1 |
 | dhw.pump | pump | boolean |   | false | DHW | 4 | 1 | 1 |
 uint8
 | dhw.maxtemp | maximum temperature | uint8 (&gt;=0&lt;=0) | C | true | DHW | 12 | 1 | 1 |
+int8
+| dhw.difftemp | start differential temperature | int8 (&gt;=0&lt;=0) | C | true | DHW | 13 | 1 | 1 |
 uint8
-| dhw.seltemp | selected temperature | uint8 (&gt;=0&lt;=0) | C | true | DHW | 0 | 1 | 1 |
+| dhw.disinfectiontemp | disinfection temperature | uint8 (&gt;=0&lt;=0) | C | true | DHW | 8 | 1 | 1 |
 uint8
 | dhw.redtemp | reduced temperature | uint8 (&gt;=0&lt;=0) | C | true | DHW | 14 | 1 | 1 |
 uint8
-| dhw.hottemp | extra hot temperature | uint8 (&gt;=0&lt;=0) | C | true | DHW | 20 | 1 | 1 |
-uint8
-| dhw.dailytemp | daily temperature | uint8 (&gt;=0&lt;=0) | C | true | DHW | 21 | 1 | 1 |
-uint8
-| dhw.disinfectiontemp | disinfection temperature | uint8 (&gt;=0&lt;=0) | C | true | DHW | 8 | 1 | 1 |
+| dhw.requiredtemp | required temperature | uint8 (&gt;=0&lt;=0) | C | true | DHW | 15 | 1 | 1 |
 | dhw.circ | circulation active | boolean |   | true | DHW | 9 | 1 | 1 |
 | dhw.circmode | circulation pump mode | enum |   | true | DHW | 10 | 1 | 1 |
-| dhw.circtc | circulation time controlled | boolean |   | true | DHW | 22 | 1 | 1 |
-| dhw.keepwarm | keep warm | boolean |   | true | DHW | 23 | 1 | 1 |
-| dhw.status2 | status 2 | enum |   | false | DHW | 24 | 1 | 1 |
-| dhw.pumpmod | pump modulation | uint8 | % | false | DHW | 25 | 1 | 1 |
-| dhw.flow | flow rate | uint16 | l/min | false | DHW | 26 | 1 | 1/10 |
-uint8
-| dhw.valvereturn | return valve | uint8 (&gt;=0&lt;=0) | % | true | DHW | 27 | 1 | 1 |
-uint8
-| dhw.deltatret | temp. diff. return valve | uint8 (&gt;=0&lt;=0) | K | true | DHW | 28 | 1 | 1 |
-| dhw.errordisp | error display | enum |   | true | DHW | 29 | 1 | 1 |
 
 ### SM200, MS200
 
 | shortname | fullname | type | uom | writeable | tag type | register offset | register count | scale factor |
 |-|-|-|-|-|-|-|-|-|
 | dhw.temp | current temperature | uint16 | C | false | DHW | 1 | 1 | 1/10 |
-| dhw.storagetemp1 | storage intern temperature | uint16 | C | false | DHW | 16 | 1 | 1/10 |
-| dhw.coldtemp | cold water | uint16 | C | false | DHW | 17 | 1 | 1/10 |
-| dhw.temp5 | temperature 5 | uint16 | C | false | DHW | 18 | 1 | 1/10 |
-| dhw.rettemp | return temperature | uint16 | C | false | DHW | 19 | 1 | 1/10 |
+| dhw.tempstatus | temperature switch in assigned dhw (MC1) | int8 |   | false | DHW | 11 | 1 | 1 |
 | dhw.pump | pump | boolean |   | false | DHW | 4 | 1 | 1 |
 uint8
 | dhw.maxtemp | maximum temperature | uint8 (&gt;=0&lt;=0) | C | true | DHW | 12 | 1 | 1 |
+int8
+| dhw.difftemp | start differential temperature | int8 (&gt;=0&lt;=0) | C | true | DHW | 13 | 1 | 1 |
 uint8
-| dhw.seltemp | selected temperature | uint8 (&gt;=0&lt;=0) | C | true | DHW | 0 | 1 | 1 |
+| dhw.disinfectiontemp | disinfection temperature | uint8 (&gt;=0&lt;=0) | C | true | DHW | 8 | 1 | 1 |
 uint8
 | dhw.redtemp | reduced temperature | uint8 (&gt;=0&lt;=0) | C | true | DHW | 14 | 1 | 1 |
 uint8
-| dhw.hottemp | extra hot temperature | uint8 (&gt;=0&lt;=0) | C | true | DHW | 20 | 1 | 1 |
-uint8
-| dhw.dailytemp | daily temperature | uint8 (&gt;=0&lt;=0) | C | true | DHW | 21 | 1 | 1 |
-uint8
-| dhw.disinfectiontemp | disinfection temperature | uint8 (&gt;=0&lt;=0) | C | true | DHW | 8 | 1 | 1 |
+| dhw.requiredtemp | required temperature | uint8 (&gt;=0&lt;=0) | C | true | DHW | 15 | 1 | 1 |
 | dhw.circ | circulation active | boolean |   | true | DHW | 9 | 1 | 1 |
 | dhw.circmode | circulation pump mode | enum |   | true | DHW | 10 | 1 | 1 |
-| dhw.circtc | circulation time controlled | boolean |   | true | DHW | 22 | 1 | 1 |
-| dhw.keepwarm | keep warm | boolean |   | true | DHW | 23 | 1 | 1 |
-| dhw.status2 | status 2 | enum |   | false | DHW | 24 | 1 | 1 |
-| dhw.pumpmod | pump modulation | uint8 | % | false | DHW | 25 | 1 | 1 |
-| dhw.flow | flow rate | uint16 | l/min | false | DHW | 26 | 1 | 1/10 |
-uint8
-| dhw.valvereturn | return valve | uint8 (&gt;=0&lt;=0) | % | true | DHW | 27 | 1 | 1 |
-uint8
-| dhw.deltatret | temp. diff. return valve | uint8 (&gt;=0&lt;=0) | K | true | DHW | 28 | 1 | 1 |
-| dhw.errordisp | error display | enum |   | true | DHW | 29 | 1 | 1 |
 
 ## Devices of type \_pool
 

@@ -817,7 +817,7 @@ std::string Helpers::toUpper(std::string const & s) {
 
 // capitalizes one UTF-8 character in char array
 // works with Latin1 (1 byte), Polish and other (2 bytes) characters
-// supports special characters for all 11 supported languages: EN, DE, NL, SV, PL, NO, FR, TR, IT, SK, CZ
+// supports special characters for all 11 supported languages: EN, DE, NL, SV, PL, NO, FR, TR, IT, SK, CS
 #if defined(EMSESP_STANDALONE)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wtype-limits"

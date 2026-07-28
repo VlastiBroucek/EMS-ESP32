@@ -21,6 +21,7 @@ For more details go to [emsesp.org](https://emsesp.org/).
 - possible memory leaks fixed.
 - repeated startup schedules compute value
 - call `system/message` called from scheduler processes compute twice
+- water module SM100/200 as dhw1/dhw2 [#3164](https://github.com/emsesp/EMS-ESP32/issues/3164)
 
 ## Changed
 
@@ -29,3 +30,4 @@ For more details go to [emsesp.org](https://emsesp.org/).
 - add option for sync thermostat to ntp, allow different time zones [#3148](https://github.com/emsesp/EMS-ESP32/discussions/3148), **defaults to sync**.
 - block too many GET requests [mentioned in #3104](https://github.com/emsesp/EMS-ESP32/issues/3104)
 - set 10 sec timeout for http requests [#3104](https://github.com/emsesp/EMS-ESP32/issues/3104)
+- language code "cs" [#3161](https://github.com/emsesp/EMS-ESP32/issues/3161)
