@@ -1281,7 +1281,6 @@ void Mqtt::add_ha_classes(JsonObject doc, const uint8_t device_type, const uint8
         doc[dc_ha] = "timestamp";
         break;
     case DeviceValueUOM::UPTIME:
-        doc[sc_ha] = sc_ha_measurement;
         doc[dc_ha] = "uptime";
         break;
     case DeviceValueUOM::MV:
