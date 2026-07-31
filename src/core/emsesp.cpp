@@ -173,11 +173,24 @@ uint8_t EMSESP::device_id_from_cmd(const uint8_t device_type, const char * cmd, 
     return 0;
 }
 
-// clears list of recognized devices
-void EMSESP::clear_all_devices() {
-    // temporarily removed: clearing the list causes a crash, the associated commands and mqtt should also be removed.
-    // emsdevices.clear(); // remove entries, but doesn't delete actual devices
+// remove a single device with all it's entities, commands, and telegrams
+void EMSESP::erase_device(const uint8_t type_id) {
+    for (auto it = emsdevices.begin(); it < emsdevices.end(); it++) {
+        if ((*it)->device_id() == type_id) {
+            (*it)->erase_device_values();
+            emsdevices.erase(it);
+            break;
+        }
+    }
 }
+
+ // clears list of recognized devices, entities and telegrams
+ void EMSESP::clear_all_devices() {
+    for (auto & emsdevice : emsdevices) {
+        emsdevice->erase_device_values();
+    }
+    emsdevices.clear();
+ }
 
 // called from EMSdevice/Command whenever an entity or telegram handler is registered.
 // Devices reserve their value/telegram vectors generously (to avoid realloc storms while
@@ -1027,10 +1040,13 @@ void EMSESP::process_UBADevices(const std::shared_ptr<const Telegram> & telegram
             if (next_byte & 0x01) {
                 // if we haven't already detected this device, request it's version details, unless its us (EMS-ESP)
                 // when the version info is received, it will automagically add the device
-                if ((device_id != EMSbus::ems_bus_id()) && !(EMSESP::device_exists(device_id))) {
+                if ((device_id != EMSbus::ems_bus_id()) && !(device_exists(device_id))) {
                     LOG_DEBUG("New EMS device detected with ID 0x%02X. Requesting version information.", device_id);
                     send_read_request(EMSdevice::EMS_TYPE_VERSION, device_id);
                 }
+            } else if (device_exists(device_id) && !device_hasEntities(device_id)) {
+                LOG_DEBUG("Remove EMS device with ID 0x%02X", device_id);
+                erase_device(device_id); // 
             }
             next_byte = next_byte >> 1; // advance 1 bit
         }
@@ -1235,6 +1251,15 @@ bool EMSESP::process_telegram(const std::shared_ptr<const Telegram> & telegram) 
         }
     }
     return telegram_found;
+}
+
+bool EMSESP::device_hasEntities(const uint8_t device_id) {
+    for (const auto & emsdevice : emsdevices) {
+        if (emsdevice->is_device_id(device_id) && (emsdevice->count_entities() > 0)) {
+            return true;
+        }
+    }
+    return false; // not found
 }
 
 // return true if we have this device already registered

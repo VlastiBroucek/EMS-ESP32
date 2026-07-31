@@ -152,6 +152,7 @@ class EMSESP {
     static void send_write_request(const uint16_t type_id, const uint8_t dest, const uint8_t offset, const uint8_t value);
     static void send_write_request(const uint16_t type_id, const uint8_t dest, const uint8_t offset, const uint8_t value, const uint16_t validate_typeid);
 
+    static bool    device_hasEntities(const uint8_t device_id);
     static bool    device_exists(const uint8_t device_id);
     static void    device_active(const uint8_t device_id, const bool active);
     static bool    cmd_is_readonly(const uint8_t device_type, const uint8_t device_id, const char * cmd, const int8_t id);
@@ -238,6 +239,7 @@ class EMSESP {
 
     static bool add_device(const uint8_t device_id, const uint8_t product_id, const char * version, const uint8_t brand);
     static void scan_devices();
+    static void erase_device(const uint8_t type_id);
     static void clear_all_devices();
 
     // called whenever a device entity or telegram handler is registered, so we can

@@ -693,6 +693,10 @@ void EMSdevice::erase_device_values() {
         }
     }
     devicevalues_.clear();
+    telegram_functions_.clear();
+    handlers_ignored_.clear();
+    handlers_config_.clear();
+    handlers_broadcasted_.clear();
 }
 
 // single list of options

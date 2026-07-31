@@ -36,4 +36,6 @@ For more details go to [emsesp.org](https://emsesp.org/).
 - add option for sync thermostat to ntp, allow different time zones [#3148](https://github.com/emsesp/EMS-ESP32/discussions/3148), **defaults to sync**.
 - block too many GET requests [mentioned in #3104](https://github.com/emsesp/EMS-ESP32/issues/3104)
 - Gateway and Connect devices are shown in the Devices page, but disabled [3126](https://github.com/emsesp/EMS-ESP32/discussions/3126)
+- show control setting only for master thermostats (0x10) [#3173](https://github.com/emsesp/EMS-ESP32/issues/3173)
+- remove devices without entities not listed in 0x07 telegram
 
