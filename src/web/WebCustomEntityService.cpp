@@ -417,10 +417,10 @@ std::string WebCustomEntityService::get_metrics_prometheus() {
 
 // build the json for specific entity
 void WebCustomEntityService::get_value_json(JsonObject output, CustomEntityItem const & entity) {
-    output["name"]     = (const char *)entity.name;
-    output["fullname"] = (const char *)entity.name;
-    output["storage"]  = entity.ram == 1 ? "ram" : entity.ram == 2 ? "nvs" : "ems";
-    output["type"]     = entity.value_type == DeviceValueType::BOOL ? "boolean" : entity.value_type == DeviceValueType::STRING ? "string" : F_(number);
+    output["name"]      = (const char *)entity.name;
+    output["fullname"]  = (const char *)entity.name;
+    output["storage"]   = entity.ram == 1 ? "ram" : entity.ram == 2 ? "nvs" : "ems";
+    output["type"]      = entity.value_type == DeviceValueType::BOOL ? "boolean" : entity.value_type == DeviceValueType::STRING ? "string" : F_(number);
     output["readable"]  = true;
     output["writeable"] = entity.writeable;
     output["visible"]   = true;

@@ -213,7 +213,7 @@ void WebSchedulerService::get_value_json(JsonObject output, const ScheduleItem &
     } else {
         output["time"] = scheduleItem.time;
     }
-    output["cmd_name"] = scheduleItem.cmd_name;
+    output["cmd_name"]  = scheduleItem.cmd_name;
     output["readable"]  = true;
     output["writeable"] = true;
     output["visible"]   = true;

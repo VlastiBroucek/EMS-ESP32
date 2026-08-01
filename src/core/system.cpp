@@ -677,7 +677,7 @@ void System::store_settings(WebSettings & settings) {
     locale_         = settings.locale;
     system_name_    = settings.system_name;
     developer_mode_ = settings.developer_mode;
-    disable_reset_ = settings.disable_reset;
+    disable_reset_  = settings.disable_reset;
 }
 
 // Starts up core services
@@ -2876,7 +2876,6 @@ bool System::command_txpause(const char * value, const int8_t id) {
 
 // format command - factory reset, removing all config files
 bool System::command_format(const char * value, const int8_t id) {
-
     if (EMSESP::system_.disable_reset()) {
         LOG_NOTICE("Factory reset disabled");
         return false;

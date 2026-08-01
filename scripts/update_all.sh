@@ -25,6 +25,8 @@ pnpm format
 cd ..
 npx cspell "**"
 
+# exit 0
+
 # build files that go into docs folder
 
 platformio run -e build_modbus -t clean

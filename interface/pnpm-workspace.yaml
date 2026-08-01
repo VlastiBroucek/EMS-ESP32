@@ -4,19 +4,5 @@ allowBuilds:
   gifsicle: false
   jpegtran-bin: false
   mozjpeg: false
-  optipng-bin: true
-  pngquant-bin: true
-minimumReleaseAgeExclude:
-  - '@types/node@25.9.2'
-  - '@types/react@19.2.17'
-  - react-router@8.0.1
-overrides:
-  # pin browserslist to one exact version so `pnpm update` can't re-resolve it to a
-  # newer release it then fails to link (spurious "Failed to create bin ... ENOENT")
-  browserslist: 4.28.5
-updateConfig:
-  # typesafe-i18n / typescript-eslint rely on the classic compiler API that the
-  # native TS 7 rewrite removes. TS 6.x still has it, so stay on 6.x by excluding
-  # typescript from `pnpm update --latest` (which would otherwise jump it to 7).
-  ignoreDependencies:
-    - typescript
+  optipng-bin: false
+  pngquant-bin: false
