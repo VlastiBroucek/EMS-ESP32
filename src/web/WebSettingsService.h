@@ -121,8 +121,8 @@ class WebSettings {
     uint8_t eth_clock_mode;
 
     bool developer_mode; // developer mode
-    bool disable_reset; // disable reset
-    
+    bool disable_reset;  // disable reset
+
     static void              read(WebSettings & settings, JsonObject root);
     static StateUpdateResult update(JsonObject root, WebSettings & settings);
 

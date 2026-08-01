@@ -64,17 +64,17 @@ void WebDataService::core_data(AsyncWebServerRequest * request) {
     // list is already sorted by device type
     JsonArray devices = root["devices"].to<JsonArray>();
     for (const auto & emsdevice : EMSESP::emsdevices) {
-            JsonObject obj = devices.add<JsonObject>();
-            obj["id"]      = emsdevice->unique_id();                            // a unique id
-            obj["tn"]      = emsdevice->device_type_2_device_name_translated(); // translated device type name
-            obj["t"]       = emsdevice->device_type();                          // device type number
-            obj["b"]       = emsdevice->brand_to_char();                        // brand (std::string → copied into doc, safe across async serialize)
-            obj["n"]       = emsdevice->name();                                 // custom name
-            obj["d"]       = emsdevice->device_id();                            // deviceid
-            obj["p"]       = emsdevice->product_id();                           // productid
-            obj["v"]       = emsdevice->version();                              // version
-            obj["e"]       = emsdevice->count_entities();                       // number of entities
-            obj["url"]     = emsdevice->device_type_name();                     // non-translated, lower-case, used for API URL in customization page
+        JsonObject obj = devices.add<JsonObject>();
+        obj["id"]      = emsdevice->unique_id();                            // a unique id
+        obj["tn"]      = emsdevice->device_type_2_device_name_translated(); // translated device type name
+        obj["t"]       = emsdevice->device_type();                          // device type number
+        obj["b"]       = emsdevice->brand_to_char();                        // brand (std::string → copied into doc, safe across async serialize)
+        obj["n"]       = emsdevice->name();                                 // custom name
+        obj["d"]       = emsdevice->device_id();                            // deviceid
+        obj["p"]       = emsdevice->product_id();                           // productid
+        obj["v"]       = emsdevice->version();                              // version
+        obj["e"]       = emsdevice->count_entities();                       // number of entities
+        obj["url"]     = emsdevice->device_type_name();                     // non-translated, lower-case, used for API URL in customization page
     }
 
     // add any custom entities
