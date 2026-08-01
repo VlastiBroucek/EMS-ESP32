@@ -362,7 +362,8 @@ bool Water::set_wwCircTc(const char * value, const int8_t id) {
         write_command(0x33B + dhw_, 4, b ? 0x01 : 0x00, 0x33B + dhw_);
     } else { // SM100
         write_command(0x7A5, 4, b ? 0xFF : 0x00, 0x7A5);
-    }    return true;
+    }
+    return true;
 }
 
 bool Water::set_wwKeepWarm(const char * value, const int8_t id) {
