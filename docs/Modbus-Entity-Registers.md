@@ -5966,7 +5966,6 @@ uint8
 | hc1.roomtempdiff | room temp difference | uint8 (&gt;=0&lt;=0) | K | true | HC | 42 | 1 | 1 |
 uint8
 | hc1.hpminflowtemp | HP min. flow temp. | uint8 (&gt;=0&lt;=0) | C | true | HC | 43 | 1 | 1 |
-| hc1.control | control device | enum |   | true | HC | 44 | 1 | 1 |
 uint8
 | hc1.heatondelay | heat-on delay | uint8 (&gt;=1&lt;=48) | hours | true | HC | 47 | 1 | 1 |
 uint8
@@ -6116,7 +6115,6 @@ uint8
 | hc1.roomtempdiff | room temp difference | uint8 (&gt;=0&lt;=0) | K | true | HC | 42 | 1 | 1 |
 uint8
 | hc1.hpminflowtemp | HP min. flow temp. | uint8 (&gt;=0&lt;=0) | C | true | HC | 43 | 1 | 1 |
-| hc1.control | control device | enum |   | true | HC | 44 | 1 | 1 |
 | hc1.remotetemp | room temperature from remote | cmd | C | true | HC | 45 | 1 | 1/10 |
 | hc1.remotehum | room humidity from remote | cmd | % | true | HC | 46 | 1 | 1 |
 uint8
@@ -6283,7 +6281,6 @@ uint8
 | hc1.roomtempdiff | room temp difference | uint8 (&gt;=0&lt;=0) | K | true | HC | 42 | 1 | 1 |
 uint8
 | hc1.hpminflowtemp | HP min. flow temp. | uint8 (&gt;=0&lt;=0) | C | true | HC | 43 | 1 | 1 |
-| hc1.control | control device | enum |   | true | HC | 44 | 1 | 1 |
 | hc1.remotetemp | room temperature from remote | cmd | C | true | HC | 45 | 1 | 1/10 |
 | hc1.remotehum | room humidity from remote | cmd | % | true | HC | 46 | 1 | 1 |
 uint8
@@ -6806,7 +6803,6 @@ uint8
 | hc1.ecotemp | eco temperature | uint8 (&gt;=0&lt;=0) | C | true | HC | 5 | 1 | 1/2 |
 int8
 | hc1.nofrosttemp | nofrost temperature | int8 (&gt;=0&lt;=0) | C | true | HC | 18 | 1 | 1/2 |
-| hc1.control | control device | enum |   | true | HC | 44 | 1 | 1 |
 | hc1.program | program | enum |   | true | HC | 27 | 1 | 1 |
 | hc1.remotetemp | room temperature from remote | cmd | C | true | HC | 45 | 1 | 1/10 |
 | hc1.targetflowtemp | target flow temperature | uint8 | C | false | HC | 19 | 1 | 1 |
@@ -6867,7 +6863,6 @@ uint8
 | hc1.ecotemp | eco temperature | uint8 (&gt;=0&lt;=0) | C | true | HC | 5 | 1 | 1/2 |
 int8
 | hc1.nofrosttemp | nofrost temperature | int8 (&gt;=0&lt;=0) | C | true | HC | 18 | 1 | 1/2 |
-| hc1.control | control device | enum |   | true | HC | 44 | 1 | 1 |
 | hc1.program | program | enum |   | true | HC | 27 | 1 | 1 |
 | hc1.remotetemp | room temperature from remote | cmd | C | true | HC | 45 | 1 | 1/10 |
 | hc1.targetflowtemp | target flow temperature | uint8 | C | false | HC | 19 | 1 | 1 |
@@ -6926,7 +6921,6 @@ uint8
 | hc1.ecotemp | eco temperature | uint8 (&gt;=0&lt;=0) | C | true | HC | 5 | 1 | 1/2 |
 int8
 | hc1.nofrosttemp | nofrost temperature | int8 (&gt;=0&lt;=0) | C | true | HC | 18 | 1 | 1/2 |
-| hc1.control | control device | enum |   | true | HC | 44 | 1 | 1 |
 | hc1.program | program | enum |   | true | HC | 27 | 1 | 1 |
 | hc1.remotetemp | room temperature from remote | cmd | C | true | HC | 45 | 1 | 1/10 |
 | hc1.targetflowtemp | target flow temperature | uint8 | C | false | HC | 19 | 1 | 1 |
@@ -6985,7 +6979,6 @@ uint8
 | hc1.ecotemp | eco temperature | uint8 (&gt;=0&lt;=0) | C | true | HC | 5 | 1 | 1/2 |
 int8
 | hc1.nofrosttemp | nofrost temperature | int8 (&gt;=0&lt;=0) | C | true | HC | 18 | 1 | 1/2 |
-| hc1.control | control device | enum |   | true | HC | 44 | 1 | 1 |
 | hc1.program | program | enum |   | true | HC | 27 | 1 | 1 |
 | hc1.remotetemp | room temperature from remote | cmd | C | true | HC | 45 | 1 | 1/10 |
 | hc1.targetflowtemp | target flow temperature | uint8 | C | false | HC | 19 | 1 | 1 |
@@ -7046,7 +7039,6 @@ uint8
 | hc1.ecotemp | eco temperature | uint8 (&gt;=0&lt;=0) | C | true | HC | 5 | 1 | 1/2 |
 int8
 | hc1.nofrosttemp | nofrost temperature | int8 (&gt;=0&lt;=0) | C | true | HC | 18 | 1 | 1/2 |
-| hc1.control | control device | enum |   | true | HC | 44 | 1 | 1 |
 | hc1.program | program | enum |   | true | HC | 27 | 1 | 1 |
 | hc1.remotetemp | room temperature from remote | cmd | C | true | HC | 45 | 1 | 1/10 |
 | hc1.targetflowtemp | target flow temperature | uint8 | C | false | HC | 19 | 1 | 1 |
@@ -7107,7 +7099,6 @@ uint8
 | hc1.ecotemp | eco temperature | uint8 (&gt;=0&lt;=0) | C | true | HC | 5 | 1 | 1/2 |
 int8
 | hc1.nofrosttemp | nofrost temperature | int8 (&gt;=0&lt;=0) | C | true | HC | 18 | 1 | 1/2 |
-| hc1.control | control device | enum |   | true | HC | 44 | 1 | 1 |
 | hc1.program | program | enum |   | true | HC | 27 | 1 | 1 |
 | hc1.remotetemp | room temperature from remote | cmd | C | true | HC | 45 | 1 | 1/10 |
 | hc1.targetflowtemp | target flow temperature | uint8 | C | false | HC | 19 | 1 | 1 |
@@ -7166,7 +7157,6 @@ uint8
 | hc1.ecotemp | eco temperature | uint8 (&gt;=0&lt;=0) | C | true | HC | 5 | 1 | 1/2 |
 int8
 | hc1.nofrosttemp | nofrost temperature | int8 (&gt;=0&lt;=0) | C | true | HC | 18 | 1 | 1/2 |
-| hc1.control | control device | enum |   | true | HC | 44 | 1 | 1 |
 | hc1.program | program | enum |   | true | HC | 27 | 1 | 1 |
 | hc1.remotetemp | room temperature from remote | cmd | C | true | HC | 45 | 1 | 1/10 |
 | hc1.targetflowtemp | target flow temperature | uint8 | C | false | HC | 19 | 1 | 1 |
@@ -7227,7 +7217,6 @@ uint8
 | hc1.ecotemp | eco temperature | uint8 (&gt;=0&lt;=0) | C | true | HC | 5 | 1 | 1/2 |
 int8
 | hc1.nofrosttemp | nofrost temperature | int8 (&gt;=0&lt;=0) | C | true | HC | 18 | 1 | 1/2 |
-| hc1.control | control device | enum |   | true | HC | 44 | 1 | 1 |
 | hc1.program | program | enum |   | true | HC | 27 | 1 | 1 |
 | hc1.remotetemp | room temperature from remote | cmd | C | true | HC | 45 | 1 | 1/10 |
 | hc1.targetflowtemp | target flow temperature | uint8 | C | false | HC | 19 | 1 | 1 |
@@ -7286,7 +7275,6 @@ uint8
 | hc1.ecotemp | eco temperature | uint8 (&gt;=0&lt;=0) | C | true | HC | 5 | 1 | 1/2 |
 int8
 | hc1.nofrosttemp | nofrost temperature | int8 (&gt;=0&lt;=0) | C | true | HC | 18 | 1 | 1/2 |
-| hc1.control | control device | enum |   | true | HC | 44 | 1 | 1 |
 | hc1.program | program | enum |   | true | HC | 27 | 1 | 1 |
 | hc1.remotetemp | room temperature from remote | cmd | C | true | HC | 45 | 1 | 1/10 |
 | hc1.targetflowtemp | target flow temperature | uint8 | C | false | HC | 19 | 1 | 1 |
@@ -7345,7 +7333,6 @@ uint8
 | hc1.ecotemp | eco temperature | uint8 (&gt;=0&lt;=0) | C | true | HC | 5 | 1 | 1/2 |
 int8
 | hc1.nofrosttemp | nofrost temperature | int8 (&gt;=0&lt;=0) | C | true | HC | 18 | 1 | 1/2 |
-| hc1.control | control device | enum |   | true | HC | 44 | 1 | 1 |
 | hc1.program | program | enum |   | true | HC | 27 | 1 | 1 |
 | hc1.remotetemp | room temperature from remote | cmd | C | true | HC | 45 | 1 | 1/10 |
 | hc1.targetflowtemp | target flow temperature | uint8 | C | false | HC | 19 | 1 | 1 |
@@ -7406,7 +7393,6 @@ uint8
 | hc1.ecotemp | eco temperature | uint8 (&gt;=0&lt;=0) | C | true | HC | 5 | 1 | 1/2 |
 int8
 | hc1.nofrosttemp | nofrost temperature | int8 (&gt;=0&lt;=0) | C | true | HC | 18 | 1 | 1/2 |
-| hc1.control | control device | enum |   | true | HC | 44 | 1 | 1 |
 | hc1.program | program | enum |   | true | HC | 27 | 1 | 1 |
 | hc1.remotetemp | room temperature from remote | cmd | C | true | HC | 45 | 1 | 1/10 |
 | hc1.targetflowtemp | target flow temperature | uint8 | C | false | HC | 19 | 1 | 1 |
