@@ -25,21 +25,26 @@ uint16_t WebAPIService::api_fails_ = 0;
 
 WebAPIService::WebAPIService(AsyncWebServer * server, SecurityManager * securityManager)
     : _securityManager(securityManager) {
-    AsyncCallbackJsonWebHandler * jsonHandler = new AsyncCallbackJsonWebHandler(EMSESP_API_SERVICE_PATH);
-    jsonHandler->setMethod(HTTP_POST | HTTP_GET);
-    jsonHandler->onRequest([this](AsyncWebServerRequest * request, JsonVariant json) { webAPIService(request, json); });
-    server->addHandler(jsonHandler);
+    // parse() does its own per-request admin check (with notoken_api), so no predicate.
+    // /api also matches /api/<device>/<entity> via the route's backward-compatible URI matcher.
+    securityManager->addEndpoint(
+        server,
+        EMSESP_API_SERVICE_PATH,
+        AuthenticationPredicates::NONE_REQUIRED,
+        [this](AsyncWebServerRequest * request, JsonVariant json) { webAPIService(request, json); },
+        HTTP_POST | HTTP_GET);
 }
 
 // POST|GET api/
 // POST|GET api/{device}
 // POST|GET api/{device}/{entity}
 void WebAPIService::webAPIService(AsyncWebServerRequest * request, JsonVariant json) {
-    static uint64_t lastcall = 0;
-    if (uuid::get_uptime_ms() - lastcall < 50 && request->method() == HTTP_GET) {
-        request->send(429); //too many requests
+    static bool busy = false;
+    if (busy && request->method() == HTTP_GET) {
+        request->send(429); // too many requests
         return;
     }
+    busy = true;
     JsonDocument input_doc; // has no body JSON so create dummy as empty input object
     JsonObject   input;
     // if no body then treat it as a secure GET
@@ -54,7 +59,7 @@ void WebAPIService::webAPIService(AsyncWebServerRequest * request, JsonVariant j
         input["data"] = json.as<std::string>();
     }
     parse(request, input);
-    lastcall = uuid::get_uptime_ms();
+    busy = false;
 }
 
 // for POSTS accepting plain text data
@@ -114,7 +119,7 @@ void WebAPIService::parse(AsyncWebServerRequest * request, JsonObject input) {
     EMSESP::system_.refreshHeapMem();
 
     // output json buffer
-    auto response = new AsyncJsonResponse();
+    auto response = new PsramAsyncJsonResponse();
 
     // add more mem if needed - won't be needed in ArduinoJson 7
     // while (!response->getSize()) {

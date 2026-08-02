@@ -257,7 +257,7 @@ void RxService::add_empty(const uint8_t src, const uint8_t dest, const uint16_t 
 // start and initialize Tx
 // send out request to EMS bus for all devices
 void TxService::start() {
-    // grab the bus ID and tx_mode
+    // grab the EMS Bus ID and tx_mode
     EMSESP::webSettingsService.read([&](WebSettings const & settings) {
         ems_bus_id(settings.ems_bus_id);
         tx_mode(settings.tx_mode);
@@ -404,7 +404,7 @@ void TxService::send_telegram(const QueuedTxTelegram & tx_telegram) {
     }
 
     LOG_DEBUG("Sending %s Tx [#%d], telegram: %s",
-              (telegram->operation != Telegram::Operation::TX_READ) ? ("write") : ("read"),
+              (telegram->operation != Telegram::Operation::TX_READ) ? "write" : "read",
               tx_telegram.id_,
               Helpers::data_to_hex(telegram_raw, length - 1).c_str()); // exclude the last CRC byte
 
@@ -628,7 +628,7 @@ void TxService::retry_tx(const uint8_t operation, const uint8_t * data, const ui
     }
 
     LOG_DEBUG("Last Tx %s operation failed. Retry #%d. sent message: %s, received: %s",
-              (operation == Telegram::Operation::TX_WRITE) ? ("Write") : ("Read"),
+              (operation == Telegram::Operation::TX_WRITE) ? "Write" : "Read",
               retry_count_,
               telegram_last_->to_string().c_str(),
               Helpers::data_to_hex(data, length - 1).c_str());

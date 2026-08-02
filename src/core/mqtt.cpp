@@ -53,7 +53,6 @@ std::vector<Mqtt::MQTTSubFunction, AllocatorPSRAM<Mqtt::MQTTSubFunction>> Mqtt::
 uint32_t Mqtt::mqtt_publish_fails_ = 0;
 bool     Mqtt::connecting_         = false;
 bool     Mqtt::initialized_        = false;
-bool     Mqtt::ha_climate_reset_   = false;
 uint16_t Mqtt::queuecount_         = 0;
 uint8_t  Mqtt::connectcount_       = 0;
 uint32_t Mqtt::mqtt_message_id_    = 0;
@@ -131,10 +130,10 @@ void Mqtt::loop() {
 
     uint32_t currentMillis = uuid::get_uptime();
 
-    // send heartbeat
+    // send heartbeat per the frequency in the MQTT settings
     if (currentMillis - last_publish_heartbeat_ > publish_time_heartbeat_) {
         last_publish_heartbeat_ = currentMillis;
-        EMSESP::system_.send_heartbeat(); // send heartbeat
+        EMSESP::system_.send_heartbeat(); // send MQTT heartbeat topic
     }
 
     // temperature and analog sensor publish on change
@@ -379,7 +378,7 @@ void Mqtt::start() {
     initialized_ = true;
 
     // add the 'publish' command ('call system publish' in console or via API)
-    Command::add(EMSdevice::DeviceType::SYSTEM, F_(publish), System::command_publish, FL_(publish_cmd));
+    Command::add(EMSdevice::DeviceType::SYSTEM, F_(publish), MAKE_CF_CB(System::command_publish), FL_(publish_cmd));
 
 #if defined(EMSESP_STANDALONE)
     Mqtt::on_connect(); // simulate an MQTT connection
@@ -493,7 +492,6 @@ void Mqtt::on_connect() {
         queue_unsubscribe_message(discovery_prefix_ + "/+/" + Mqtt::basename() + "/#");
         EMSESP::reset_mqtt_ha(); // re-create all HA devices if there are any
         ha_status();             // create the EMS-ESP device in HA, which is MQTT retained
-        ha_climate_reset(true);
     } else {
         // with disabled HA we subscribe and the broker sends all stored HA-emsesp-configs.
         // Around line 272 they are removed (search for "// remove HA topics if we don't use discover")
@@ -511,8 +509,8 @@ void Mqtt::on_connect() {
 
     // send initial MQTT messages for some of our services
     EMSESP::system_.send_heartbeat(); // send heartbeat
-    // for publish on change publish the initial complete list
     EMSESP::webCustomEntityService.publish(true);
+    EMSESP::webCommandService.publish(true);
     EMSESP::webSchedulerService.publish(true);
     EMSESP::analogsensor_.publish_values(true);
     EMSESP::temperaturesensor_.publish_values(true);
@@ -522,7 +520,7 @@ void Mqtt::on_connect() {
 // e.g. homeassistant/sensor/ems-esp/status/config
 // all the values from the heartbeat payload will be added as attributes to the entity state
 void Mqtt::ha_status() {
-    JsonDocument doc;
+    JsonDocument doc(PSRAM_DOC);
 
     char uniq[70];
     if (Mqtt::entity_format() == entityFormat::MULTI_SHORT) {
@@ -548,8 +546,8 @@ void Mqtt::ha_status() {
     JsonObject dev = doc["dev"].to<JsonObject>();
     dev["name"]    = Mqtt::basename();
     dev["sw"]      = "v" + std::string(EMSESP_APP_VERSION);
-    dev["mf"]      = "EMS-ESP";
-    dev["mdl"]     = "EMS-ESP";
+    dev["mf"]      = "EMS-ESP";                                                                         // manufacturer is EMS-ESP always
+    dev["mdl"]     = EMSESP::system_.system_name().empty() ? "EMS-ESP" : EMSESP::system_.system_name(); // use users custom system name if set
 #ifndef EMSESP_STANDALONE
     dev["cu"] = std::string("http://") + EMSESP::system_.get_ip_or_hostname().c_str();
 #endif
@@ -563,15 +561,13 @@ void Mqtt::ha_status() {
 // create the HA sensors - must match the MQTT payload keys in the heartbeat topic
 // Note we don't use camelCase as it would change the HA entity_id and impact historic data
 #ifndef EMSESP_STANDALONE
-    if (!EMSESP::system_.ethernet_connected() || WiFi.isConnected()) {
+    if (EMSESP::network_.wifi_connected()) {
         publish_system_ha_sensor_config(DeviceValueType::INT8, "RSSI", "rssi", DeviceValueUOM::DBM);
         publish_system_ha_sensor_config(DeviceValueType::INT8, "Signal", "wifistrength", DeviceValueUOM::PERCENT);
     }
 #endif
 
     publish_system_ha_sensor_config(DeviceValueType::STRING, "EMS Bus", "bus_status", DeviceValueUOM::NONE);
-    publish_system_ha_sensor_config(DeviceValueType::STRING, "Uptime", "uptime", DeviceValueUOM::NONE);
-    publish_system_ha_sensor_config(DeviceValueType::INT8, "Uptime (sec)", "uptime_sec", DeviceValueUOM::SECONDS);
     publish_system_ha_sensor_config(DeviceValueType::INT8, "Free memory", "freemem", DeviceValueUOM::KB);
     publish_system_ha_sensor_config(DeviceValueType::INT8, "Max alloc", "max_alloc", DeviceValueUOM::KB);
     publish_system_ha_sensor_config(DeviceValueType::INT8, "MQTT fails", "mqttfails", DeviceValueUOM::NONE);
@@ -585,11 +581,13 @@ void Mqtt::ha_status() {
     publish_system_ha_sensor_config(DeviceValueType::INT8, "CPU temperature", "temperature", DeviceValueUOM::DEGREES);
 #endif
 
-    if (!EMSESP::system_.ethernet_connected()) {
+    if (!EMSESP::network_.ethernet_connected()) {
         publish_system_ha_sensor_config(DeviceValueType::INT16, "WiFi reconnects", "wifireconnects", DeviceValueUOM::NONE);
     }
-    // This one comes from the info MQTT topic - and handled in the publish_ha_sensor_config function
+
+    // These come from the info MQTT topic - and handled in the publish_ha_sensor_config function
     publish_system_ha_sensor_config(DeviceValueType::STRING, "Version", "version", DeviceValueUOM::NONE);
+    publish_system_ha_sensor_config(DeviceValueType::STRING, "Boot time", "bootTime", DeviceValueUOM::UPTIME);
 }
 
 // add sub or pub task to the queue.
@@ -984,7 +982,7 @@ bool Mqtt::publish_ha_sensor_config(uint8_t               type,        // EMSdev
     }
 
     // build the full topic's payload
-    JsonDocument doc;
+    JsonDocument doc(PSRAM_DOC);
     doc["~"]       = Mqtt::base();
     doc["uniq_id"] = uniq_id;
 
@@ -1064,15 +1062,19 @@ bool Mqtt::publish_ha_sensor_config(uint8_t               type,        // EMSdev
 
     // add state_topic and it's value_template. This is not needed for commands, only sensors
     if (type != DeviceValueType::CMD || is_sensor) {
-        // state topic, except for commands
-        char stat_t[MQTT_TOPIC_MAX_SIZE];
-
         // This is where we determine which MQTT topic to pull the data from
-        // There is one exception for DeviceType::SYSTEM, which uses the heartbeat topic, and when fetching the version we want to take this from the info topic instead
-        if ((device_type == EMSdevice::DeviceType::SYSTEM) && (strncmp(entity, "version", 7) == 0)) {
-            snprintf(stat_t, sizeof(stat_t), "~/%s", F_(info));
-        } else {
-            snprintf(stat_t, sizeof(stat_t), "~/%s", tag_to_topic(device_type, tag).c_str());
+        char stat_t[MQTT_TOPIC_MAX_SIZE]; // state topic, except for commands
+        snprintf(stat_t, sizeof(stat_t), "~/%s", tag_to_topic(device_type, tag).c_str());
+
+        // Override - there are exceptions for DeviceType::SYSTEM, which uses the heartbeat topic
+        // and when fetching the version and bootTime we want to take this from the info topic instead
+        if (device_type == EMSdevice::DeviceType::SYSTEM) {
+            // handle the exceptions
+            if (strncmp(entity, "version", 7) == 0) {
+                snprintf(stat_t, sizeof(stat_t), "~/%s", F_(info));
+            } else if (strncmp(entity, "bootTime", 8) == 0) {
+                snprintf(stat_t, sizeof(stat_t), "~/%s", F_(info));
+            }
         }
         doc["stat_t"] = stat_t;
 
@@ -1098,7 +1100,14 @@ bool Mqtt::publish_ha_sensor_config(uint8_t               type,        // EMSdev
 
         // don't bother with value template conditions if using Domoticz which doesn't fully support MQTT Discovery
         if (discovery_type() == discoveryType::HOMEASSISTANT) {
-            doc["val_tpl"] = (std::string) "{{" + val_obj + " if " + val_cond + " else " + sample_val + "}}";
+            if (uom == DeviceValueUOM::TIMESTAMP) {
+                // special case for timestamp, using "value_template": "{{ (value_json.bootTime | as_datetime).isoformat() }}",
+                char val_tpl[100];
+                snprintf(val_tpl, sizeof(val_tpl), "{{ (value_json.%s | as_datetime).isoformat() }}", entity);
+                doc["val_tpl"] = val_tpl;
+            } else {
+                doc["val_tpl"] = (std::string) "{{" + val_obj + " if " + val_cond + " else " + sample_val + "}}";
+            }
             add_ha_avty_section(doc.as<JsonObject>(), stat_t, val_cond); // adds availability section
         } else {
             // Domoticz doesn't support value templates, so we just use the value directly
@@ -1169,8 +1178,13 @@ void Mqtt::add_ha_classes(JsonObject doc, const uint8_t device_type, const uint8
         doc[uom_ha] = "L/h";
     } else if (uom == DeviceValueUOM::L) {
         doc[uom_ha] = "L";
+    } else if (uom == DeviceValueUOM::TIMESTAMP || uom == DeviceValueUOM::UPTIME) {
+        // do nothing
     } else if (uom != DeviceValueUOM::NONE) {
-        doc[uom_ha] = EMSdevice::uom_to_string(uom); // use default
+        auto uom_str = EMSdevice::uom_to_string(uom);
+        if (strlen(uom_str)) {
+            doc[uom_ha] = uom_str;
+        }
     } else if (discovery_type() != discoveryType::HOMEASSISTANT) {
         doc[uom_ha] = " "; // Domoticz uses " " for a no-uom
     }
@@ -1261,6 +1275,13 @@ void Mqtt::add_ha_classes(JsonObject doc, const uint8_t device_type, const uint8
     case DeviceValueUOM::CONNECTIVITY:
         doc[sc_ha] = sc_ha_measurement;
         doc[dc_ha] = "connectivity";
+        break;
+    case DeviceValueUOM::TIMESTAMP:
+        doc[sc_ha] = sc_ha_measurement;
+        doc[dc_ha] = "timestamp";
+        break;
+    case DeviceValueUOM::UPTIME:
+        doc[dc_ha] = "uptime";
         break;
     case DeviceValueUOM::MV:
     case DeviceValueUOM::VOLTS:
@@ -1409,7 +1430,7 @@ bool Mqtt::publish_ha_climate_config(const DeviceValue & dv, const bool has_room
     snprintf(temp_cmd_s, sizeof(temp_cmd_s), "~/%s/%s%d/seltemp", devicename, tagname, hc_num);
     snprintf(mode_cmd_s, sizeof(mode_cmd_s), "~/%s/%s%d/mode", devicename, tagname, hc_num);
 
-    JsonDocument doc;
+    JsonDocument doc(PSRAM_DOC);
 
     doc["~"]             = Mqtt::base();
     doc["uniq_id"]       = uniq_id_s;

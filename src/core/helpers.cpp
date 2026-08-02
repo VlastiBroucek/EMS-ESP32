@@ -34,7 +34,6 @@ char * Helpers::hextoa(char * result, const uint8_t value) {
 }
 
 // same as hextoa but uses to a hex std::string
-// Optimized: Avoid string concatenation to reduce temporary allocations
 std::string Helpers::hextoa(const uint8_t value, bool prefix) {
     if (prefix) {
         char buf[5]; // "0x" + 2 hex chars + null
@@ -60,7 +59,6 @@ char * Helpers::hextoa(char * result, const uint16_t value) {
 }
 
 // same as above but to a hex string
-// Optimized: Avoid string concatenation to reduce temporary allocations
 std::string Helpers::hextoa(const uint16_t value, bool prefix) {
     if (prefix) {
         char buf[7]; // "0x" + 4 hex chars + null
@@ -114,7 +112,6 @@ char * Helpers::ultostr(char * ptr, uint32_t value, const uint8_t base) {
 
 // fast itoa returning a std::string
 // http://www.strudel.org.uk/itoa/
-// Optimized: Use stack buffer to avoid heap allocation, then create string once
 std::string Helpers::itoa(int16_t value) {
     // int16_t max: -32768 to 32767 = max 6 chars + null
     char   buf[8];
@@ -140,7 +137,7 @@ std::string Helpers::itoa(int16_t value) {
 /*
   * fast itoa
   * written by Lukás Chmela, Released under GPLv3. http://www.strudel.org.uk/itoa/ version 0.4
-  * optimized for ESP32
+  * optimized for ESP32 for EMS-ESP
   */
 char * Helpers::itoa(int32_t value, char * result, const uint8_t base) {
     // check that the base if valid

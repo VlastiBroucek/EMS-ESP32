@@ -6,66 +6,61 @@ For a copy, see <https://opensource.org/licenses/MIT> or
 the LICENSE file.
 */
 
-#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
-
 #include "ClientSecureSync.h"
-#include <lwip/sockets.h>  // socket options
+#include <lwip/sockets.h>
+#include "../Config.h"
 
 namespace espMqttClientInternals {
 
 ClientSecureSync::ClientSecureSync()
-: client() {
-  // empty
+    : client() {
+    client.setClient(&basic_client, true);
+    client.setBufferSizes(EMC_RX_BUFFER_SIZE, EMC_TX_BUFFER_SIZE);
+    client.setSessionTimeout(120); // Set the timeout in seconds (>=120 seconds)
+}
+
+ClientSecureSync::~ClientSecureSync() {
+    stop();
 }
 
 bool ClientSecureSync::connect(IPAddress ip, uint16_t port) {
-  bool ret = client.connect(ip, port);  // implicit conversion of return code int --> bool
-  if (ret) {
-    #if defined(ARDUINO_ARCH_ESP8266)
-    client.setNoDelay(true);
-    #elif defined(ARDUINO_ARCH_ESP32)
-    // Set TCP option directly to bypass lack of working setNoDelay for WiFiClientSecure
-    int val = true;
-    client.setSocketOption(IPPROTO_TCP, TCP_NODELAY, &val, sizeof(int));
-    #endif
-  }
-  return ret;
+    bool ret = client.connect(ip, port); // implicit conversion of return code int --> bool
+    if (ret) {
+        // Set TCP option directly to bypass lack of working setNoDelay for WiFiClientSecure
+        int val = true;
+        basic_client.setSocketOption(IPPROTO_TCP, TCP_NODELAY, &val, sizeof(int));
+    }
+    return ret;
 }
 
-bool ClientSecureSync::connect(const char* host, uint16_t port) {
-  bool ret = client.connect(host, port);  // implicit conversion of return code int --> bool
-  if (ret) {
-    #if defined(ARDUINO_ARCH_ESP8266)
-    client.setNoDelay(true);
-    #elif defined(ARDUINO_ARCH_ESP32)
-    // Set TCP option directly to bypass lack of working setNoDelay for WiFiClientSecure
-    int val = true;
-    client.setSocketOption(IPPROTO_TCP, TCP_NODELAY, &val, sizeof(int));
-    #endif
-  }
-  return ret;
+bool ClientSecureSync::connect(const char * host, uint16_t port) {
+    bool ret = client.connect(host, port); // implicit conversion of return code int --> bool
+    if (ret) {
+        // Set TCP option directly to bypass lack of working setNoDelay for WiFiClientSecure
+        int val = true;
+        basic_client.setSocketOption(IPPROTO_TCP, TCP_NODELAY, &val, sizeof(int));
+    }
+    return ret;
 }
 
-size_t ClientSecureSync::write(const uint8_t* buf, size_t size) {
-  return client.write(buf, size);
+size_t ClientSecureSync::write(const uint8_t * buf, size_t size) {
+    return client.write(buf, size);
 }
 
-int ClientSecureSync::read(uint8_t* buf, size_t size) {
-  return client.read(buf, size);
+int ClientSecureSync::read(uint8_t * buf, size_t size) {
+    return client.read(buf, size);
 }
 
 void ClientSecureSync::stop() {
-  client.stop();
+    client.stop();
 }
 
 bool ClientSecureSync::connected() {
-  return client.connected();
+    return client.connected();
 }
 
 bool ClientSecureSync::disconnected() {
-  return !client.connected();
+    return !client.connected();
 }
 
-}  // namespace espMqttClientInternals
-
-#endif
+} // namespace espMqttClientInternals

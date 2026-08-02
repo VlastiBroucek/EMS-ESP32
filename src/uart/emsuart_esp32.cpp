@@ -39,7 +39,7 @@ uint32_t             inverse_mask = 0;
 // receive task, wait for break and call incoming_telegram
 void EMSuart::uart_event_task(void * pvParameters) {
     uart_event_t event;
-    uint8_t      telegram[UART_FIFO_LEN + 1]; // same size as in driver_install
+    uint8_t      telegram[UART_HW_FIFO_LEN(EMSUART_NUM) + 1]; // same size as in driver_install
     uint8_t      length = 0;
 
     while (1) {
@@ -66,18 +66,23 @@ void EMSuart::uart_event_task(void * pvParameters) {
 // initialize UART driver
 void EMSuart::start(const uint8_t tx_mode, const uint8_t rx_gpio, const uint8_t tx_gpio) {
     if (tx_mode_ == EMS_TXMODE_INIT) {
+#if CONFIG_IDF_TARGET_ESP32C6
+        uart_config_t uart_config = {.baud_rate           = EMSUART_BAUD,
+                                     .data_bits           = UART_DATA_8_BITS,
+                                     .parity              = UART_PARITY_DISABLE,
+                                     .stop_bits           = UART_STOP_BITS_1,
+                                     .flow_ctrl           = UART_HW_FLOWCTRL_DISABLE,
+                                     .rx_flow_ctrl_thresh = 0};
+#else
         uart_config_t uart_config = {.baud_rate           = EMSUART_BAUD,
                                      .data_bits           = UART_DATA_8_BITS,
                                      .parity              = UART_PARITY_DISABLE,
                                      .stop_bits           = UART_STOP_BITS_1,
                                      .flow_ctrl           = UART_HW_FLOWCTRL_DISABLE,
                                      .rx_flow_ctrl_thresh = 0,
-                                     .source_clk          = UART_SCLK_APB
-#if ESP_ARDUINO_VERSION_MAJOR >= 3
-                                     ,
-                                     .flags = {0}
+                                     .source_clk          = UART_SCLK_APB,
+                                     .flags               = {0}};
 #endif
-        };
 #if defined(EMSUART_RX_INVERT)
         inverse_mask |= UART_SIGNAL_RXD_INV;
 #endif
@@ -87,7 +92,12 @@ void EMSuart::start(const uint8_t tx_mode, const uint8_t rx_gpio, const uint8_t 
         uart_param_config(EMSUART_NUM, &uart_config);
         uart_set_pin(EMSUART_NUM, tx_gpio, rx_gpio, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
         uart_set_line_inverse(EMSUART_NUM, inverse_mask);
-        uart_driver_install(EMSUART_NUM, UART_FIFO_LEN + 1, 0, UART_FIFO_LEN + 3, &uart_queue, 0); // buffer must be > fifo, queue can hold data+break+overflow message
+        uart_driver_install(EMSUART_NUM,
+                            UART_HW_FIFO_LEN(EMSUART_NUM) + 1,
+                            0,
+                            UART_HW_FIFO_LEN(EMSUART_NUM) + 3,
+                            &uart_queue,
+                            0); // buffer must be > fifo, queue can hold data+break+overflow message
         uart_set_rx_full_threshold(EMSUART_NUM, 1);
         uart_set_rx_timeout(EMSUART_NUM, 0); // disable
 

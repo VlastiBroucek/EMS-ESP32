@@ -21,6 +21,10 @@
 
 // GENERAL SETTINGS
 
+#ifndef EMSESP_DEFAULT_SYSTEM_NAME
+#define EMSESP_DEFAULT_SYSTEM_NAME ""
+#endif
+
 #ifndef EMSESP_DEFAULT_LOCALE
 #define EMSESP_DEFAULT_LOCALE EMSESP_LOCALE_EN // English
 #endif
@@ -285,6 +289,8 @@ enum {
 #define EMSESP_PLATFORM "ESP32S3"
 #elif CONFIG_IDF_TARGET_ESP32 || EMSESP_STANDALONE
 #define EMSESP_PLATFORM "ESP32"
+#elif CONFIG_IDF_TARGET_ESP32C6
+#define EMSESP_PLATFORM "ESP32C6"
 #else
 #error Target CONFIG_IDF_TARGET is not supported
 #endif
@@ -293,12 +299,9 @@ enum {
 #ifndef STRINGIZE
 #define STRINGIZE(s) #s
 #endif
-#ifdef TASMOTA_SDK
-#define ARDUINO_VERSION_STR(major, minor, patch) "Tasmota Arduino v" STRINGIZE(major) "." STRINGIZE(minor) "." STRINGIZE(patch)
-#else
-#define ARDUINO_VERSION_STR(major, minor, patch) "ESP32 Arduino v" STRINGIZE(major) "." STRINGIZE(minor) "." STRINGIZE(patch)
-#endif
-#define ARDUINO_VERSION ARDUINO_VERSION_STR(ESP_ARDUINO_VERSION_MAJOR, ESP_ARDUINO_VERSION_MINOR, ESP_ARDUINO_VERSION_PATCH)
-#endif
 
+#define ARDUINO_VERSION_STR(major, minor, patch) "Tasmota Arduino v" STRINGIZE(major) "." STRINGIZE(minor) "." STRINGIZE(patch)
+#define ARDUINO_VERSION ARDUINO_VERSION_STR(ESP_ARDUINO_VERSION_MAJOR, ESP_ARDUINO_VERSION_MINOR, ESP_ARDUINO_VERSION_PATCH)
+
+#endif
 #endif

@@ -12,8 +12,8 @@ corepack use pnpm@latest
 pnpm update
 pnpm install
 pnpm format
-pnpm lint
 pnpm build-webUI
+pnpm lint
 
 cd ../mock-api
 rm -rf node_modules
@@ -25,8 +25,9 @@ pnpm format
 cd ..
 npx cspell "**"
 
-# build files that go into docs folder
+# exit 0
 
+# build files that go into docs folder
 platformio run -e build_modbus -t clean
 platformio run -e build_modbus
 platformio run -e build_standalone -t clean

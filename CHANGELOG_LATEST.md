@@ -2,32 +2,26 @@
 
 For more details go to [emsesp.org](https://emsesp.org/).
 
-## [3.8.3]
+## [3.9.0]
+
+This release is based on the latest Espressif/Arduino core version 3. It brings in many memory and performance optimizations. Note it does require the user to manually migrate settings from 3.8.x to 3.9.0.
 
 ## Added
 
-- KM300 at address 0x4A [#3084](https://github.com/emsesp/EMS-ESP32/issues/3084)
+- user-requested LED blink [#3063](https://github.com/emsesp/EMS-ESP32/issues/3063)
+- Commands Service that can be called via MQTT or API or used in the Scheduler Service
+- option to disable factory reset [#3150](https://github.com/emsesp/EMS-ESP32/issues/3150)
+- TLS support with 4MB boards without PSRAM
 
 ## Fixed
 
-- signed value for solarInfuence [#3077](https://github.com/emsesp/EMS-ESP32/issues/3077)
-- set bin file upload limit to 1M again [#3086](https://github.com/emsesp/EMS-ESP32/issues/3086)
-- check arithmetric operations on strings [#3127](https://github.com/emsesp/EMS-ESP32/discussions/3127)
-- prevent system crash during WiFi network discovery on ESP32-S3 hardware [#3128](https://github.com/emsesp/EMS-ESP32/pull/3128)
-- fix setting date/time on Junkers thermostats
-- offset of hpminflowtemp [#3144](https://github.com/emsesp/EMS-ESP32/issues/3144)
-- water circulation command [#3149](https://github.com/emsesp/EMS-ESP32/pull/3149)
-- start scheduler after customEntities, delay scheduler loop after startup, handling of `system/restart` command [#3146](https://github.com/emsesp/EMS-ESP32/issues/3146)
-- possible memory leaks fixed.
-- repeated startup schedules compute value
-- call `system/message` called from scheduler processes compute twice
-- water module SM100/200 as dhw1/dhw2 [#3164](https://github.com/emsesp/EMS-ESP32/issues/3164)
+- shunting yard show json
 
 ## Changed
 
-- call compute value direct, enlarge TCP stack [#3127](https://github.com/emsesp/EMS-ESP32/discussions/3127)
-- Dewtemperature for Easycontrol calculated by ems-esp [#3135](https://github.com/emsesp/EMS-ESP32/issues/3135)
-- add option for sync thermostat to ntp, allow different time zones [#3148](https://github.com/emsesp/EMS-ESP32/discussions/3148), **defaults to sync**.
-- block too many GET requests [mentioned in #3104](https://github.com/emsesp/EMS-ESP32/issues/3104)
-- set 10 sec timeout for http requests [#3104](https://github.com/emsesp/EMS-ESP32/issues/3104)
-- language code "cs" [#3161](https://github.com/emsesp/EMS-ESP32/issues/3161)
+- various memory optimizations [#3083](https://github.com/emsesp/EMS-ESP32/issues/3083)
+- Scheduler name is now mandatory
+- network fallback to AP only after start [#3090](https://github.com/emsesp/EMS-ESP32/issues/3090)
+- replaced Web async-validator with custom validator and toast with native snackbar to reduce bundle size
+- Gateway and Connect devices are shown in the Devices page, but disabled [3126](https://github.com/emsesp/EMS-ESP32/discussions/3126)
+

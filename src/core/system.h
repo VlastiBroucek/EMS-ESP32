@@ -26,6 +26,7 @@
 #include "console.h"
 #include "mqtt.h"
 #include "telegram.h"
+#include "led.h"
 
 #ifndef EMSESP_STANDALONE
 #include <esp_wifi.h>
@@ -37,23 +38,13 @@
 #include <uuid/log.h>
 #include <PButton.h>
 
-#if ESP_ARDUINO_VERSION_MAJOR < 3
-#define EMSESP_RGB_WRITE neopixelWrite
-#else
-#define EMSESP_RGB_WRITE rgbLedWrite
-#endif
-
 #if CONFIG_IDF_TARGET_ESP32
 // there is no official API available on the original ESP32
 extern "C" {
 uint8_t temprature_sens_read();
 }
 #elif CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32S2
-#if ESP_IDF_VERSION_MAJOR < 5
-#include "driver/temp_sensor.h"
-#else
 #include "driver/temperature_sensor.h"
-#endif
 #endif
 
 using uuid::console::Shell;
@@ -61,8 +52,6 @@ using uuid::console::Shell;
 #define EMSESP_FS_CONFIG_DIRECTORY "/config"
 
 #define EMSESP_CUSTOMSUPPORT_FILE "/config/customSupport.json"
-
-#define RGB_LED_BRIGHTNESS 20 // 255 is max brightness
 
 namespace emsesp {
 
@@ -80,6 +69,7 @@ enum SYSTEM_STATUS : uint8_t {
 
 enum FUSE_VALUE : uint8_t { ALL = 0, MFG = 1, MODEL = 2, BOARD = 3, REV = 4, BATCH = 5, FUSE = 6 };
 
+enum EMAIL_SECURITY : uint8_t { NONE = 0, SSL = 1, STARTTLS = 2 };
 struct PartitionInfo {
     std::string version;
     size_t      size;
@@ -103,7 +93,9 @@ class System {
     static bool command_info(const char * value, const int8_t id, JsonObject output);
     static bool command_response(const char * value, const int8_t id, JsonObject output);
     static bool command_service(const char * cmd, const char * value);
+    static bool command_sendmail(const char * value, const int8_t id);
     static bool command_txpause(const char * value, const int8_t id);
+    static bool command_led(const char * value, const int8_t id);
 
     static bool        get_value_info(JsonObject root, const char * cmd);
     static void        get_value_json(JsonObject output, const std::string & circuit, const std::string & name, JsonVariant val);
@@ -150,8 +142,6 @@ class System {
 
     static bool uploadFirmwareURL(const char * url = nullptr);
 
-    void led_init();
-    void network_init();
     void button_init();
     void commands_init();
     void uart_init();
@@ -173,10 +163,6 @@ class System {
 
     static String get_ip_or_hostname();
 
-    void dallas_gpio(uint8_t gpio) {
-        dallas_gpio_ = gpio;
-    }
-
     bool telnet_enabled() {
         return telnet_enabled_;
     }
@@ -197,18 +183,6 @@ class System {
         return modbus_timeout_;
     }
 
-    bool analog_enabled() {
-        return analog_enabled_;
-    }
-
-    void analog_enabled(bool b) {
-        analog_enabled_ = b;
-    }
-
-    void hide_led(bool b) {
-        hide_led_ = b;
-    }
-
     bool readonly_mode() {
         return readonly_mode_;
     }
@@ -223,6 +197,14 @@ class System {
 
     void developer_mode(bool developer_mode) {
         developer_mode_ = developer_mode;
+    }
+
+    bool disable_reset() {
+        return disable_reset_;
+    }
+
+    void disable_reset(bool disable_reset) {
+        disable_reset_ = disable_reset;
     }
 
     // Boolean Format API/MQTT
@@ -270,32 +252,8 @@ class System {
         hostname_ = hostname;
     }
 
-    bool ethernet_connected() {
-        return ethernet_connected_;
-    }
-
-    void ethernet_connected(bool b) {
-        ethernet_connected_ = b;
-    }
-
-    void has_ipv6(bool b) {
-        has_ipv6_ = b;
-    }
-
-    bool has_ipv6() {
-        return has_ipv6_;
-    }
-
     void ntp_connected(bool b);
     bool ntp_connected();
-
-    bool network_connected() {
-#ifndef EMSESP_STANDALONE
-        return (ethernet_connected() || WiFi.isConnected());
-#else
-        return true;
-#endif
-    }
 
     void fahrenheit(bool b) {
         fahrenheit_ = b;
@@ -315,14 +273,16 @@ class System {
         return std::string(locale_.c_str());
     }
 
+    std::string system_name() {
+        return std::string(system_name_.c_str());
+    }
+
     void healthcheck(uint8_t healthcheck) {
         healthcheck_ = healthcheck;
     }
 
     void show_system(uuid::console::Shell & shell);
     void show_users(uuid::console::Shell & shell);
-
-    void wifi_reconnect();
 
     static std::string languages_string();
 
@@ -351,10 +311,20 @@ class System {
     static uint32_t getHeapMem() {
         return heap_mem_;
     }
+    // All-time low watermark of free internal heap (KB).
+    // Unlike getHeapMem() (sampled now), this captures the *lowest* free heap
+    // has ever been since boot — i.e. the worst transient dip during MQTT
+    // publishes, HA discovery, /api/system calls, TLS handshakes, etc.
+    // This is the number that actually reflects optimisations targeting
+    // transient JSON / buffer peaks (e.g. Phase C PSRAM JsonDocuments).
+    static uint32_t getMinFreeMem() {
+        return min_free_mem_;
+    }
     static void refreshHeapMem() {
 #ifndef EMSESP_STANDALONE
         max_alloc_mem_ = ESP.getMaxAllocHeap() / 1024;
         heap_mem_      = ESP.getFreeHeap() / 1024;
+        min_free_mem_  = ESP.getMinFreeHeap() / 1024;
 #endif
     }
 
@@ -387,14 +357,20 @@ class System {
 
     static bool set_partition(const char * partitionname);
 
+    // healthcheck flags - shared with LED for status visualization
+    static constexpr uint8_t HEALTHCHECK_NO_BUS     = (1 << 0); // 1
+    static constexpr uint8_t HEALTHCHECK_NO_NETWORK = (1 << 1); // 2
+    static constexpr uint8_t HEALTHCHECK_RESET      = (1 << 7); // 128
+
   private:
     static uuid::log::Logger logger_;
 
     static bool     test_set_all_active_; // force all entities in a device to have a value
     static uint32_t max_alloc_mem_;
     static uint32_t heap_mem_;
+    static uint32_t min_free_mem_;
 
-    uint8_t systemStatus_; // uses SYSTEM_STATUS enum
+    volatile uint8_t systemStatus_; // uses SYSTEM_STATUS enum - written from the AsyncTCP task (e.g. cancel) and read from the main loop during OTA
 
     void set_partition_install_date();
 
@@ -407,15 +383,6 @@ class System {
     static constexpr uint32_t BUTTON_Debounce      = 40;  // Debounce period to prevent flickering when pressing or releasing the button (in ms)
     static constexpr uint32_t BUTTON_DblClickDelay = 250; // Max period between clicks for a double click event (in ms)
 
-    // LED flash timer
-    static bool     led_flash_timer_;
-    static uint8_t  led_flash_gpio_;
-    static uint8_t  led_flash_type_;
-    static uint32_t led_flash_start_time_;
-    static uint32_t led_flash_duration_;
-    static void     start_led_flash(uint8_t duration);
-    static void     led_flash();
-
     // button press delays
     static constexpr uint32_t BUTTON_LongPressDelay  = 3000; // Hold period for a long press event (in ms) - ~3 seconds
     static constexpr uint32_t BUTTON_VLongPressDelay = 9500; // Hold period for a very long press event (in ms) - !10 seconds
@@ -426,17 +393,11 @@ class System {
 #else
     static constexpr uint32_t SYSTEM_CHECK_FREQUENCY = 5000; // do a system check every 5 seconds
 #endif
-    static constexpr uint32_t HEALTHCHECK_LED_LONG_DUARATION  = 1500;     // 1.5 seconds
-    static constexpr uint32_t HEALTHCHECK_LED_FLASH_DUARATION = 150;      // 150ms
-    static constexpr uint8_t  HEALTHCHECK_NO_BUS              = (1 << 0); // 1
-    static constexpr uint8_t  HEALTHCHECK_NO_NETWORK          = (1 << 1); // 2
-    static constexpr uint8_t  LED_ON                          = HIGH;     // LED on
 
 #ifndef EMSESP_STANDALONE
     static uuid::syslog::SyslogService syslog_;
 #endif
 
-    void led_monitor();
     void system_check();
 
     static std::vector<uint8_t, AllocatorPSRAM<uint8_t>> string_range_to_vector(const std::string & range, const std::string & exclude = "");
@@ -454,29 +415,21 @@ class System {
     uint8_t  healthcheck_       = HEALTHCHECK_NO_NETWORK | HEALTHCHECK_NO_BUS; // start with all flags set, no wifi and no ems bus connection
     uint32_t last_system_check_ = 0;
 
-    bool upload_isrunning_   = false; // true if we're in the middle of a OTA firmware upload
-    bool ethernet_connected_ = false;
-    bool has_ipv6_           = false;
+    bool upload_isrunning_ = false; // true if we're in the middle of a OTA firmware upload
 
     bool     ntp_connected_  = false;
     uint32_t ntp_last_check_ = 0;
 
-    bool eth_present_ = false;
-
     // EMS-ESP settings
     std::string hostname_;
+    String      system_name_;
     String      locale_;
-    bool        hide_led_;
-    uint8_t     led_type_;
-    uint8_t     led_gpio_;
-    bool        analog_enabled_;
     bool        low_clock_;
     String      board_profile_;
     uint8_t     pbutton_gpio_;
     uint8_t     rx_gpio_;
     uint8_t     tx_gpio_;
     uint8_t     tx_mode_;
-    uint8_t     dallas_gpio_;
     bool        telnet_enabled_;
     bool        syslog_enabled_;
     int8_t      syslog_level_;
@@ -488,28 +441,19 @@ class System {
     uint8_t     bool_format_;
     uint8_t     enum_format_;
     bool        readonly_mode_;
-    String      version_;
     bool        modbus_enabled_;
     uint16_t    modbus_port_;
     uint8_t     modbus_max_clients_;
     uint32_t    modbus_timeout_;
     bool        developer_mode_;
-
-    // ethernet
-    uint8_t phy_type_;
-    int8_t  eth_power_;
-    uint8_t eth_phy_addr_;
-    uint8_t eth_clock_mode_;
-
-    uint32_t fstotal_;
-    uint32_t psram_;
-    uint32_t appused_;
-    uint32_t appfree_;
+    bool        disable_reset_;
+    uint32_t    fstotal_;
+    uint32_t    psram_;
+    uint32_t    appused_;
+    uint32_t    appfree_;
 
 #if CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32S2
-#if ESP_IDF_VERSION_MAJOR >= 5
     temperature_sensor_handle_t temperature_handle_ = NULL;
-#endif
 #endif
     float temperature_ = 0;
 };

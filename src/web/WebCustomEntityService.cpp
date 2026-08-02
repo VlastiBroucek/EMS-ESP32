@@ -69,7 +69,7 @@ void WebCustomEntity::read(WebCustomEntity & webEntity, JsonObject root) {
 StateUpdateResult WebCustomEntity::update(JsonObject root, WebCustomEntity & webCustomEntity) {
     // reset everything to start fresh
     Command::erase_device_commands(EMSdevice::DeviceType::CUSTOM);
-    JsonDocument doc;
+    JsonDocument doc(PSRAM_DOC);
     for (CustomEntityItem & entityItem : webCustomEntity.customEntityItems) {
         if (entityItem.raw) {
             delete[] entityItem.raw;
@@ -147,8 +147,8 @@ StateUpdateResult WebCustomEntity::update(JsonObject root, WebCustomEntity & web
                 Command::add(
                     EMSdevice::DeviceType::CUSTOM,
                     webCustomEntity.customEntityItems.back().name,
-                    [webCustomEntity](const char * value, const int8_t id) {
-                        return EMSESP::webCustomEntityService.command_setvalue(value, id, webCustomEntity.customEntityItems.back().name);
+                    [name = std::string(webCustomEntity.customEntityItems.back().name)](const char * value, const int8_t id, JsonObject output) {
+                        return EMSESP::webCustomEntityService.command_setvalue(value, id, name.c_str());
                     },
                     FL_(entity_cmd),
                     CommandFlag::ADMIN_ONLY);
@@ -236,7 +236,7 @@ bool WebCustomEntityService::command_setvalue(const char * value, const int8_t i
             }
 
             publish_single(entityItem);
-            if (EMSESP::mqtt_.get_publish_onchange(0)) {
+            if (EMSESP::mqtt_.get_publish_onchange(EMSdevice::DeviceType::SYSTEM)) {
                 publish();
             }
             char cmd[COMMAND_MAX_LENGTH];
@@ -455,7 +455,7 @@ void WebCustomEntityService::publish_single(CustomEntityItem & entity) {
         snprintf(topic, sizeof(topic), "%s_data/%s", F_(custom), entity.name);
     }
 
-    JsonDocument doc;
+    JsonDocument doc(PSRAM_DOC);
     JsonObject   output = doc.to<JsonObject>();
     render_value(output, entity, true);
     Mqtt::queue_publish(topic, output["value"].as<std::string>());
@@ -472,12 +472,12 @@ void WebCustomEntityService::publish(const bool force) {
                 publish_single(entityItem);
             }
             return;
-        } else if (!EMSESP::mqtt_.get_publish_onchange(0)) {
+        } else if (!EMSESP::mqtt_.get_publish_onchange(EMSdevice::DeviceType::SYSTEM)) {
             return; // wait for first time period
         }
     }
 
-    JsonDocument doc;
+    JsonDocument doc(PSRAM_DOC);
     JsonObject   output     = doc.to<JsonObject>();
     bool         ha_created = ha_configdone_;
 
@@ -488,7 +488,7 @@ void WebCustomEntityService::publish(const bool force) {
         render_value(output, entityItem);
         // create HA config
         if (Mqtt::ha_enabled() && !ha_configdone_) {
-            JsonDocument config;
+            JsonDocument config(PSRAM_DOC);
             config["~"] = Mqtt::base();
 
             char stat_t[50];
@@ -568,7 +568,7 @@ uint8_t WebCustomEntityService::count_entities() {
         return 0;
     }
 
-    JsonDocument doc;
+    JsonDocument doc(PSRAM_DOC);
     JsonObject   output = doc.to<JsonObject>();
     uint8_t      count  = 0;
 
@@ -707,7 +707,7 @@ void WebCustomEntityService::fetch() {
 }
 
 // called on process telegram, read from telegram
-bool WebCustomEntityService::get_value(std::shared_ptr<const Telegram> telegram) {
+bool WebCustomEntityService::get_value(const std::shared_ptr<const Telegram> & telegram) {
     bool has_change = false;
     // read-length of BOOL, INT8, UINT8, INT16, UINT16, UINT24, TIME, UINT32
     const uint8_t len[] = {1, 1, 1, 2, 2, 3, 3, 4};
@@ -731,7 +731,7 @@ bool WebCustomEntityService::get_value(std::shared_ptr<const Telegram> telegram)
                     entity.data = data.c_str();
                     if (Mqtt::publish_single()) {
                         publish_single(entity);
-                    } else if (EMSESP::mqtt_.get_publish_onchange(0)) {
+                    } else if (EMSESP::mqtt_.get_publish_onchange(EMSdevice::DeviceType::SYSTEM)) {
                         has_change = true;
                     }
                     char cmd[COMMAND_MAX_LENGTH];
@@ -753,7 +753,7 @@ bool WebCustomEntityService::get_value(std::shared_ptr<const Telegram> telegram)
                 entity.value = value;
                 if (Mqtt::publish_single()) {
                     publish_single(entity);
-                } else if (EMSESP::mqtt_.get_publish_onchange(0)) {
+                } else if (EMSESP::mqtt_.get_publish_onchange(EMSdevice::DeviceType::SYSTEM)) {
                     has_change = true;
                 }
                 char cmd[COMMAND_MAX_LENGTH];
@@ -798,8 +798,8 @@ void WebCustomEntityService::load_test_data() {
         Command::add(
             EMSdevice::DeviceType::CUSTOM,
             webCustomEntity.customEntityItems.back().name,
-            [webCustomEntity](const char * value, const int8_t id) {
-                return EMSESP::webCustomEntityService.command_setvalue(value, id, webCustomEntity.customEntityItems.back().name);
+            [name = std::string(webCustomEntity.customEntityItems.back().name)](const char * value, const int8_t id, JsonObject output) {
+                return EMSESP::webCustomEntityService.command_setvalue(value, id, name.c_str());
             },
             FL_(entity_cmd),
             CommandFlag::ADMIN_ONLY);
@@ -834,8 +834,8 @@ void WebCustomEntityService::load_test_data() {
         Command::add(
             EMSdevice::DeviceType::CUSTOM,
             webCustomEntity.customEntityItems.back().name,
-            [webCustomEntity](const char * value, const int8_t id) {
-                return EMSESP::webCustomEntityService.command_setvalue(value, id, webCustomEntity.customEntityItems.back().name);
+            [name = std::string(webCustomEntity.customEntityItems.back().name)](const char * value, const int8_t id, JsonObject output) {
+                return EMSESP::webCustomEntityService.command_setvalue(value, id, name.c_str());
             },
             FL_(entity_cmd),
             CommandFlag::ADMIN_ONLY);
@@ -857,8 +857,8 @@ void WebCustomEntityService::load_test_data() {
         Command::add(
             EMSdevice::DeviceType::CUSTOM,
             webCustomEntity.customEntityItems.back().name,
-            [webCustomEntity](const char * value, const int8_t id) {
-                return EMSESP::webCustomEntityService.command_setvalue(value, id, webCustomEntity.customEntityItems.back().name);
+            [name = std::string(webCustomEntity.customEntityItems.back().name)](const char * value, const int8_t id, JsonObject output) {
+                return EMSESP::webCustomEntityService.command_setvalue(value, id, name.c_str());
             },
             FL_(entity_cmd),
             CommandFlag::ADMIN_ONLY);

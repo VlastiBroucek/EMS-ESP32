@@ -46,6 +46,38 @@ ${fileInfo.map((f) => `${INDENT}{"${f.uri}", "${f.mimeType}", ${f.variable}, ${f
 static constexpr size_t WWW_ASSETS_COUNT = sizeof(WWW_ASSETS) / sizeof(WWW_ASSETS[0]);
 `;
 
+// Optional locale allow-list, shared with the Vite build via VITE_APP_LOCALES
+// (e.g. "en,de,nl"). When set, locale chunks outside the list are NOT embedded
+// into firmware flash. `en` is always kept as the fallback. Unset => embed all.
+const ALL_LOCALES = [
+  'cs',
+  'de',
+  'en',
+  'fr',
+  'it',
+  'nl',
+  'no',
+  'pl',
+  'sk',
+  'sv',
+  'tr'
+];
+const localeAllowList = (process.env.VITE_APP_LOCALES || '')
+  .split(',')
+  .map((locale) => locale.trim())
+  .filter(Boolean);
+
+const isExcludedLocaleChunk = (relativeFilePath) => {
+  if (localeAllowList.length === 0) return false;
+  const base = relativeFilePath.split(sep).pop();
+  const match = /^([a-z]{2})-[A-Za-z0-9_-]+\.js$/.exec(base);
+  if (!match) return false;
+  const code = match[1];
+  // Only treat known locale codes as locale chunks; never drop the en fallback.
+  if (!ALL_LOCALES.includes(code) || code === 'en') return false;
+  return !localeAllowList.includes(code);
+};
+
 const getFilesSync = (dir, files = []) => {
   readdirSync(dir, { withFileTypes: true }).forEach((entry) => {
     const entryPath = resolve(dir, entry.name);
@@ -116,7 +148,12 @@ writeStream.write(ARDUINO_INCLUDES);
 
 const buildPath = resolve(sourcePath);
 for (const filePath of getFilesSync(buildPath)) {
-  writeFile(relative(buildPath, filePath), readFileSync(filePath));
+  const relativeFilePath = relative(buildPath, filePath);
+  if (isExcludedLocaleChunk(relativeFilePath)) {
+    console.log(`Skipping locale (not in VITE_APP_LOCALES): ${relativeFilePath}`);
+    continue;
+  }
+  writeFile(relativeFilePath, readFileSync(filePath));
 }
 
 writeStream.write(generateWWWClass());

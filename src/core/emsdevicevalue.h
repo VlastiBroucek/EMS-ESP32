@@ -23,6 +23,8 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 
+#include <memory>
+
 #include "helpers.h"          // for conversions
 #include "default_settings.h" // for enum types
 
@@ -49,35 +51,37 @@ class DeviceValue {
     // also used with HA as uom
     // shows also the HA device class being used
     enum DeviceValueUOM : uint8_t {
-        NONE = 0,    // 0
-        DEGREES,     // 1 - °C - temperature
-        DEGREES_R,   // 2 - °C (relative temperature) - temperature
-        PERCENT,     // 3 - % - power factor
-        LMIN,        // 4 - l/min - volume flow rate
-        KWH,         // 5 - kWh - energy
-        WH,          // 6 - Wh - energy
-        HOURS,       // 7 - h - duration
-        MINUTES,     // 8 - m - duration
-        UA,          // 9 - µA - current
-        BAR,         // 10 - bar - pressure
-        KW,          // 11 - kW - power
-        W,           // 12 - W - power
-        KB,          // 13 - kB - data size
-        SECONDS,     // 14 - s - duration
-        DBM,         // 15 - dBm - signal strength
-        FAHRENHEIT,  // 16 - °F - temperature
-        MV,          // 17 - mV - voltage
-        SQM,         // 18 - m² - area
-        M3,          // 19 - m³ - volume
-        L,           // 20 - L - volume
-        KMIN,        // 21 - K*min
-        K,           // 22 - K - temperature
-        VOLTS,       // 23 - V - voltage
-        MBAR,        // 24 - mbar - atmospheric pressure
-        LH,          // 25 - l/h - volume flow rate
-        CTKWH,       // 26 - ct/kWh - monetary
-        HERTZ,       // 27 - Hz - frequency
-        CONNECTIVITY // 28 - used in HA - connectivity
+        NONE = 0,     // 0
+        DEGREES,      // 1 - °C - temperature
+        DEGREES_R,    // 2 - °C (relative temperature) - temperature
+        PERCENT,      // 3 - % - power factor
+        LMIN,         // 4 - l/min - volume flow rate
+        KWH,          // 5 - kWh - energy
+        WH,           // 6 - Wh - energy
+        HOURS,        // 7 - h - duration
+        MINUTES,      // 8 - m - duration
+        UA,           // 9 - µA - current
+        BAR,          // 10 - bar - pressure
+        KW,           // 11 - kW - power
+        W,            // 12 - W - power
+        KB,           // 13 - kB - data size
+        SECONDS,      // 14 - s - duration
+        DBM,          // 15 - dBm - signal strength
+        FAHRENHEIT,   // 16 - °F - temperature
+        MV,           // 17 - mV - voltage
+        SQM,          // 18 - m² - area
+        M3,           // 19 - m³ - volume
+        L,            // 20 - L - volume
+        KMIN,         // 21 - K*min
+        K,            // 22 - K - temperature
+        VOLTS,        // 23 - V - voltage
+        MBAR,         // 24 - mbar - atmospheric pressure
+        LH,           // 25 - l/h - volume flow rate
+        CTKWH,        // 26 - ct/kWh - monetary
+        HERTZ,        // 27 - Hz - frequency
+        CONNECTIVITY, // 28 - used in HA - connectivity
+        TIMESTAMP,    // 29 - used in HA - timestamp
+        UPTIME,       // 30 - used in HA - uptime for boot time
     };
 
     // TAG mapping - maps to DeviceValueTAG_s in emsdevicevalue.cpp
@@ -168,23 +172,25 @@ class DeviceValue {
         DV_NUMOP_MUL50  = -50
     };
 
-    uint8_t               device_type;    // EMSdevice::DeviceType
-    int8_t                tag;            // DeviceValueTAG::*
+    // Layout chosen for compact packing AND cache locality on 32-bit ESP32.
+    // pointers — 5 × 4 bytes, all naturally aligned
     void *                value_p;        // pointer to variable of any type
-    uint8_t               type;           // DeviceValueType::*
+    const char * const    short_name;     // used in MQTT and API
+    const char * const *  fullname;       // used in Web and Console, is translated
     const char * const ** options;        // options as a flash char array
     const char * const *  options_single; // options are not translated
-    int8_t                numeric_operator;
-    const char * const    short_name;      // used in MQTT and API
-    const char * const *  fullname;        // used in Web and Console, is translated
-    std::string           custom_fullname; // optional, from customization
-    uint8_t               uom;             // DeviceValueUOM::*
-    bool                  has_cmd;         // true if there is a Console/MQTT command which matches the short_name
-    int16_t               min;             // min range
-    uint32_t              max;             // max range
-    uint8_t               state;           // DeviceValueState::*
-
-    uint8_t options_size; // number of options in the char array, calculated at class initialization
+    // single-byte fields packed together — hot fields, share cache line 0 with the pointers above
+    uint8_t device_type;      // EMSdevice::DeviceType
+    int8_t  tag;              // DeviceValueTAG::*
+    uint8_t type;             // DeviceValueType::*
+    uint8_t state;            // DeviceValueState::*
+    int8_t  numeric_operator; // DeviceValueNumOp::*
+    uint8_t uom;              // DeviceValueUOM::*
+    bool    has_cmd;          // true if there is a Console/MQTT command which matches the short_name
+    uint8_t options_size;     // number of options in the char array, calculated at class initialization
+    // wider numeric range fields
+    int16_t  min; // min range
+    uint32_t max; // max range
 
     DeviceValue(uint8_t               device_type,    // EMSdevice::DeviceType
                 int8_t                tag,            // DeviceValueTAG::*
@@ -214,6 +220,13 @@ class DeviceValue {
     std::string        get_fullname() const;
     static std::string get_name(const std::string & entity);
 
+    // raw stored custom name (including any >min<max suffix), empty if none. Stored on heap only when set.
+    const std::string & custom_fullname() const;
+    void                set_custom_fullname(const std::string & name);
+    bool                has_custom_fullname() const {
+        return (bool)custom_fullname_;
+    }
+
     // dv state flags
     void add_state(uint8_t s) {
         state |= s;
@@ -232,6 +245,11 @@ class DeviceValue {
     static const char * const * DeviceValueTAG_s[];
     static const char * const   DeviceValueTAG_mqtt[];
     static uint8_t              NUM_TAGS; // # tags
+
+  private:
+    // optional custom name from customization. Allocated on heap only when actually set,
+    // so unnamed entities (the vast majority) don't pay for an inline std::string.
+    std::unique_ptr<std::string> custom_fullname_;
 };
 
 }; // namespace emsesp

@@ -11,36 +11,17 @@ NTPSettingsService::NTPSettingsService(AsyncWebServer * server, FS * fs, Securit
         configureTime(request, json);
     });
 
-    WiFi.onEvent([this](WiFiEvent_t event, WiFiEventInfo_t info) { WiFiEvent(event); });
     addUpdateHandler([this] { configureNTP(); }, false);
 }
 
 void NTPSettingsService::begin() {
     _fsPersistence.readFromFS();
-    configureNTP();
 }
 
-// handles both WiFI and Ethernet
-void NTPSettingsService::WiFiEvent(WiFiEvent_t event) {
-    switch (event) {
-    case ARDUINO_EVENT_WIFI_STA_DISCONNECTED:
-    case ARDUINO_EVENT_ETH_DISCONNECTED:
-        if (_connected && emsesp::EMSESP::system_.ntp_connected()) {
-            emsesp::EMSESP::logger().info("WiFi connection dropped, stopping NTP");
-            _connected = false;
-            configureNTP();
-        }
-        break;
-
-    case ARDUINO_EVENT_WIFI_STA_GOT_IP:
-    case ARDUINO_EVENT_ETH_GOT_IP:
-        // emsesp::EMSESP::logger().info("Got IP address, starting NTP synchronization");
-        _connected = true;
+void NTPSettingsService::loop() {
+    if (_connected != emsesp::EMSESP::network_.network_connected()) {
+        _connected = emsesp::EMSESP::network_.network_connected();
         configureNTP();
-        break;
-
-    default:
-        break;
     }
 }
 
@@ -55,7 +36,9 @@ void NTPSettingsService::configureNTP() {
     } else {
         setenv("TZ", _state.tzFormat.c_str(), 1);
         tzset();
-        esp_sntp_stop();
+        if (esp_sntp_enabled()) {
+            esp_sntp_stop();
+        }
     }
 }
 
@@ -68,7 +51,12 @@ void NTPSettingsService::configureTime(AsyncWebServerRequest * request, JsonVari
             tm.tm_isdst         = -1; // not set by strptime, tells mktime to determine daylightsaving
             time_t         time = mktime(&tm);
             struct timeval now  = {.tv_sec = time, .tv_usec = {}};
+#if CONFIG_IDF_TARGET_ESP32C3
+            // settimeofday and adjtime() does not work, unknown how to set time
+            emsesp::EMSESP::logger().warning("manual clock setting not possible");
+#else
             settimeofday(&now, nullptr);
+#endif
             AsyncWebServerResponse * response = request->beginResponse(200);
             request->send(response);
             return;

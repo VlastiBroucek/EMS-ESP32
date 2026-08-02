@@ -350,6 +350,7 @@ void Test::run_test(uuid::console::Shell & shell, const std::string & cmd, const
         EMSESP::webCustomEntityService.load_test_data();  // custom entities
         EMSESP::webCustomizationService.load_test_data(); // set customizations - this will overwrite any settings in the FS
         EMSESP::temperaturesensor_.load_test_data();      // add temperature sensors
+        EMSESP::webCommandService.load_test_data();       // add command items
         EMSESP::webSchedulerService.load_test_data();     // add scheduler data
 
         shell.invoke_command("show values");
@@ -406,7 +407,7 @@ void Test::run_test(uuid::console::Shell & shell, const std::string & cmd, const
     if (command == "scheduler") {
         shell.printfln("Adding Scheduler items...");
 
-        // add some dummy entities
+        EMSESP::webCommandService.load_test_data();
         EMSESP::webSchedulerService.load_test_data();
 
 #ifdef EMSESP_STANDALONE
@@ -450,7 +451,7 @@ void Test::run_test(uuid::console::Shell & shell, const std::string & cmd, const
 // THESE ONLY WORK WITH AN ESP32, not in standalone/native mode
 #ifndef EMSESP_STANDALONE
     if (command == "ls") {
-        System::listDir("/", 3);
+        EMSESP::system_.listDir("/", 3);
         ok = true;
     }
 
@@ -1091,6 +1092,22 @@ void Test::run_test(uuid::console::Shell & shell, const std::string & cmd, const
         shell.invoke_command("call boiler circpump/value");
     }
 
+    if (command == "led") {
+        shell.printfln("Testing LED...");
+
+        JsonDocument          doc;
+        AsyncWebServerRequest request;
+
+        request.method(HTTP_POST);
+        char data1[] = "{\"data\":\"red:blink1\"}";
+        deserializeJson(doc, data1);
+        JsonVariant json = doc.as<JsonVariant>();
+        request.url("/api/system/led");
+        EMSESP::webAPIService.webAPIService(&request, json);
+
+        ok = true;
+    }
+
     if (command == "shuntingyard") {
         shell.printfln("Testing shunting yard...");
 
@@ -1100,6 +1117,7 @@ void Test::run_test(uuid::console::Shell & shell, const std::string & cmd, const
         EMSESP::webCustomEntityService.load_test_data();  // custom entities
         EMSESP::webCustomizationService.load_test_data(); // set customizations - this will overwrite any settings in the FS
         EMSESP::temperaturesensor_.load_test_data();      // add temperature sensors
+        EMSESP::webCommandService.load_test_data();       // add command items
         EMSESP::webSchedulerService.load_test_data();     // run scheduler tests, and conditions
 
         JsonDocument          doc;
@@ -1329,16 +1347,6 @@ void Test::run_test(uuid::console::Shell & shell, const std::string & cmd, const
             // request.url("/rest/action");
             // EMSESP::webStatusService.action(&request, doc.as<JsonVariant>());
 
-            // test version checks
-            // use same data as in restServer.ts
-            // log shows first if you can upgrade to dev, and then if you can upgrade to stable
-            // request.url("/rest/action");
-            // std::string LATEST_STABLE_VERSION = "3.8.0";
-            // std::string LATEST_DEV_VERSION    = "3.8.1-dev.3";
-            // std::string param                 = LATEST_DEV_VERSION + "," + LATEST_STABLE_VERSION;
-            // std::string action                = "{\"action\":\"checkUpgrade\", \"param\":\"" + param + "\"}";
-            // deserializeJson(doc, action);
-
             // // case 0: on latest stable, can upgrade to dev only. So true, false
             // EMSESP::webStatusService.set_current_version(LATEST_STABLE_VERSION);
             // EMSESP::webStatusService.action(&request, doc.as<JsonVariant>());
@@ -1373,6 +1381,7 @@ void Test::run_test(uuid::console::Shell & shell, const std::string & cmd, const
             EMSESP::webCustomEntityService.load_test_data();  // custom entities
             EMSESP::webCustomizationService.load_test_data(); // set customizations - this will overwrite any settings in the FS
             EMSESP::temperaturesensor_.load_test_data();      // add temperature sensors
+            EMSESP::webCommandService.load_test_data();       // add command items
             EMSESP::webSchedulerService.load_test_data();     // run scheduler tests, and conditions
 
             request.method(HTTP_GET);
@@ -2101,6 +2110,101 @@ void Test::run_test(uuid::console::Shell & shell, const std::string & cmd, const
         shell.printfln("Testing pin...");
         shell.invoke_command("call system pin");
         shell.invoke_command("call system pin 1 true");
+        ok = true;
+    }
+
+    if (command == "version") {
+        shell.printfln("Testing version upgrade and downgrade detection...");
+
+        // mirrors System::check_upgrade(): settings = version stored in settings file, current = running firmware
+        struct VersionTest {
+            const char * settings;
+            const char * current;
+            const char * expected; // "upgrade", "downgrade" or "same"
+        };
+
+        const VersionTest tests[] = {
+            // identical versions
+            {"3.9.0", "3.9.0", "same"},
+            {"3.9.0-dev.12", "3.9.0-dev.12", "same"},
+
+            // numeric upgrades (patch, minor, major)
+            {"3.9.0", "3.9.1", "upgrade"},
+            {"3.8.5", "3.9.0", "upgrade"},
+            {"2.10.9", "3.0.0", "upgrade"},
+
+            // numeric downgrades
+            {"3.9.1", "3.9.0", "downgrade"},
+            {"3.9.0", "3.8.5", "downgrade"},
+            {"3.0.0", "2.10.9", "downgrade"},
+
+            // prerelease (dev) sequences on the same base version
+            {"3.9.0-dev.12", "3.9.0-dev.13", "upgrade"},
+            {"3.9.0-dev.13", "3.9.0-dev.12", "downgrade"},
+            {"3.9.0-dev.9", "3.9.0-dev.12", "upgrade"}, // single vs double digit dev number
+            {"3.9.0-dev.8", "3.9.0-dev.12", "upgrade"}, // regression: was reported as a downgrade
+
+            // prerelease vs release on the same base version (semver: prerelease < release)
+            {"3.9.0-dev.12", "3.9.0", "upgrade"},
+            {"3.9.0", "3.9.0-dev.12", "downgrade"},
+
+            // prerelease vs a different base version
+            {"3.9.0-dev.12", "3.9.1", "upgrade"},
+            {"3.9.1", "3.9.0-dev.12", "downgrade"},
+            {"3.8.5", "3.9.0-dev.12", "upgrade"},
+
+            // mixed prerelease tags
+            {"3.5.0-b13", "3.9.0-dev.12", "upgrade"},
+
+            // partial version strings are shorter than 5 chars, so check_upgrade() treats them as missing (3.5.0)
+            {"3.9", "3.9.0", "upgrade"},
+            {"3.9", "3.9.1", "upgrade"},
+
+            // build metadata after '+' is ignored
+            {"3.9.0+abc123", "3.9.0", "same"},
+
+            // numeric prerelease identifiers compare numerically, so leading zeros are equivalent
+            {"3.9.0-dev.01", "3.9.0-dev.1", "same"},
+            {"3.9.0-dev.012", "3.9.0-dev.12", "same"},
+
+            // missing/short version: check_upgrade() assumes 3.5.0
+            {"", "3.9.0", "upgrade"},
+            {"1.0", "3.9.0", "upgrade"},
+        };
+
+        uint8_t failed = 0;
+        for (const auto & test : tests) {
+            // replicate check_upgrade()'s handling of a missing version
+            std::string settingsVersion = test.settings;
+            if (settingsVersion.length() < 5) {
+                settingsVersion = "3.5.0";
+            }
+
+            FirmwareVersion settings_version(settingsVersion);
+            FirmwareVersion this_version(test.current);
+
+            const char * actual;
+            if (this_version > settings_version) {
+                actual = "upgrade";
+            } else if (this_version < settings_version) {
+                actual = "downgrade";
+            } else {
+                actual = "same";
+            }
+
+            bool pass = (strcmp(actual, test.expected) == 0);
+            if (!pass) {
+                failed++;
+            }
+            shell.printfln("%s %-14s -> %-14s expected %-9s got %-9s", pass ? "PASS" : "FAIL", test.settings, test.current, test.expected, actual);
+        }
+
+        if (failed) {
+            shell.printfln("%d test(s) FAILED", failed);
+        } else {
+            shell.printfln("All version tests passed");
+        }
+
         ok = true;
     }
 

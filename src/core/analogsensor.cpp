@@ -25,31 +25,31 @@ uuid::log::Logger    AnalogSensor::logger_{F_(analogsensor), uuid::log::Facility
 std::vector<uint8_t> AnalogSensor::exclude_types_;
 
 #ifndef EMSESP_STANDALONE
-portMUX_TYPE  mux                     = portMUX_INITIALIZER_UNLOCKED;
-unsigned long AnalogSensor::edge[]    = {0, 0, 0};
-unsigned long AnalogSensor::edgecnt[] = {0, 0, 0};
+portMUX_TYPE           mux                     = portMUX_INITIALIZER_UNLOCKED;
+volatile unsigned long AnalogSensor::edge[]    = {0, 0, 0};
+volatile unsigned long AnalogSensor::edgecnt[] = {0, 0, 0};
 
 void IRAM_ATTR AnalogSensor::freqIrq0() {
     portENTER_CRITICAL_ISR(&mux);
     if (micros() - edge[0] > 10) { // limit to 100kHz
-        edgecnt[0]++;
-        edge[0] = micros();
+        edgecnt[0] = edgecnt[0] + 1;
+        edge[0]    = micros();
     }
     portEXIT_CRITICAL_ISR(&mux);
 }
 void IRAM_ATTR AnalogSensor::freqIrq1() {
     portENTER_CRITICAL_ISR(&mux);
     if (micros() - edge[1] > 10) { // limit to 100kHz
-        edgecnt[1]++;
-        edge[1] = micros();
+        edgecnt[1] = edgecnt[1] + 1;
+        edge[1]    = micros();
     }
     portEXIT_CRITICAL_ISR(&mux);
 }
 void IRAM_ATTR AnalogSensor::freqIrq2() {
     portENTER_CRITICAL_ISR(&mux);
     if (micros() - edge[2] > 10) { // limit to 100kHz
-        edgecnt[2]++;
-        edge[2] = micros();
+        edgecnt[2] = edgecnt[2] + 1;
+        edge[2]    = micros();
     }
     portEXIT_CRITICAL_ISR(&mux);
 }
@@ -102,7 +102,7 @@ void AnalogSensor::start(const bool factory_settings) {
     Command::add(
         EMSdevice::DeviceType::ANALOGSENSOR,
         F_(setvalue),
-        [&](const char * value, const int8_t id) { return command_setvalue(value, id); },
+        [&](const char * value, const int8_t id, JsonObject output) { return command_setvalue(value, id); },
         FL_(setiovalue_cmd),
         CommandFlag::ADMIN_ONLY);
 
@@ -119,9 +119,8 @@ void AnalogSensor::reload(bool get_nvs) {
 #if defined(EMSESP_STANDALONE)
     analog_enabled_ = true; // for local offline testing
 #endif
-    for (auto sensor : sensors_) {
+    for (const auto & sensor : sensors_) {
         remove_ha_topic(sensor.type(), sensor.gpio());
-        sensor.ha_registered = false;
 #ifndef EMSESP_STANDALONE
         if ((sensor.type() >= AnalogType::CNT_0 && sensor.type() <= AnalogType::CNT_2)
             || (sensor.type() >= AnalogType::FREQ_0 && sensor.type() <= AnalogType::FREQ_2)) {
@@ -196,7 +195,7 @@ void AnalogSensor::reload(bool get_nvs) {
                 Command::add(
                     EMSdevice::DeviceType::ANALOGSENSOR,
                     sensor.name,
-                    [&](const char * value, const int8_t id) { return command_setvalue(value, sensor.gpio); },
+                    [&](const char * value, const int8_t id, JsonObject output) { return command_setvalue(value, sensor.gpio); },
                     sensor.type == AnalogType::COUNTER || (sensor.type >= AnalogType::CNT_0 && sensor.type <= AnalogType::CNT_2) ? FL_(counter)
                     : sensor.type == AnalogType::DIGITAL_OUT                                                                     ? FL_(digital_out)
                     : sensor.type == AnalogType::RGB                                                                             ? FL_(RGB)
@@ -273,8 +272,10 @@ void AnalogSensor::reload(bool get_nvs) {
             sensor.set_value(0);
             publish_sensor(sensor);
             attachInterrupt(sensor.gpio(), index == 0 ? freqIrq0 : index == 1 ? freqIrq1 : freqIrq2, FALLING);
-            lastedge[index] = edge[index] = micros();
-            edgecnt[index]                = 0;
+            unsigned long now = micros();
+            edge[index]       = now;
+            lastedge[index]   = now;
+            edgecnt[index]    = 0;
         } else if (sensor.type() >= AnalogType::CNT_0 && sensor.type() <= AnalogType::CNT_2) {
             auto index = sensor.type() - AnalogType::CNT_0;
             LOG_DEBUG("Counter %d on GPIO %02d", index, sensor.gpio());
@@ -299,7 +300,7 @@ void AnalogSensor::reload(bool get_nvs) {
             uint8_t  r = v / 10000;
             uint8_t  g = (v - r * 10000) / 100;
             uint8_t  b = v % 100;
-            EMSESP_RGB_WRITE(sensor.gpio(), 2 * r, 2 * g, 2 * b);
+            rgbLedWrite(sensor.gpio(), 2 * r, 2 * g, 2 * b);
             LOG_DEBUG("RGB set to %d, %d, %d", r, g, b);
         } else if (sensor.type() == AnalogType::DIGITAL_OUT) {
             LOG_DEBUG("Digital Write on GPIO %02d", sensor.gpio());
@@ -347,23 +348,13 @@ void AnalogSensor::reload(bool get_nvs) {
             sensor.polltime_ = sensor.value() != 0 ? uuid::get_uptime() + (sensor.factor() * 1000) : 0;
         } else if (sensor.type() >= AnalogType::PWM_0 && sensor.type() <= AnalogType::PWM_2) {
             LOG_DEBUG("PWM output on GPIO %02d", sensor.gpio());
-#if ESP_IDF_VERSION_MAJOR >= 5
             ledcAttach(sensor.gpio(), sensor.factor(), 13);
-#else
-            uint8_t channel = sensor.type() - AnalogType::PWM_0;
-            ledcSetup(channel, sensor.factor(), 13);
-            ledcAttachPin(sensor.gpio(), channel);
-#endif
             if (sensor.offset() > 100) {
                 sensor.set_offset(100);
             } else if (sensor.offset() < 0) {
                 sensor.set_offset(0);
             }
-#if ESP_IDF_VERSION_MAJOR >= 5
             ledcWrite(sensor.gpio(), (uint32_t)(sensor.offset() * 8191 / 100));
-#else
-            ledcWrite(channel, (uint32_t)(sensor.offset() * 8191 / 100));
-#endif
             sensor.set_value(sensor.offset());
             sensor.set_uom(DeviceValueUOM::PERCENT);
             publish_sensor(sensor);
@@ -682,12 +673,12 @@ void AnalogSensor::publish_values(const bool force) {
                 publish_sensor(sensor);
             }
             return;
-        } else if (!EMSESP::mqtt_.get_publish_onchange(0)) {
+        } else if (!EMSESP::mqtt_.get_publish_onchange(EMSdevice::DeviceType::SYSTEM)) {
             return; // wait for first time period
         }
     }
 
-    JsonDocument doc;
+    JsonDocument doc(PSRAM_DOC);
     JsonObject   obj            = doc.to<JsonObject>();
     bool         ha_dev_created = false;
 
@@ -716,7 +707,7 @@ void AnalogSensor::publish_values(const bool force) {
         if (Mqtt::ha_enabled() && (!sensor.ha_registered || force)) {
             LOG_DEBUG("Recreating HA config for analog sensor GPIO %02d", sensor.gpio());
 
-            JsonDocument config;
+            JsonDocument config(PSRAM_DOC);
             config["~"] = Mqtt::base();
 
             char stat_t[50];
@@ -1001,7 +992,7 @@ bool AnalogSensor::command_setvalue(const char * value, const int8_t gpio) {
                 uint8_t r = v / 10000;
                 uint8_t g = (v - r * 10000) / 100;
                 uint8_t b = v % 100;
-                EMSESP_RGB_WRITE(sensor.gpio(), 2 * r, 2 * g, 2 * b);
+                rgbLedWrite(sensor.gpio(), 2 * r, 2 * g, 2 * b);
                 LOG_DEBUG("RGB set to %d, %d, %d", r, g, b);
             } else if (sensor.type() == AnalogType::PULSE) {
                 uint8_t v = val;
@@ -1043,12 +1034,7 @@ bool AnalogSensor::command_setvalue(const char * value, const int8_t gpio) {
                 }
                 sensor.set_offset(val);
                 sensor.set_value(val);
-#if ESP_IDF_VERSION_MAJOR >= 5
                 ledcWrite(sensor.gpio(), (uint32_t)(sensor.offset() * 8191 / 100));
-#else
-                uint8_t channel = sensor.type() - AnalogType::PWM_0;
-                ledcWrite(channel, (uint32_t)(val * 8191 / 100));
-#endif
             } else {
                 return false;
             }

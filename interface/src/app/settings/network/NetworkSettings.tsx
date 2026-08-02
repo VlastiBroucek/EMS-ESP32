@@ -1,5 +1,4 @@
 import { memo, useCallback, useContext, useEffect, useState } from 'react';
-import { toast } from 'react-toastify';
 
 import CancelIcon from '@mui/icons-material/Cancel';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -26,7 +25,6 @@ import { API } from 'api/app';
 
 import { updateState, useRequest } from 'alova/client';
 import type { APIcall } from 'app/main/types';
-import type { ValidateFieldsError } from 'async-validator';
 import {
   BlockFormControlLabel,
   BlockNavigation,
@@ -37,11 +35,13 @@ import {
   ValidatedPasswordField,
   ValidatedTextField
 } from 'components';
+import { toast } from 'components/toast';
 import { useI18nContext } from 'i18n/i18n-react';
 import type { NetworkSettingsType } from 'types';
 import { updateValueDirty, useRest } from 'utils';
 import { ValidationError, validate } from 'validators';
 import { createNetworkSettingsValidator } from 'validators/network';
+import type { ValidateFieldsError } from 'validators/schema';
 
 import SystemMonitor from '../../status/SystemMonitor';
 import { WiFiConnectionContext } from './WiFiConnectionContext';
@@ -89,7 +89,7 @@ const NetworkSettings = () => {
             static_ip_config: false,
             bandwidth20: false,
             tx_power: 0,
-            nosleep: false,
+            nosleep: true,
             enableMDNS: true,
             enableCORS: false,
             CORSOrigin: '*'
@@ -121,19 +121,19 @@ const NetworkSettings = () => {
     deselectNetwork();
   }, [data, saveData, deselectNetwork]);
 
-  const setCancel = useCallback(async () => {
+  const setCancel = async () => {
     deselectNetwork();
     await loadData();
-  }, [deselectNetwork, loadData]);
+  };
 
-  const doRestart = useCallback(async () => {
+  const doRestart = async () => {
     setRestarting(true);
     await sendAPI({ device: 'system', cmd: 'restart', id: 0 }).catch(
       (error: Error) => {
         toast.error(error.message);
       }
     );
-  }, [sendAPI]);
+  };
 
   const content = () => {
     if (!data) {
@@ -173,7 +173,7 @@ const NetworkSettings = () => {
           <ValidatedTextField
             fieldErrors={fieldErrors || {}}
             name="ssid"
-            label={'SSID (' + LL.NETWORK_BLANK_SSID() + ')'}
+            label="SSID"
             fullWidth
             variant="outlined"
             value={data.ssid}

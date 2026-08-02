@@ -105,8 +105,12 @@ const char * EMSdevice::uom_to_string(uint8_t uom) {
 }
 
 std::string EMSdevice::brand_to_char() {
+    return std::string{brand_to_cstr()};
+}
+
+const char * EMSdevice::brand_to_cstr() const {
     if (!custom_brand().empty()) {
-        return custom_brand();
+        return custom_brand().c_str();
     }
     switch (brand_) {
     case EMSdevice::Brand::BOSCH:
@@ -141,6 +145,8 @@ const char * EMSdevice::device_type_2_device_name(const uint8_t device_type) {
         return F_(scheduler);
     case DeviceType::CUSTOM:
         return F_(custom);
+    case DeviceType::COMMAND:
+        return F_(commands);
     case DeviceType::BOILER:
         return F_(boiler);
     case DeviceType::THERMOSTAT:
@@ -293,6 +299,9 @@ uint8_t EMSdevice::device_name_2_device_type(const char * topic) {
     if (!strcmp(lowtopic, F_(scheduler))) {
         return DeviceType::SCHEDULER;
     }
+    if (!strcmp(lowtopic, F_(commands))) {
+        return DeviceType::COMMAND;
+    }
     if (!strcmp(lowtopic, F_(system))) {
         return DeviceType::SYSTEM;
     }
@@ -343,8 +352,9 @@ std::string EMSdevice::to_string() {
 }
 
 // returns string of EMS device version and productID
+// this is used in the MQTT Discovery config
 std::string EMSdevice::to_string_version() {
-    return "DeviceID:" + Helpers::hextoa(device_id_) + " ProductID:" + Helpers::itoa(product_id_) + " Version:" + version_;
+    return "DeviceID " + Helpers::hextoa(device_id_) + ", ProductID " + Helpers::itoa(product_id_) + ", Version " + version_;
 }
 
 // returns out brand + device name
@@ -549,6 +559,7 @@ void EMSdevice::show_mqtt_handlers(uuid::console::Shell & shell) const {
 // register a callback function for a specific telegram type
 void EMSdevice::register_telegram_type(const uint16_t telegram_type_id, const char * telegram_type_name, bool fetch, const process_function_p f, uint8_t length) {
     telegram_functions_.emplace_back(telegram_type_id, telegram_type_name, fetch, false, length, f);
+    EMSESP::mark_entities_changed();
 }
 
 // add to device value library, also know now as a "device entity"
@@ -665,6 +676,7 @@ void EMSdevice::add_device_value(int8_t                tag,              // to b
     // add the device entity
     devicevalues_.emplace_back(
         device_type_, tag, value_p, type, options, options_single, numeric_operator, short_name, fullname, custom_fullname, uom, has_cmd, min, max, state);
+    EMSESP::mark_entities_changed();
 
     // add a new command if it has a function attached
     if (has_cmd) {
@@ -1271,9 +1283,9 @@ void EMSdevice::setCustomizationEntity(const std::string & entity_id) {
 
             // set the custom name if it has one, or clear it
             if (has_custom_name) {
-                dv.custom_fullname = entity_id.substr(custom_name_pos + 1);
+                dv.set_custom_fullname(entity_id.substr(custom_name_pos + 1));
             } else {
-                dv.custom_fullname = "";
+                dv.set_custom_fullname("");
             }
 
             auto min = dv.min;
@@ -1312,11 +1324,11 @@ void EMSdevice::getCustomizationEntities(std::vector<std::string> & entity_ids) 
                 break;
             }
         }
-        if (!is_set && (mask || !dv.custom_fullname.empty())) {
-            if (dv.custom_fullname.empty()) {
+        if (!is_set && (mask || dv.has_custom_fullname())) {
+            if (!dv.has_custom_fullname()) {
                 entity_ids.push_back(Helpers::hextoa(mask, false) + entity_name);
             } else {
-                entity_ids.push_back(Helpers::hextoa(mask, false) + entity_name + "|" + dv.custom_fullname);
+                entity_ids.push_back(Helpers::hextoa(mask, false) + entity_name + "|" + dv.custom_fullname());
             }
         }
     }
@@ -2160,7 +2172,7 @@ void EMSdevice::mqtt_ha_entity_config_create() {
         if (!dv.has_state(DeviceValueState::DV_HA_CONFIG_CREATED) && dv.has_state(DeviceValueState::DV_ACTIVE)
             && !dv.has_state(DeviceValueState::DV_API_MQTT_EXCLUDE)) {
             // create_device_config is only done once for the EMS device. It can added to any entity, so we take the first
-            if (Mqtt::publish_ha_sensor_config_dv(dv, name().c_str(), brand_to_char().c_str(), to_string_version().c_str(), false, create_device_config)) {
+            if (Mqtt::publish_ha_sensor_config_dv(dv, name().c_str(), brand_to_cstr(), to_string_version().c_str(), false, create_device_config)) {
                 dv.add_state(DeviceValueState::DV_HA_CONFIG_CREATED);
                 create_device_config = false; // only create the main config once
                 count++;
@@ -2224,7 +2236,7 @@ bool EMSdevice::has_telegram_id(uint16_t id) const {
 }
 
 // return the name of the telegram type
-const char * EMSdevice::telegram_type_name(std::shared_ptr<const Telegram> telegram) {
+const char * EMSdevice::telegram_type_name(const std::shared_ptr<const Telegram> & telegram) {
     // see if it's one of the common ones, like Version
     if (telegram->type_id == EMS_TYPE_VERSION) {
         return "Version";
@@ -2243,12 +2255,12 @@ const char * EMSdevice::telegram_type_name(std::shared_ptr<const Telegram> teleg
 
 // take a telegram_type_id and call the matching handler
 // return true if match found
-bool EMSdevice::handle_telegram(std::shared_ptr<const Telegram> telegram) {
+bool EMSdevice::handle_telegram(const std::shared_ptr<const Telegram> & telegram) {
     for (auto & tf : telegram_functions_) {
         if (tf.telegram_type_id_ == telegram->type_id) {
             // for telegram destination only read telegram
             if (telegram->dest == device_id_ && telegram->message_length > 0) {
-                tf.process_function_(telegram);
+                tf.process_function_(this, telegram);
                 return true;
             }
             // if the data block is empty and we have not received data before, assume that this telegram
@@ -2266,7 +2278,7 @@ bool EMSdevice::handle_telegram(std::shared_ptr<const Telegram> telegram) {
             }
             if (telegram->message_length > 0) {
                 tf.received_ = true;
-                tf.process_function_(telegram);
+                tf.process_function_(this, telegram);
             }
 
             return true;
@@ -2312,7 +2324,6 @@ std::string EMSdevice::name() {
 // returns true on success.
 int EMSdevice::get_modbus_value(uint8_t tag, const std::string & shortname, std::vector<uint16_t> & result) {
     // find device value by shortname
-    // TODO replace linear search which is inefficient
     const auto & it = std::find_if(devicevalues_.begin(), devicevalues_.end(), [&](const DeviceValue & x) { return x.tag == tag && x.short_name == shortname; });
     if (it == devicevalues_.end() && (it->short_name != shortname || it->tag != tag)) {
         return -1;

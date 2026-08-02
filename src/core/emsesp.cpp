@@ -48,24 +48,25 @@ uint16_t          EMSESP::wait_validate_    = 0;
 bool              EMSESP::wait_km_          = false;
 uint32_t          EMSESP::last_fetch_       = 0;
 
+uint32_t EMSESP::last_entity_change_        = 0;
+bool     EMSESP::entity_compaction_pending_ = false;
+
 AsyncWebServer webServer(80);
 
 #if defined(EMSESP_STANDALONE)
-FS                      dummyFS;
-ESP32React              EMSESP::esp32React(&webServer, &dummyFS);
-WebSettingsService      EMSESP::webSettingsService      = WebSettingsService(&webServer, &dummyFS, EMSESP::esp32React.getSecurityManager());
-WebCustomizationService EMSESP::webCustomizationService = WebCustomizationService(&webServer, &dummyFS, EMSESP::esp32React.getSecurityManager());
-WebSchedulerService     EMSESP::webSchedulerService     = WebSchedulerService(&webServer, &dummyFS, EMSESP::esp32React.getSecurityManager());
-WebCustomEntityService  EMSESP::webCustomEntityService  = WebCustomEntityService(&webServer, &dummyFS, EMSESP::esp32React.getSecurityManager());
-WebModulesService       EMSESP::webModulesService       = WebModulesService(&webServer, &dummyFS, EMSESP::esp32React.getSecurityManager());
+FS     dummyFS;
+auto & fsRef = dummyFS;
 #else
-ESP32React              EMSESP::esp32React(&webServer, &LittleFS);
-WebSettingsService      EMSESP::webSettingsService      = WebSettingsService(&webServer, &LittleFS, EMSESP::esp32React.getSecurityManager());
-WebCustomizationService EMSESP::webCustomizationService = WebCustomizationService(&webServer, &LittleFS, EMSESP::esp32React.getSecurityManager());
-WebSchedulerService     EMSESP::webSchedulerService     = WebSchedulerService(&webServer, &LittleFS, EMSESP::esp32React.getSecurityManager());
-WebCustomEntityService  EMSESP::webCustomEntityService  = WebCustomEntityService(&webServer, &LittleFS, EMSESP::esp32React.getSecurityManager());
-WebModulesService       EMSESP::webModulesService       = WebModulesService(&webServer, &LittleFS, EMSESP::esp32React.getSecurityManager());
+auto & fsRef = LittleFS;
 #endif
+
+ESP32React              EMSESP::esp32React(&webServer, &fsRef);
+WebSettingsService      EMSESP::webSettingsService      = WebSettingsService(&webServer, &fsRef, EMSESP::esp32React.getSecurityManager());
+WebCustomizationService EMSESP::webCustomizationService = WebCustomizationService(&webServer, &fsRef, EMSESP::esp32React.getSecurityManager());
+WebSchedulerService     EMSESP::webSchedulerService     = WebSchedulerService(&webServer, &fsRef, EMSESP::esp32React.getSecurityManager());
+WebCommandService       EMSESP::webCommandService       = WebCommandService(&webServer, &fsRef, EMSESP::esp32React.getSecurityManager());
+WebCustomEntityService  EMSESP::webCustomEntityService  = WebCustomEntityService(&webServer, &fsRef, EMSESP::esp32React.getSecurityManager());
+WebModulesService       EMSESP::webModulesService       = WebModulesService(&webServer, &fsRef, EMSESP::esp32React.getSecurityManager());
 
 WebActivityService EMSESP::webActivityService = WebActivityService(&webServer, EMSESP::esp32React.getSecurityManager());
 WebStatusService   EMSESP::webStatusService   = WebStatusService(&webServer, EMSESP::esp32React.getSecurityManager());
@@ -86,9 +87,11 @@ TxService         EMSESP::txservice_;         // outgoing Telegram Tx handler
 Mqtt              EMSESP::mqtt_;              // mqtt handler
 Modbus *          EMSESP::modbus_ = nullptr;  // modbus handler
 System            EMSESP::system_;            // core system services
+Network           EMSESP::network_;           // network services
 TemperatureSensor EMSESP::temperaturesensor_; // Temperature sensors
 AnalogSensor      EMSESP::analogsensor_;      // Analog sensors
 Shower            EMSESP::shower_;            // Shower logic
+LED               EMSESP::led_;               // LED handler
 Preferences       EMSESP::nvs_;               // NV Storage
 
 // for a specific EMS device go and request data values
@@ -176,19 +179,35 @@ void EMSESP::clear_all_devices() {
     // emsdevices.clear(); // remove entries, but doesn't delete actual devices
 }
 
-// return number of devices of a known type
-uint8_t EMSESP::count_devices(const uint8_t device_type) {
-    if (emsdevices.empty()) {
-        return 0;
+// called from EMSdevice/Command whenever an entity or telegram handler is registered.
+// Devices reserve their value/telegram vectors generously (to avoid realloc storms while
+// heating circuits etc. are discovered incrementally), so once registration settles we
+// reclaim the unused capacity - see compact_entities_if_stable().
+void EMSESP::mark_entities_changed() {
+    last_entity_change_        = uuid::get_uptime();
+    entity_compaction_pending_ = true;
+}
+
+// once the entity/telegram set has been stable for ENTITY_COMPACT_DELAY, shrink the
+// per-device and command vectors to their actual size. Re-arms automatically if a new
+// device/circuit appears later (which just costs a single realloc).
+void EMSESP::compact_entities_if_stable() {
+    if (!entity_compaction_pending_) {
+        return; // nothing to do (cheap early-out on the hot path)
+    }
+    if ((uuid::get_uptime() - last_entity_change_) < ENTITY_COMPACT_DELAY) {
+        return; // still settling
     }
 
-    uint8_t count = 0;
     for (const auto & emsdevice : emsdevices) {
-        if (emsdevice && emsdevice->device_type() == device_type) {
-            count++;
+        if (emsdevice) {
+            emsdevice->compact();
         }
     }
-    return count;
+    Command::compact();
+
+    entity_compaction_pending_ = false;
+    LOG_DEBUG("Reclaimed unused entity vector capacity");
 }
 
 // return total number of devices excluding the Controller
@@ -204,27 +223,6 @@ uint8_t EMSESP::count_devices() {
         }
     }
     return count;
-}
-
-// returns the index of a device if there are more of the same type
-// or 0 if there is only one or none
-uint8_t EMSESP::device_index(const uint8_t device_type, const uint8_t unique_id) {
-    uint8_t count         = 0;
-    uint8_t index         = 0;
-    uint8_t current_index = 1;
-
-    for (const auto & emsdevice : emsdevices) {
-        if (emsdevice->device_type() == device_type) {
-            count++;
-            if (emsdevice->unique_id() == unique_id) {
-                index = current_index;
-            }
-            current_index++;
-        }
-    }
-
-    // Return 0 if only one device exists or not found
-    return (count <= 1) ? 0 : index;
 }
 
 // scans for new devices
@@ -264,6 +262,7 @@ uint8_t EMSESP::bus_status() {
 // show the EMS bus status plus both Rx and Tx queues
 void EMSESP::show_ems(uuid::console::Shell & shell) {
     // EMS bus information
+    shell.printfln("EMS Bus ID: %02X", EMSbus::ems_bus_id());
     switch (bus_status()) {
     case BUS_STATUS_OFFLINE:
         shell.printfln("EMS Bus is disconnected.");
@@ -469,7 +468,7 @@ void EMSESP::show_device_values(uuid::console::Shell & shell) {
                 // print header, with device type translated
                 shell.printfln("%s: %s (%d)", emsdevice->device_type_2_device_name_translated(), emsdevice->to_string().c_str(), emsdevice->count_entities());
 
-                JsonDocument doc;
+                JsonDocument doc(PSRAM_DOC);
                 JsonObject   json = doc.to<JsonObject>();
 
                 emsdevice->generate_values(json, DeviceValueTAG::TAG_NONE, true, EMSdevice::OUTPUT_TARGET::CONSOLE);
@@ -493,7 +492,7 @@ void EMSESP::show_device_values(uuid::console::Shell & shell) {
     // show any custom entities
     if (webCustomEntityService.count_entities() > 0) {
         shell.printfln("Custom Entities:");
-        JsonDocument custom_doc; // use max size
+        JsonDocument custom_doc(PSRAM_DOC); // use max size
         JsonObject   custom_output = custom_doc.to<JsonObject>();
         webCustomEntityService.show_values(custom_output);
         for (JsonPair p : custom_output) {
@@ -584,7 +583,7 @@ void EMSESP::publish_all(bool force) {
         publish_other_values();      // switch and heat pump, ...
         publish_sensor_values(true); // includes temperature and analog sensors
 
-        system_.send_heartbeat();
+        system_.send_heartbeat(); // send MQTT heartbeat topic
     }
 }
 
@@ -625,7 +624,7 @@ void EMSESP::publish_all_loop() {
         if (Mqtt::ha_enabled()) {
             Mqtt::ha_status();
         }
-        system_.send_heartbeat();
+        system_.send_heartbeat(); // send MQTT heartbeat topic
         break;
     default:
         // all finished
@@ -658,7 +657,7 @@ void EMSESP::reset_mqtt_ha() {
 // this will also create the HA /config topic for each device value
 // generate_values_json is called to build the device value (dv) object array
 void EMSESP::publish_device_values(uint8_t device_type) {
-    JsonDocument doc;
+    JsonDocument doc(PSRAM_DOC);
     JsonObject   json         = doc.to<JsonObject>();
     bool         need_publish = false;
     bool         nested       = (Mqtt::is_nested());
@@ -715,6 +714,7 @@ void EMSESP::publish_other_values() {
     // publish_device_values(EMSdevice::DeviceType::GENERIC);
 
     webSchedulerService.publish();
+    webCommandService.publish();
     webCustomEntityService.publish();
 }
 
@@ -734,7 +734,7 @@ void EMSESP::publish_sensor_values(const bool time, const bool force) {
 }
 
 // MQTT publish a telegram as raw data to the topic 'response'
-void EMSESP::publish_response(std::shared_ptr<const Telegram> telegram) {
+void EMSESP::publish_response(const std::shared_ptr<const Telegram> & telegram) {
     static char *   buffer = nullptr;
     static uint8_t  offset = 0;
     static uint16_t type   = 0;
@@ -821,6 +821,11 @@ bool EMSESP::get_device_value_info(JsonObject root, const char * cmd, const int8
         return webSchedulerService.get_value_info(root, cmd);
     }
 
+    // commands
+    if (devicetype == DeviceType::COMMAND) {
+        return webCommandService.get_value_info(root, cmd);
+    }
+
     // custom entities
     if (devicetype == DeviceType::CUSTOM) {
         return webCustomEntityService.get_value_info(root, cmd);
@@ -848,7 +853,7 @@ std::string EMSESP::device_tostring(const uint8_t device_id) {
 
 // create a pretty print telegram as a text string
 // e.g. Boiler(0x08) -> Me(0x0B), Version(0x02), data: 7B 06 01 00 00 00 00 00 00 04 (offset 1)
-std::string EMSESP::pretty_telegram(std::shared_ptr<const Telegram> telegram) {
+std::string EMSESP::pretty_telegram(const std::shared_ptr<const Telegram> & telegram) {
     uint8_t src    = telegram->src & 0x7F;
     uint8_t dest   = telegram->dest & 0x7F;
     uint8_t offset = telegram->offset;
@@ -948,7 +953,6 @@ std::string EMSESP::pretty_telegram(std::shared_ptr<const Telegram> telegram) {
         }
     }
 
-    // Optimized: Use stack buffer and build string once to avoid multiple temporary allocations
     char buf[250];
     if (telegram->operation == Telegram::Operation::RX_READ) {
         auto pos = snprintf(buf,
@@ -1008,7 +1012,7 @@ std::string EMSESP::pretty_telegram(std::shared_ptr<const Telegram> telegram) {
  * e.g. in example above 1st byte = x0B = b1011 so we have deviceIDs 0x08, 0x09, 0x011
  * and 2nd byte = x80 = b1000 b0000 = deviceID 0x17
  */
-void EMSESP::process_UBADevices(std::shared_ptr<const Telegram> telegram) {
+void EMSESP::process_UBADevices(const std::shared_ptr<const Telegram> & telegram) {
     // exit it length is incorrect (must be 13 or 15 bytes long)
     if (telegram->message_length > 15) {
         return;
@@ -1034,7 +1038,7 @@ void EMSESP::process_UBADevices(std::shared_ptr<const Telegram> telegram) {
 }
 
 // read deviceName from telegram 0x01 offset 27 and set it to custom name
-void EMSESP::process_deviceName(std::shared_ptr<const Telegram> telegram) {
+void EMSESP::process_deviceName(const std::shared_ptr<const Telegram> & telegram) {
     // exit if only part of name fields
     if (telegram->offset > 27 || (telegram->offset + telegram->message_length) < 29) {
         return;
@@ -1062,7 +1066,7 @@ void EMSESP::process_deviceName(std::shared_ptr<const Telegram> telegram) {
 
 // process the Version telegram (type 0x02), which is a common type
 // e.g. 09 0B 02 00 PP V1 V2
-void EMSESP::process_version(std::shared_ptr<const Telegram> telegram) {
+void EMSESP::process_version(const std::shared_ptr<const Telegram> & telegram) {
     // check for valid telegram, just in case
     if (telegram->offset != 0) {
         return;
@@ -1120,7 +1124,7 @@ void EMSESP::process_version(std::shared_ptr<const Telegram> telegram) {
 // but only process if the telegram is sent to us or it's a broadcast (dest=0x00=all)
 // We also check for common telegram types, like the Version(0x02)
 // returns false if there are none found
-bool EMSESP::process_telegram(std::shared_ptr<const Telegram> telegram) {
+bool EMSESP::process_telegram(const std::shared_ptr<const Telegram> & telegram) {
     // if watching or reading...
     if ((telegram->type_id == read_id_ || telegram->type_id == response_id_) && (telegram->dest == EMSbus::ems_bus_id())) {
         if (telegram->type_id == response_id_) {
@@ -1161,7 +1165,7 @@ bool EMSESP::process_telegram(std::shared_ptr<const Telegram> telegram) {
         wait_validate_ = 0;
     }
 
-    // Check for custom entities reding this telegram
+    // check for custom entities reding this telegram
     webCustomEntityService.get_value(telegram);
 
     // check for common types, like the Version(0x02)
@@ -1212,6 +1216,7 @@ bool EMSESP::process_telegram(std::shared_ptr<const Telegram> telegram) {
             }
         }
     }
+
     // handle unknown telegrams
     if (!telegram_found) {
         // mark nonempty telegrams as ignored
@@ -1531,7 +1536,7 @@ void EMSESP::incoming_telegram(uint8_t * data, const uint8_t length) {
         Roomctrl::check(data[1], data, length);
 #ifdef EMSESP_UART_DEBUG
         // get_uptime is only updated once per loop, does not give the right time
-        LOG_TRACE("[UART_DEBUG] Echo after %d ms: %s", ::millis() - rx_time_, Helpers::data_to_hex(data, length).c_str());
+        LOG_TRACE("[UART_DEBUG] Echo after %d ms: %s", uuid::get_uptime_ms() - rx_time_, Helpers::data_to_hex(data, length).c_str());
 #endif
         // add to RxQueue for log/watch
         rxservice_.add(data, length);
@@ -1615,11 +1620,11 @@ void EMSESP::incoming_telegram(uint8_t * data, const uint8_t length) {
 #ifdef EMSESP_UART_DEBUG
         char s[4];
         if (first_value & 0x80) {
-            LOG_TRACE("[UART_DEBUG] next Poll %s after %d ms", Helpers::hextoa(s, first_value), ::millis() - rx_time_);
+            LOG_TRACE("[UART_DEBUG] next Poll %s after %d ms", Helpers::hextoa(s, first_value), uuid::get_uptime_ms() - rx_time_);
             // time measurement starts here, use millis because get_uptime is only updated once per loop
-            rx_time_ = ::millis();
+            rx_time_ = uuid::get_uptime_ms();
         } else {
-            LOG_TRACE("[UART_DEBUG] Poll ack %s after %d ms", Helpers::hextoa(s, first_value), ::millis() - rx_time_);
+            LOG_TRACE("[UART_DEBUG] Poll ack %s after %d ms", Helpers::hextoa(s, first_value), uuid::get_uptime_ms() - rx_time_);
         }
 #endif
         // check for poll to us, if so send top message from Tx queue immediately and quit
@@ -1633,7 +1638,7 @@ void EMSESP::incoming_telegram(uint8_t * data, const uint8_t length) {
         return;
     } else {
 #ifdef EMSESP_UART_DEBUG
-        LOG_TRACE("[UART_DEBUG] Reply after %d ms: %s", ::millis() - rx_time_, Helpers::data_to_hex(data, length).c_str());
+        LOG_TRACE("[UART_DEBUG] Reply after %d ms: %s", uuid::get_uptime_ms() - rx_time_, Helpers::data_to_hex(data, length).c_str());
 #endif
         Roomctrl::check(data[1], data, length); // check if there is a message for the roomcontroller
 
@@ -1710,10 +1715,10 @@ void EMSESP::start() {
     bool factory_settings = false;
 #endif
 
-#if defined(EMSESP_DEBUG)
-    // LOG_DEBUG("Listing root directory before:");
-    // system_.listDir("/", 3); // show the contents of the root directory
-#endif
+    // #if defined(EMSESP_DEBUG)
+    //     LOG_DEBUG("Listing root directory before:");
+    //     system_.listDir("/", 3); // show the contents of the root directory
+    // #endif
 
     // start NVS storage
     if (!nvs_.begin("ems-esp", false, "nvs1")) { // try bigger nvs partition on 16M flash first
@@ -1726,17 +1731,19 @@ void EMSESP::start() {
     // start web log service. now we can start capturing logs to the web log
     webLogService.begin();
 
-    // loads core system services settings (network, mqtt, ap, ntp etc)
+    // loads core system services settings (mqtt, ap, ntp etc)
     esp32React.begin();
 
-#if defined(EMSESP_DEBUG)
-    // LOG_DEBUG("Listing root directory before:");
-    // system_.listDir("/", 3); // show the contents of the root directory
-#endif
+    // #if defined(EMSESP_DEBUG)
+    //     LOG_DEBUG("Listing root directory after:");
+    //     system_.listDir("/", 3); // show the contents of the root directory
+    // #endif
 
 #ifndef EMSESP_STANDALONE
     if (factory_settings) {
         LOG_WARNING("No settings found on filesystem. Using factory settings.");
+        // make sure OTAdata is updated with core3 (v3.9.0) format
+        esp_ota_set_boot_partition(esp_ota_get_running_partition());
     }
 #endif
 
@@ -1785,6 +1792,16 @@ void EMSESP::start() {
 
     webSettingsService.begin(); // load EMS-ESP Application settings
 
+    // start network services. This will initialise WiFi or Ethernet depending on the settings.
+    network_.begin();
+
+    // start the core web services, as this loads the settings from the filesystem
+    // this will also handle any MQTT subscriptions
+    webCustomizationService.begin(); // load the customizations
+    webCommandService.begin();       // load the user commands
+    webCustomEntityService.begin();  // load the custom telegram reads
+    webSchedulerService.begin();     // load the scheduler events
+
     // perform any system upgrades
     if (!factory_settings) {
         if (system_.check_upgrade()) {
@@ -1798,10 +1815,6 @@ void EMSESP::start() {
 #include "device_library.h"
     };
     LOG_INFO("Library loaded: %d EMS devices, %d device entities, %s", device_library_.size(), EMSESP_TRANSLATION_COUNT, system_.languages_string().c_str());
-
-    webCustomizationService.begin(); // load the customizations
-    webCustomEntityService.begin();  // load the custom telegram reads
-    webSchedulerService.begin();     // load the scheduler events
 
     // start telnet service if it's enabled
     // default idle is 10 minutes, default write timeout is 0 (automatic)
@@ -1821,10 +1834,10 @@ void EMSESP::start() {
     analogsensor_.start(factory_settings);      // Analog external sensors
 
     // start web services
+    LOG_INFO("Starting Web Server");
     webLogService.start();     // apply settings to weblog service
     webModulesService.begin(); // setup the external library modules
     webServer.begin();         // start the web server
-    LOG_INFO("Starting Web Server");
 }
 
 void EMSESP::start_serial_console() {
@@ -1855,9 +1868,12 @@ void EMSESP::shell_prompt() {
 void EMSESP::loop() {
     uuid::loop(); // store system uptime
 
+    // handle network
+    network_.loop();
+
     // handles LED and checks system health, and syslog service
     if (system_.loop()) {
-        return; // LED flashing is active, skip the rest of the loop
+        return; // LED flashing is active meaning its about to reboot, skip the rest of the loop
     }
 
     esp32React.loop();    // core services: Network, AP, MQTT and NTP
@@ -1868,17 +1884,17 @@ void EMSESP::loop() {
     if (EMSESP::system_.systemStatus() != SYSTEM_STATUS::SYSTEM_STATUS_PENDING_UPLOAD
         && EMSESP::system_.systemStatus() != SYSTEM_STATUS::SYSTEM_STATUS_UPLOADING) {
         // loop through the services
-        rxservice_.loop();          // process any incoming Rx telegrams
-        shower_.loop();             // check for shower on/off
-        temperaturesensor_.loop();  // read sensor temperatures
-        analogsensor_.loop();       // read analog sensor values
-        publish_all_loop();         // with HA messages in parts to avoid flooding the MQTT queue
-        mqtt_.loop();               // sends out anything in the MQTT queue
-        webModulesService.loop();   // loop through the external library modules
-        if (system_.PSram() == 0) { // run non-async if there is no PSRAM available
-            webSchedulerService.loop();
-        }
-        scheduled_fetch_values(); // force a query on the EMS devices to fetch latest data at a set interval (1 min)
+        webStatusService.loop();      // periodic refresh of cached versions.json
+        rxservice_.loop();            // process any incoming Rx telegrams
+        shower_.loop();               // check for shower on/off
+        temperaturesensor_.loop();    // read sensor temperatures
+        analogsensor_.loop();         // read analog sensor values
+        publish_all_loop();           // with HA messages in parts to avoid flooding the MQTT queue
+        mqtt_.loop();                 // sends out anything in the MQTT queue
+        webModulesService.loop();     // loop through the external library modules
+        webSchedulerService.loop();   // scheduler timing logic; command execution is offloaded to WebCommandService's worker task
+        scheduled_fetch_values();     // force a query on the EMS devices to fetch latest data at a set interval (1 min)
+        compact_entities_if_stable(); // reclaim over-reserved entity vector capacity once device discovery settles
     }
     // check for GPIO Errors - this is called once when booting
     if (EMSESP::system_.systemStatus() == SYSTEM_STATUS::SYSTEM_STATUS_INVALID_GPIO) {
@@ -1893,7 +1909,7 @@ void EMSESP::loop() {
         // start an upload from a URL, assuming the URL exists and set from a previous pass
         // Note this next call is synchronous and blocking.
         if (!system_.uploadFirmwareURL()) {
-            // upload failed, send a "reset" to return back to normal
+            // upload failed, send a "reset" to reset the OTA URL
             Shell::loop_all(); // flush log buffers so latest error message are shown in console
             system_.uploadFirmwareURL("reset");
             EMSESP::system_.systemStatus(SYSTEM_STATUS::SYSTEM_STATUS_ERROR_UPLOAD);

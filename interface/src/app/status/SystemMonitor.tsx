@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import CancelIcon from '@mui/icons-material/Cancel';
 import { Box, Button, Typography } from '@mui/material';
@@ -57,39 +57,31 @@ const SystemMonitor = () => {
     void send();
   }, 1000); // check every 1 second
 
-  const { statusMessage, isUploading, progressValue } = useMemo(() => {
-    const status = data?.status;
+  const status = data?.status;
 
-    const message =
-      status && status >= SystemStatusCodes.SYSTEM_STATUS_UPLOADING
-        ? LL.WAIT_FIRMWARE()
-        : status === SystemStatusCodes.SYSTEM_STATUS_PENDING_RESTART
-          ? LL.APPLICATION_RESTARTING()
-          : status === SystemStatusCodes.SYSTEM_STATUS_NORMAL
-            ? LL.RESTARTING_PRE()
-            : status === SystemStatusCodes.SYSTEM_STATUS_ERROR_UPLOAD
-              ? 'Upload Failed'
-              : LL.RESTARTING_POST();
+  const statusMessage =
+    status && status >= SystemStatusCodes.SYSTEM_STATUS_UPLOADING
+      ? LL.WAIT_FIRMWARE()
+      : status === SystemStatusCodes.SYSTEM_STATUS_PENDING_RESTART
+        ? LL.APPLICATION_RESTARTING()
+        : status === SystemStatusCodes.SYSTEM_STATUS_NORMAL
+          ? LL.RESTARTING_PRE()
+          : status === SystemStatusCodes.SYSTEM_STATUS_ERROR_UPLOAD
+            ? 'Upload Failed'
+            : LL.RESTARTING_POST();
 
-    const uploading =
-      status !== undefined && status >= SystemStatusCodes.SYSTEM_STATUS_UPLOADING;
-    const progress =
-      uploading && status
-        ? Math.round(status - SystemStatusCodes.SYSTEM_STATUS_UPLOADING)
-        : 0;
+  const isUploading =
+    status !== undefined && status >= SystemStatusCodes.SYSTEM_STATUS_UPLOADING;
+  const progressValue =
+    isUploading && status
+      ? Math.round(status - SystemStatusCodes.SYSTEM_STATUS_UPLOADING)
+      : 0;
 
-    return {
-      statusMessage: message,
-      isUploading: uploading,
-      progressValue: progress
-    };
-  }, [data?.status, LL]);
-
-  const onCancel = useCallback(async () => {
+  const onCancel = async () => {
     setErrorMessage(undefined);
     await setSystemStatus(String(SystemStatusCodes.SYSTEM_STATUS_NORMAL));
     document.location.href = '/';
-  }, [setSystemStatus]);
+  };
 
   return (
     <Box
@@ -153,9 +145,21 @@ const SystemMonitor = () => {
                 {LL.PLEASE_WAIT()}&hellip;
               </Typography>
               {isUploading && (
-                <Box sx={{ width: '100%', pl: 2, pr: 2, py: 2 }}>
-                  <LinearProgressWithLabel value={progressValue} />
-                </Box>
+                <>
+                  <Box sx={{ width: '100%', pl: 2, pr: 2, py: 2 }}>
+                    <LinearProgressWithLabel value={progressValue} />
+                  </Box>
+
+                  <Button
+                    sx={{ ml: 2, mt: 2 }}
+                    startIcon={<CancelIcon />}
+                    variant="outlined"
+                    color="secondary"
+                    onClick={onCancel}
+                  >
+                    {LL.CANCEL()}
+                  </Button>
+                </>
               )}
             </>
           )}

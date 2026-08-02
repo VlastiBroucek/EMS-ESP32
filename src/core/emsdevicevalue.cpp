@@ -38,21 +38,22 @@ DeviceValue::DeviceValue(uint8_t               device_type,
                          int16_t               min,
                          uint32_t              max,
                          uint8_t               state)
-    : device_type(device_type)
-    , tag(tag)
-    , value_p(value_p)
-    , type(type)
-    , options(options)
-    , options_single(options_single)
-    , numeric_operator(numeric_operator)
+    // Initializer list ordered to match the reordered field declarations in
+    // emsdevicevalue.h (pointers first, then 1-byte block, then 2/4-byte, then std::string)
+    : value_p(value_p)
     , short_name(short_name)
     , fullname(fullname)
-    , custom_fullname(custom_fullname)
+    , options(options)
+    , options_single(options_single)
+    , device_type(device_type)
+    , tag(tag)
+    , type(type)
+    , state(state)
+    , numeric_operator(numeric_operator)
     , uom(uom)
     , has_cmd(has_cmd)
     , min(min)
-    , max(max)
-    , state(state) {
+    , max(max) {
     // calculate #options in options list
     if (options_single) {
         options_size = 1;
@@ -60,7 +61,12 @@ DeviceValue::DeviceValue(uint8_t               device_type,
         options_size = Helpers::count_items(options);
     }
 
-    // set the min/max
+    // store the custom name on the heap, but only if one was actually provided
+    if (!custom_fullname.empty()) {
+        custom_fullname_ = std::make_unique<std::string>(custom_fullname);
+    }
+
+    // set the min/max (reads back the custom name set above)
     set_custom_minmax();
 
     /*
@@ -108,10 +114,12 @@ DeviceValue::DeviceValue(uint8_t               device_type,
 const char * DeviceValue::DeviceValueUOM_s[] = {
 
     F_(uom_blank), // 0
-    F_(uom_degrees), F_(uom_degrees), F_(uom_percent), F_(uom_lmin), F_(uom_kwh),  F_(uom_wh),      FL_(hours)[0], FL_(minutes)[0],
-    F_(uom_ua),      F_(uom_bar),     F_(uom_kw),      F_(uom_w),    F_(uom_kb),   FL_(seconds)[0], F_(uom_dbm),   F_(uom_fahrenheit),
-    F_(uom_mv),      F_(uom_sqm),     F_(uom_m3),      F_(uom_l),    F_(uom_kmin), F_(uom_k),       F_(uom_volts), F_(uom_mbar),
-    F_(uom_lh),      F_(uom_ctkwh),   F_(uom_hz),      F_(uom_blank)
+    F_(uom_degrees), F_(uom_degrees), F_(uom_percent), F_(uom_lmin), F_(uom_kwh),     F_(uom_wh),   FL_(hours)[0],      FL_(minutes)[0], F_(uom_ua),
+    F_(uom_bar),     F_(uom_kw),      F_(uom_w),       F_(uom_kb),   FL_(seconds)[0], F_(uom_dbm),  F_(uom_fahrenheit), F_(uom_mv),      F_(uom_sqm),
+    F_(uom_m3),      F_(uom_l),       F_(uom_kmin),    F_(uom_k),    F_(uom_volts),   F_(uom_mbar), F_(uom_lh),         F_(uom_ctkwh),   F_(uom_hz),
+    F_(uom_blank), // connectivity
+    F_(uom_blank), // timestamp
+    F_(uom_blank)  // blank
 
 };
 
@@ -343,11 +351,12 @@ bool DeviceValue::get_min_max(int16_t & dv_set_min, uint32_t & dv_set_max) {
 
 // extract custom min from custom_fullname
 bool DeviceValue::get_custom_min(int16_t & val) {
-    auto    min_pos    = custom_fullname.find('>');
-    bool    has_min    = (min_pos != std::string::npos);
-    uint8_t fahrenheit = !EMSESP::system_.fahrenheit() ? 0 : (uom == DeviceValueUOM::DEGREES) ? 2 : (uom == DeviceValueUOM::DEGREES_R) ? 1 : 0;
+    const auto & cf         = custom_fullname();
+    auto         min_pos    = cf.find('>');
+    bool         has_min    = (min_pos != std::string::npos);
+    uint8_t      fahrenheit = !EMSESP::system_.fahrenheit() ? 0 : (uom == DeviceValueUOM::DEGREES) ? 2 : (uom == DeviceValueUOM::DEGREES_R) ? 1 : 0;
     if (has_min) {
-        int32_t v = Helpers::atoint(custom_fullname.substr(min_pos + 1).c_str());
+        int32_t v = Helpers::atoint(cf.substr(min_pos + 1).c_str());
         if (fahrenheit) {
             v = (v - (32 * (fahrenheit - 1))) / 1.8; // reset to °C
         }
@@ -361,11 +370,12 @@ bool DeviceValue::get_custom_min(int16_t & val) {
 
 // extract custom max from custom_fullname
 bool DeviceValue::get_custom_max(uint32_t & val) {
-    auto    max_pos    = custom_fullname.find('<');
-    bool    has_max    = (max_pos != std::string::npos);
-    uint8_t fahrenheit = !EMSESP::system_.fahrenheit() ? 0 : (uom == DeviceValueUOM::DEGREES) ? 2 : (uom == DeviceValueUOM::DEGREES_R) ? 1 : 0;
+    const auto & cf         = custom_fullname();
+    auto         max_pos    = cf.find('<');
+    bool         has_max    = (max_pos != std::string::npos);
+    uint8_t      fahrenheit = !EMSESP::system_.fahrenheit() ? 0 : (uom == DeviceValueUOM::DEGREES) ? 2 : (uom == DeviceValueUOM::DEGREES_R) ? 1 : 0;
     if (has_max) {
-        int32_t v = Helpers::atoint(custom_fullname.substr(max_pos + 1).c_str());
+        int32_t v = Helpers::atoint(cf.substr(max_pos + 1).c_str());
         if (fahrenheit) {
             v = (v - (32 * (fahrenheit - 1))) / 1.8; // reset to °C
         }
@@ -383,14 +393,32 @@ void DeviceValue::set_custom_minmax() {
     get_custom_max(max);
 }
 
-std::string DeviceValue::get_custom_fullname() const {
-    auto min_pos    = custom_fullname.find('>');
-    auto max_pos    = custom_fullname.find('<');
-    auto minmax_pos = min_pos < max_pos ? min_pos : max_pos;
-    if (minmax_pos != std::string::npos) {
-        return custom_fullname.substr(0, minmax_pos);
+// raw stored custom name (empty string if none was set)
+const std::string & DeviceValue::custom_fullname() const {
+    static const std::string empty_string;
+    return custom_fullname_ ? *custom_fullname_ : empty_string;
+}
+
+// set or clear the custom name, only allocating heap when there's actually a name
+void DeviceValue::set_custom_fullname(const std::string & name) {
+    if (name.empty()) {
+        custom_fullname_.reset();
+    } else if (custom_fullname_) {
+        *custom_fullname_ = name;
+    } else {
+        custom_fullname_ = std::make_unique<std::string>(name);
     }
-    return custom_fullname;
+}
+
+std::string DeviceValue::get_custom_fullname() const {
+    const auto & cf         = custom_fullname();
+    auto         min_pos    = cf.find('>');
+    auto         max_pos    = cf.find('<');
+    auto         minmax_pos = min_pos < max_pos ? min_pos : max_pos;
+    if (minmax_pos != std::string::npos) {
+        return cf.substr(0, minmax_pos);
+    }
+    return cf;
 }
 
 // returns the translated fullname or the custom fullname (if provided)

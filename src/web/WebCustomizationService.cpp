@@ -54,10 +54,10 @@ void WebCustomization::read(WebCustomization & customizations, JsonObject root) 
     JsonArray sensorsJson = root["ts"].to<JsonArray>();
     for (const SensorCustomization & sensor : customizations.sensorCustomizations) {
         JsonObject sensorJson   = sensorsJson.add<JsonObject>();
-        sensorJson["id"]        = (const char *)sensor.id;   // ID of chip
+        sensorJson["id"]        = (const char *)sensor.id;   // ID of dallas temperature sensor chip
         sensorJson["name"]      = (const char *)sensor.name; // n
         sensorJson["offset"]    = sensor.offset;             // o
-        sensorJson["is_system"] = sensor.is_system;          // s for core_voltage, supply_voltage
+        sensorJson["is_system"] = sensor.is_system;          // s for gateway_temperature
     }
 
     // Analog Sensor customization
@@ -212,7 +212,7 @@ void WebCustomizationService::device_entities(AsyncWebServerRequest * request) {
                 JsonArray output = response->getRoot();
                 emsdevice->generate_values_web_customization(output);
 #else
-                JsonDocument doc;
+                JsonDocument doc(PSRAM_DOC);
                 JsonArray    output = doc.to<JsonArray>();
                 emsdevice->generate_values_web_customization(output);
 #endif
@@ -491,8 +491,8 @@ void WebCustomizationService::load_test_data() {
                 // find the device value and set the mask and custom name to match the above fake data
                 for (auto & dv : emsdevice->devicevalues_) {
                     if (strcmp(dv.short_name, "heatingactive") == 0) {
-                        dv.state           = DeviceValueState::DV_FAVORITE; // set as favorite
-                        dv.custom_fullname = "is my heating on?";
+                        dv.state = DeviceValueState::DV_FAVORITE; // set as favorite
+                        dv.set_custom_fullname("is my heating on?");
                     } else if (strcmp(dv.short_name, "tapwateractive") == 0) {
                         dv.state = DeviceValueState::DV_FAVORITE; // set as favorite
                     } else if (strcmp(dv.short_name, "selflowtemp") == 0) {

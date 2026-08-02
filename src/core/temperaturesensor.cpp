@@ -47,13 +47,10 @@ void TemperatureSensor::start(const bool factory_settings) {
 
 // load settings
 void TemperatureSensor::reload() {
-    // load the service settings
-    EMSESP::system_.dallas_gpio(0); // reset in system to check valid sensor
     EMSESP::webSettingsService.read([&](WebSettings const & settings) {
         dallas_gpio_ = settings.dallas_gpio;
         parasite_    = settings.dallas_parasite;
     });
-    EMSESP::system_.dallas_gpio(dallas_gpio_); // set to system for checks
 
     for (auto & sensor : sensors_) {
         remove_ha_topic(sensor.id());
@@ -492,12 +489,12 @@ void TemperatureSensor::publish_values(const bool force) {
                 publish_sensor(sensor);
             }
             return;
-        } else if (!EMSESP::mqtt_.get_publish_onchange(0)) {
+        } else if (!EMSESP::mqtt_.get_publish_onchange(EMSdevice::DeviceType::SYSTEM)) {
             return; // wait for first time period
         }
     }
 
-    JsonDocument doc;
+    JsonDocument doc(PSRAM_DOC);
     bool         ha_dev_created = false;
 
     for (auto & sensor : sensors_) {
@@ -522,7 +519,7 @@ void TemperatureSensor::publish_values(const bool force) {
             } else if (!sensor.ha_registered || force) {
                 LOG_DEBUG("Recreating HA config for sensor ID %s", sensor.id());
 
-                JsonDocument config;
+                JsonDocument config(PSRAM_DOC);
                 config["~"]        = Mqtt::base();
                 config["dev_cla"]  = "temperature";
                 config["stat_cla"] = "measurement";

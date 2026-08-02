@@ -51,6 +51,7 @@ class NTPSettingsService : public StatefulService<NTPSettings> {
     NTPSettingsService(AsyncWebServer * server, FS * fs, SecurityManager * securityManager);
 
     void        begin();
+    void        loop();
     static void ntp_received(struct timeval * tv);
 
   private:
@@ -58,7 +59,6 @@ class NTPSettingsService : public StatefulService<NTPSettings> {
     FSPersistence<NTPSettings> _fsPersistence;
     volatile bool              _connected;
 
-    void WiFiEvent(WiFiEvent_t event);
     void configureNTP();
     void configureTime(AsyncWebServerRequest * request, JsonVariant json);
 };

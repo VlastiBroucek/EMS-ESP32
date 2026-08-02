@@ -1,7 +1,7 @@
 {
   "type": "systembackup",
-  "version": "3.8.2",
-  "date": "2026-04-15T08:06:45",
+  "version": "3.9.0",
+  "date": "2026-08-02T08:06:45",
   "systembackup": [
     {
       "type": "settings",
@@ -83,7 +83,7 @@
         ]
       },
       "Settings": {
-        "version": "3.8.2",
+        "version": "3.9.0",
         "board_profile": "E32V2",
         "platform": "ESP32",
         "locale": "en",
@@ -132,7 +132,8 @@
         "modbus_port": 502,
         "modbus_max_clients": 10,
         "modbus_timeout": 300,
-        "developer_mode": true
+        "developer_mode": true,
+        "disable_reset": false
       }
     },
     {
