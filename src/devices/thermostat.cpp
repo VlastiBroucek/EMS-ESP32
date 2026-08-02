@@ -5180,7 +5180,7 @@ void Thermostat::register_device_values_hc(std::shared_ptr<Thermostat::HeatingCi
             register_device_value(tag, &hc->control, DeviceValueType::ENUM, FL_(enum_control2), FL_(control), DeviceValueUOM::NONE, MAKE_CF_CB(set_control));
         } else if (model == EMSdevice::EMS_DEVICE_FLAG_UI800) {
             register_device_value(tag, &hc->control, DeviceValueType::ENUM, FL_(enum_control3), FL_(control), DeviceValueUOM::NONE, MAKE_CF_CB(set_control));
-        } else if (device_id() == 0x10) { // only master hermostats have control by remote
+        } else if (device_id() == 0x10) { // only master thermostats have control by remote
             register_device_value(tag, &hc->control, DeviceValueType::ENUM, FL_(enum_control1), FL_(control), DeviceValueUOM::NONE, MAKE_CF_CB(set_control));
         }
         if (model != EMSdevice::EMS_DEVICE_FLAG_RC100 && model != EMSdevice::EMS_DEVICE_FLAG_CR120) {
@@ -5484,7 +5484,7 @@ void Thermostat::register_device_values_hc(std::shared_ptr<Thermostat::HeatingCi
                               FL_(nofrosttemp),
                               DeviceValueUOM::DEGREES,
                               MAKE_CF_CB(set_nofrosttemp));
-        if (device_id() == 0x10) { // only master hermostats have control by remote
+        if (device_id() == 0x10) { // only master thermostats have control by remote
             register_device_value(tag, &hc->control, DeviceValueType::ENUM, FL_(enum_j_control), FL_(control), DeviceValueUOM::NONE, MAKE_CF_CB(set_control));
         }
         register_device_value(tag, &hc->program, DeviceValueType::ENUM, FL_(enum_progMode4), FL_(program), DeviceValueUOM::NONE, MAKE_CF_CB(set_program));
