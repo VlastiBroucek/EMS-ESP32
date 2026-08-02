@@ -1663,32 +1663,40 @@ void Thermostat::process_RC35Timer(const std::shared_ptr<const Telegram> & teleg
     has_update(telegram, hc->pause, 85);   // time in hours
     has_update(telegram, hc->party, 86);   // time in hours
 
-    if (telegram->message_length + telegram->offset >= 92 && telegram->offset <= 87) {
-        char data[sizeof(hc->vacation) + 4]; // avoid compiler warning
-        snprintf(data,
-                 sizeof(data),
-                 "%02d.%02d.%04d-%02d.%02d.%04d",
-                 telegram->message_data[87 - telegram->offset],
-                 telegram->message_data[88 - telegram->offset],
-                 telegram->message_data[89 - telegram->offset] + 2000,
-                 telegram->message_data[90 - telegram->offset],
-                 telegram->message_data[91 - telegram->offset],
-                 telegram->message_data[92 - telegram->offset] + 2000);
-        has_update(hc->vacation, data, sizeof(hc->vacation));
+    // vacation dates are in positions 87 to 92
+    if (telegram->offset <= 87 && (telegram->offset + telegram->message_length) > 92) {
+        const uint8_t pos = 87 - telegram->offset;
+        if ((pos + 5) < EMS_MAX_TELEGRAM_MESSAGE_LENGTH) {
+            char data[sizeof(hc->vacation) + 4]; // avoid compiler warning
+            snprintf(data,
+                     sizeof(data),
+                     "%02d.%02d.%04d-%02d.%02d.%04d",
+                     telegram->message_data[pos],
+                     telegram->message_data[pos + 1],
+                     telegram->message_data[pos + 2] + 2000,
+                     telegram->message_data[pos + 3],
+                     telegram->message_data[pos + 4],
+                     telegram->message_data[pos + 5] + 2000);
+            has_update(hc->vacation, data, sizeof(hc->vacation));
+        }
     }
 
-    if (telegram->message_length + telegram->offset >= 98 && telegram->offset <= 93) {
-        char data[sizeof(hc->holiday) + 4]; // avoid compiler warning
-        snprintf(data,
-                 sizeof(data),
-                 "%02d.%02d.%04d-%02d.%02d.%04d",
-                 telegram->message_data[93 - telegram->offset],
-                 telegram->message_data[94 - telegram->offset],
-                 telegram->message_data[95 - telegram->offset] + 2000,
-                 telegram->message_data[96 - telegram->offset],
-                 telegram->message_data[97 - telegram->offset],
-                 telegram->message_data[98 - telegram->offset] + 2000);
-        has_update(hc->holiday, data, sizeof(hc->holiday));
+    // holiday dates are in positions 93 to 98
+    if (telegram->offset <= 93 && (telegram->offset + telegram->message_length) > 98) {
+        const uint8_t pos = 93 - telegram->offset;
+        if ((pos + 5) < EMS_MAX_TELEGRAM_MESSAGE_LENGTH) {
+            char data[sizeof(hc->holiday) + 4]; // avoid compiler warning
+            snprintf(data,
+                     sizeof(data),
+                     "%02d.%02d.%04d-%02d.%02d.%04d",
+                     telegram->message_data[pos],
+                     telegram->message_data[pos + 1],
+                     telegram->message_data[pos + 2] + 2000,
+                     telegram->message_data[pos + 3],
+                     telegram->message_data[pos + 4],
+                     telegram->message_data[pos + 5] + 2000);
+            has_update(hc->holiday, data, sizeof(hc->holiday));
+        }
     }
 }
 
@@ -1862,7 +1870,7 @@ void Thermostat::process_RCErrorMessage(const std::shared_ptr<const Telegram> & 
 }
 
 // 0xBF
-void Thermostat::process_ErrorMessageBF(const std::shared_ptr<const Telegram> & telegram) {
+void Thermostat::process_ErrorMessageBF(const std::shared_ptr<const Telegram> &) {
     EMSESP::send_read_request(0xC0, device_id(), 0, 20); // read last errorcode
 }
 
@@ -2338,7 +2346,7 @@ bool Thermostat::set_damping(const char * value, const int8_t id) {
 }
 
 // 0x0241- Set solar
-bool Thermostat::set_solar(const char * value, const int8_t id) {
+bool Thermostat::set_solar(const char * value, const int8_t) {
     bool b;
     if (Helpers::value2bool(value, b)) {
         if (model() == EMSdevice::EMS_DEVICE_FLAG_RC100) {
@@ -3034,7 +3042,7 @@ bool Thermostat::set_party(const char * value, const int8_t id) {
     return true;
 }
 
-bool Thermostat::set_absent(const char * value, const int8_t id) {
+bool Thermostat::set_absent(const char * value, const int8_t) {
     bool b;
     if (Helpers::value2bool(value, b)) {
         write_command(0x16E, 0, b ? 0xFF : 0, 0x16E);

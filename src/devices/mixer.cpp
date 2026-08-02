@@ -278,7 +278,7 @@ bool Mixer::set_flowTempOffset(const char * value, const int8_t id) {
     return false;
 }
 
-bool Mixer::set_pressure(const char * value, const int8_t id) {
+bool Mixer::set_pressure(const char * value, const int8_t) {
     int v;
     if (!Helpers::value2number(value, v)) {
         return false;
@@ -288,7 +288,7 @@ bool Mixer::set_pressure(const char * value, const int8_t id) {
     return true;
 }
 
-bool Mixer::set_wwprio(const char * value, const int8_t id) {
+bool Mixer::set_wwprio(const char * value, const int8_t) {
     bool b;
     if (!Helpers::value2bool(value, b)) {
         return false;

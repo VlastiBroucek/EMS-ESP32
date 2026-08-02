@@ -1122,7 +1122,7 @@ bool Solar::set_diffControl(const char * value, const int8_t id) {
     return true;
 }
 
-bool Solar::set_solarHeatAssistOn(const char * value, const int8_t id) {
+bool Solar::set_solarHeatAssistOn(const char * value, const int8_t) {
     float t;
     if (!Helpers::value2float(value, t)) {
         return false;
@@ -1131,7 +1131,7 @@ bool Solar::set_solarHeatAssistOn(const char * value, const int8_t id) {
     return true;
 }
 
-bool Solar::set_solarHeatAssistOff(const char * value, const int8_t id) {
+bool Solar::set_solarHeatAssistOff(const char * value, const int8_t) {
     float t;
     if (!Helpers::value2float(value, t)) {
         return false;
