@@ -104,7 +104,7 @@ static void setup_commands(std::shared_ptr<Commands> const & commands) {
                 shell.printfln("Unknown show command");
             }
         },
-        [](Shell const & shell, const std::vector<std::string> & current_arguments, const std::string & next_argument) -> std::vector<std::string> {
+        [](Shell const &, const std::vector<std::string> &, const std::string &) -> std::vector<std::string> {
             return std::vector<std::string>{"system", "users", "devices", "log", "ems", "values", "mqtt", "commands"};
         });
 
@@ -191,7 +191,7 @@ static void setup_commands(std::shared_ptr<Commands> const & commands) {
                           CommandFlags::ADMIN,
                           {F_(restart)},
                           {F_(partitionname_optional)},
-                          [](Shell & shell, const std::vector<std::string> & arguments) {
+                          [](Shell &, const std::vector<std::string> & arguments) {
                               if (arguments.size()) {
                                   EMSESP::system_.system_restart(arguments.front().c_str());
                               } else {
@@ -202,7 +202,7 @@ static void setup_commands(std::shared_ptr<Commands> const & commands) {
     commands->add_command(ShellContext::MAIN,
                           CommandFlags::ADMIN,
                           string_vector{F_(wifi), F_(reconnect)},
-                          [](Shell & shell, const std::vector<std::string> & arguments) { EMSESP::network_.reconnect(); });
+                          [](Shell &, const std::vector<std::string> &) { EMSESP::network_.reconnect(); });
 
     //
     // SET commands
@@ -244,7 +244,7 @@ static void setup_commands(std::shared_ptr<Commands> const & commands) {
     commands->add_command(ShellContext::MAIN,
                           CommandFlags::ADMIN,
                           string_vector{F_(set), F_(wifi), F_(password)},
-                          [](Shell & shell, const std::vector<std::string> & arguments) {
+                          [](Shell & shell, const std::vector<std::string> &) {
                               shell.enter_password(F_(new_password_prompt1), [](Shell & shell, bool completed, const std::string & password1) {
                                   if (completed) {
                                       shell.enter_password(F_(new_password_prompt2), [password1](Shell & shell, bool completed, const std::string & password2) {
@@ -367,7 +367,7 @@ static void setup_commands(std::shared_ptr<Commands> const & commands) {
     // EMS device commands
     //
 
-    commands->add_command(ShellContext::MAIN, CommandFlags::ADMIN, {F_(scan)}, [](Shell & shell, const std::vector<std::string> & arguments) {
+    commands->add_command(ShellContext::MAIN, CommandFlags::ADMIN, {F_(scan)}, [](Shell &, const std::vector<std::string> &) {
         EMSESP::scan_devices();
     });
 

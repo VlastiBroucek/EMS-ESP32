@@ -98,7 +98,7 @@ StateUpdateResult WebScheduler::update(JsonObject root, WebScheduler & webSchedu
         Command::add(
             EMSdevice::DeviceType::SCHEDULER,
             webScheduler.scheduleItems.back().name,
-            [name = std::string(webScheduler.scheduleItems.back().name)](const char * value, const int8_t id, JsonObject output) {
+            [name = std::string(webScheduler.scheduleItems.back().name)](const char * value, const int8_t id, JsonObject) {
                 return EMSESP::webSchedulerService.command_setvalue(value, id, name.c_str());
             },
             FL_(schedule_cmd),
@@ -464,7 +464,7 @@ void WebSchedulerService::load_test_data() {
                 Command::add(
                     EMSdevice::DeviceType::SCHEDULER,
                     item.name,
-                    [name = std::string(item.name)](const char * value, const int8_t id, JsonObject output) {
+                    [name = std::string(item.name)](const char * value, const int8_t id, JsonObject) {
                         return EMSESP::webSchedulerService.command_setvalue(value, id, name.c_str());
                     },
                     FL_(schedule_cmd),

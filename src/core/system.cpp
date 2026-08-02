@@ -110,7 +110,7 @@ bool System::command_send(const char * value, const int8_t id) {
 }
 
 // send email via SMTP
-bool System::command_sendmail(const char * value, const int8_t id) {
+bool System::command_sendmail(const char * value, const int8_t) {
     bool     enabled = false;
     uint8_t  security;
     uint16_t port;
@@ -487,7 +487,7 @@ void System::set_partition_install_date() {
 }
 
 // sets the partition to use on the next restart
-bool System::set_partition(const char * partitionname) {
+bool System::set_partition([[maybe_unused]] const char * partitionname) {
 #ifdef EMSESP_STANDALONE
     return true;
 #else
@@ -1694,7 +1694,7 @@ static const std::pair<const char *, const char *> SECTION_MAP[] = {
 #endif
 
 // convert a single config file into a section of the output json object
-void System::exportSettings(const std::string & type, const char * filename, JsonObject output) {
+void System::exportSettings(const std::string & type, [[maybe_unused]] const char * filename, JsonObject output) {
     if (type != "settings") {
         output["type"] = type; // add the type to the output, not for settings as it's already added because its grouped
     }
@@ -1849,7 +1849,7 @@ void System::exportSystemBackup(JsonObject output) {
 }
 
 // write a settings file using input from a json object, called from upload/restore
-bool System::saveSettings(const char * filename, JsonObject input) {
+bool System::saveSettings([[maybe_unused]] const char * filename, [[maybe_unused]] JsonObject input) {
 #ifndef EMSESP_STANDALONE
     const char * section = nullptr;
     for (const auto & [f, label] : SECTION_MAP) {
@@ -2819,7 +2819,7 @@ bool System::load_board_profile(std::vector<int8_t> & data, const std::string & 
 //  rgb for RGB
 // For example: /api/system/led?data=red:blink1
 // For older non-RGB models, the colour would default to just being on.
-bool System::command_led(const char * value, const int8_t id) {
+bool System::command_led(const char * value, const int8_t) {
     if (!value) {
         return false; // no argument
     }
@@ -2842,7 +2842,7 @@ bool System::command_led(const char * value, const int8_t id) {
 }
 
 // txpause command - temporarily pause the TX, by setting Txmode to 0 (disabled)
-bool System::command_txpause(const char * value, const int8_t id) {
+bool System::command_txpause(const char * value, const int8_t) {
     bool arg;
     if (!Helpers::value2bool(value, arg)) {
         return false; // argument not recognized
@@ -2985,7 +2985,7 @@ bool System::ntp_connected() {
 }
 
 // see if its a BBQKees Gateway by checking the eFuse values
-String System::getBBQKeesGatewayDetails(uint8_t detail) {
+String System::getBBQKeesGatewayDetails([[maybe_unused]] uint8_t detail) {
 #ifndef EMSESP_STANDALONE
     union {
         struct {
@@ -3401,7 +3401,7 @@ bool System::readCommand(const char * data) {
 }
 
 // system read command
-bool System::command_read(const char * value, const int8_t id) {
+bool System::command_read(const char * value, const int8_t) {
     return readCommand(value);
 }
 
@@ -3696,7 +3696,7 @@ void System::restore_snapshot_gpios(std::vector<int8_t> & u_gpios, std::vector<i
 }
 
 // show the contents of a directory in the LittleFS filesystem
-void System::listDir(const char * dirname, uint8_t levels) {
+void System::listDir([[maybe_unused]] const char * dirname, [[maybe_unused]] uint8_t levels) {
 #if defined(EMSESP_DEBUG)
 #ifndef EMSESP_STANDALONE
 

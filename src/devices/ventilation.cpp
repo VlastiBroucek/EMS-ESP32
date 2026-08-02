@@ -87,7 +87,7 @@ void Ventilation::process_ModeMessage(const std::shared_ptr<const Telegram> & te
 }
 
 // message 0x0587, data: 00 00 64 00 64 0A 00 01 54 01 00 01 00 00 00 46 00 00 00 02 00 A3 00 A3
-void Ventilation::process_BypassMessage(const std::shared_ptr<const Telegram> & telegram) {
+void Ventilation::process_BypassMessage(const std::shared_ptr<const Telegram> &) {
     // has_update(telegram, bypass_closing, 0);
     // has_update(telegram, bypass_opening, 1);
 }

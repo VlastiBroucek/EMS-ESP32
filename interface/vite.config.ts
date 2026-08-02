@@ -2,6 +2,7 @@ import preact from '@preact/preset-vite';
 import fs from 'fs';
 import path from 'path';
 import { visualizer } from 'rollup-plugin-visualizer';
+import { pathToFileURL } from 'url';
 import { Plugin, PluginOption, defineConfig } from 'vite';
 import viteImagemin from 'vite-plugin-imagemin';
 import zlib from 'zlib';
@@ -178,24 +179,20 @@ const createProductionTerserOptions = () => ({
   toplevel: true
 });
 
-// Image optimization plugin
+// Image optimization plugin.
+// Only svgo runs here: the raster optimizers (optipng, pngquant, gifsicle,
+// jpegtran, mozjpeg) are native binaries whose install scripts are blocked by
+// `allowBuilds` in pnpm-workspace.yaml, so they would fail on every build.
+// Raster assets are committed pre-optimized instead.
 const imageOptimizationPlugin = {
   ...viteImagemin({
     verbose: false,
-    gifsicle: {
-      optimizationLevel: 7,
-      interlaced: false
-    },
-    optipng: {
-      optimizationLevel: 7
-    },
-    mozjpeg: {
-      quality: 20
-    },
-    pngquant: {
-      quality: [0.8, 0.9],
-      speed: 4
-    },
+    filter: /\.svg$/i,
+    gifsicle: false,
+    jpegTran: false,
+    mozjpeg: false,
+    optipng: false,
+    pngquant: false,
     svgo: {
       plugins: [
         { name: 'removeViewBox' },
@@ -210,8 +207,15 @@ export default defineConfig(
   async ({ command, mode }: { command: string; mode: string }) => {
     if (command === 'serve') {
       console.log(`Preparing for standalone build with server, mode=${mode}`);
-      // @ts-expect-error - mock server doesn't have type declarations
-      const { default: mockServer } = await import('../mock-api/mockServer.js');
+      // Imported through a computed URL so the config bundler leaves it as a real
+      // runtime import: mock-api is a separate package with its own node_modules,
+      // and inlining it here would drag its dependencies into every build.
+      const mockServerUrl = pathToFileURL(
+        path.resolve(import.meta.dirname, '../mock-api/mockServer.js')
+      ).href;
+      const { default: mockServer } = (await import(
+        /* @vite-ignore */ mockServerUrl
+      )) as { default: () => PluginOption };
       return {
         plugins: [...createBasePlugins(true, true), mockServer()],
         resolve: {

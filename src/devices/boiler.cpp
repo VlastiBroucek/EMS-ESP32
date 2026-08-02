@@ -1822,7 +1822,7 @@ void Boiler::process_HpPool(const std::shared_ptr<const Telegram> & telegram) {
 // Boiler(0x08) -> All(0x00), ?(0x04A2), data: 02 01 01 00 01 00
 // Boiler(0x08) -W-> Me(0x0B), HpInput(0x04A2), data: 20 07 06 01 00 (from #802)
 // see https://github.com/emsesp/EMS-ESP32/issues/2844#issuecomment-3689049155
-void Boiler::process_HpInput(const std::shared_ptr<const Telegram> & telegram) {
+void Boiler::process_HpInput(const std::shared_ptr<const Telegram> &) {
 }
 
 // Heatpump inputs settings- type 0x486 (https://github.com/emsesp/EMS-ESP32/issues/600)
@@ -1923,7 +1923,7 @@ void Boiler::process_UBASetPoints2(const std::shared_ptr<const Telegram> & teleg
 }
 
 // 0x35 - not yet implemented, not readable, only for settings
-void Boiler::process_UBAFlags(const std::shared_ptr<const Telegram> & telegram) {
+void Boiler::process_UBAFlags(const std::shared_ptr<const Telegram> &) {
 }
 
 // 0x1C
@@ -1942,7 +1942,7 @@ void Boiler::process_UBAMaintenanceStatus(const std::shared_ptr<const Telegram> 
 }
 
 // 0xBF
-void Boiler::process_ErrorMessage(const std::shared_ptr<const Telegram> & telegram) {
+void Boiler::process_ErrorMessage(const std::shared_ptr<const Telegram> &) {
     EMSESP::send_read_request(0xC2, device_id(), 0, 20); // read last errorcode
     EMSESP::send_read_request(0xC6, device_id(), 0, 21); // read last errorcode
 }
@@ -2494,7 +2494,7 @@ bool Boiler::set_ww_disinfect_temp(const char * value, const int8_t id) {
 }
 
 // Set the dhw priority
-bool Boiler::set_ww_prio(const char * value, const int8_t id) {
+bool Boiler::set_ww_prio(const char * value, const int8_t) {
     bool b;
     if (!Helpers::value2bool(value, b)) {
         return false;
@@ -2814,7 +2814,7 @@ bool Boiler::set_pump_delay(const char * value, const int8_t id) {
 }
 
 // set pump logic temperature
-bool Boiler::set_pumpOnTemp(const char * value, const int8_t id) {
+bool Boiler::set_pumpOnTemp(const char * value, const int8_t) {
     int v;
     if (!Helpers::value2temperature(value, v)) {
         return false;
@@ -3037,7 +3037,7 @@ bool Boiler::set_reset(const char * value, const int8_t id) {
     return false;
 }
 
-bool Boiler::set_manDefrost(const char * value, const int8_t id) {
+bool Boiler::set_manDefrost(const char * value, const int8_t) {
     bool b;
     if (!Helpers::value2bool(value, b)) {
         return false;
@@ -3046,7 +3046,7 @@ bool Boiler::set_manDefrost(const char * value, const int8_t id) {
     return true;
 }
 
-bool Boiler::set_chimneysweeper(const char * value, const int8_t id) {
+bool Boiler::set_chimneysweeper(const char * value, const int8_t) {
     bool b;
     if (!Helpers::value2bool(value, b)) {
         return false;
@@ -3325,7 +3325,7 @@ bool Boiler::set_auxLimit(const char * value, const int8_t id) {
     return false;
 }
 
-bool Boiler::set_auxHeaterSource(const char * value, const int8_t id) {
+bool Boiler::set_auxHeaterSource(const char * value, const int8_t) {
     uint8_t v;
     if (Helpers::value2enum(value, v, FL_(enum_auxHeaterSource))) {
         write_command(0x491, 0, v, 0x491);
@@ -3409,7 +3409,7 @@ bool Boiler::set_hpMaxPower(const char * value, const int8_t id) {
     return false;
 }
 
-bool Boiler::set_pvMaxComp(const char * value, const int8_t id) {
+bool Boiler::set_pvMaxComp(const char * value, const int8_t) {
     float v;
     if (Helpers::value2float(value, v)) {
         write_command(0x484, 54, (uint8_t)(v * 10), 0x484);
@@ -3437,7 +3437,7 @@ bool Boiler::set_hpPowerLimit(const char * value, const int8_t id) {
     return false;
 }
 
-bool Boiler::set_powerReduction(const char * value, const int8_t id) {
+bool Boiler::set_powerReduction(const char * value, const int8_t) {
     int v;
     if (Helpers::value2number(value, v)) {
         write_command(0x484, 64, v / 10, 0x484);
@@ -3661,7 +3661,7 @@ bool Boiler::set_shutdown(const char * value, const int8_t id) {
     return false;
 }
 
-bool Boiler::set_pumpKickHour(const char * value, const int8_t id) {
+bool Boiler::set_pumpKickHour(const char * value, const int8_t) {
     int v;
     if (Helpers::value2number(value, v, 0, 23)) {
         write_command(0xEB, 0, v, 0xEB);
@@ -3670,7 +3670,7 @@ bool Boiler::set_pumpKickHour(const char * value, const int8_t id) {
     return false;
 }
 
-bool Boiler::set_pumpKickDay(const char * value, const int8_t id) {
+bool Boiler::set_pumpKickDay(const char * value, const int8_t) {
     uint8_t v;
     if (Helpers::value2enum(value, v, FL_(enum_dayOfWeek))) {
         write_command(0xEB, 1, v + 1, 0xEB);
@@ -3679,7 +3679,7 @@ bool Boiler::set_pumpKickDay(const char * value, const int8_t id) {
     return false;
 }
 
-bool Boiler::set_pumpKickDelay(const char * value, const int8_t id) {
+bool Boiler::set_pumpKickDelay(const char * value, const int8_t) {
     int v;
     if (Helpers::value2number(value, v, 0, 32767)) {
         uint8_t data[2] = {(uint8_t)(v >> 8), (uint8_t)v};

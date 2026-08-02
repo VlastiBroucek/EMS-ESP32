@@ -152,7 +152,7 @@ void Network::begin() {
 }
 
 // format the BSSID (MAC address) of the network interface
-bool Network::formatBSSID(const String & bssid, uint8_t (&mac)[6]) {
+bool Network::formatBSSID([[maybe_unused]] const String & bssid, [[maybe_unused]] uint8_t (&mac)[6]) {
 #ifndef EMSESP_STANDALONE
     uint tmp[6];
     if (bssid.isEmpty() || sscanf(bssid.c_str(), "%X:%X:%X:%X:%X:%X", &tmp[0], &tmp[1], &tmp[2], &tmp[3], &tmp[4], &tmp[5]) != 6) {
@@ -331,7 +331,7 @@ void Network::checkConnection() {
 //  802.11ac - wifi5
 //  802.11ax - wifi6
 // tx_power is the Tx power to set, 0 for auto
-void Network::setWiFiPower(uint8_t tx_power) {
+void Network::setWiFiPower([[maybe_unused]] uint8_t tx_power) {
 #ifndef EMSESP_STANDALONE
     if (tx_power != 0) {
         if (!WiFi.setTxPower(static_cast<wifi_power_t>(tx_power))) {
@@ -413,7 +413,7 @@ void Network::startmDNS() const {
 }
 
 // WiFi disconnect reason code to string
-const char * Network::disconnectReason(uint8_t code) {
+const char * Network::disconnectReason([[maybe_unused]] uint8_t code) {
 #ifndef EMSESP_STANDALONE
     switch (code) {
     case WIFI_REASON_UNSPECIFIED: // = 1,
