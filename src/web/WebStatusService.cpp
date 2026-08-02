@@ -367,13 +367,13 @@ void WebStatusService::getVersions(JsonObject root) {
 #else
     // standalone/test build: provide deterministic dummy data
     JsonObject stable_out     = root["stable"].to<JsonObject>();
-    stable_out["version"]     = "3.8.2";
-    stable_out["date"]        = "2026-04-25";
-    stable_out["upgradeable"] = FirmwareVersion("3.8.2") > current_version;
+    stable_out["version"]     = "3.8.3";
+    stable_out["date"]        = "2026-08-01";
+    stable_out["upgradeable"] = FirmwareVersion("3.8.3") > current_version;
 
     JsonObject dev_out     = root["dev"].to<JsonObject>();
     dev_out["version"]     = "3.9.0-dev.1";
-    dev_out["date"]        = "2026-04-25";
+    dev_out["date"]        = "2026-08-02";
     dev_out["upgradeable"] = FirmwareVersion("3.9.0-dev.1") > current_version;
 #endif
 }

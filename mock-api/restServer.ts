@@ -143,7 +143,7 @@ let system_status = {
 let DEV_VERSION_IS_UPGRADEABLE: boolean;
 let STABLE_VERSION_IS_UPGRADEABLE: boolean;
 let THIS_VERSION: string;
-let LATEST_STABLE_VERSION = '3.8.2';
+let LATEST_STABLE_VERSION = '3.8.3';
 let LATEST_DEV_VERSION = '3.9.0-dev.1';
 
 // scenarios for testing versioning
@@ -4187,7 +4187,7 @@ let emsesp_customentities = {
       writeable: true,
       hide: false,
       value:
-        '{"stable":{"version":"3.8.2","date":"2026-05-12"},"dev":{"version":"3.8.3-dev.5","date":"2026-05-28T09:55:29Z"}}'
+        '{"stable":{"version":"3.8.3","date":"2026-08-01"},"dev":{"version":"3.9.0-dev.0","date":"2026-08-01T09:55:29Z"}}'
     }
   ]
 };
