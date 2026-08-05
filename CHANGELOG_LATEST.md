@@ -16,6 +16,8 @@ This release is based on the latest Espressif/Arduino core version 3. It brings 
 ## Fixed
 
 - shunting yard show json
+- LED stayed off on a healthy system when "Disable LED" was unchecked
+- Ethernet MAC address changed with the new SDK, breaking DHCP reservations (currently disabled)
 
 ## Changed
 
