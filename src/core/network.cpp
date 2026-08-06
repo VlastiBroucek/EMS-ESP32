@@ -82,7 +82,13 @@ void Network::begin() {
     WiFi.persistent(false);
     WiFi.setAutoReconnect(false);
     WiFi.mode(WIFI_STA);
-    WiFi.disconnect(true, true); // wipe old settings in NVS. Will give a warning on boot but can be ignored.
+
+    if (WiFi.STA.started()) {
+        WiFi.disconnect(true, true); // wipe old settings; only when STA is up
+    } else {
+        WiFi.disconnect(true, false); // disconnect/off without erase, so no warning is shown
+    }
+
     WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN);
     WiFi.setHostname(hostname_.c_str());     // updates shared default_hostname buffer
     WiFi.enableSTA(true);                    // creates the STA netif
