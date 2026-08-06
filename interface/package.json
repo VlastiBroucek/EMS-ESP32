@@ -26,8 +26,8 @@
     "@alova/adapter-xhr": "2.3.1",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
-    "@mui/icons-material": "^9.2.0",
-    "@mui/material": "^9.2.0",
+    "@mui/icons-material": "^9.3.0",
+    "@mui/material": "^9.3.0",
     "@table-library/react-table-library": "4.1.15",
     "alova": "^3.5.3",
     "jwt-decode": "^4.0.0",
@@ -52,11 +52,11 @@
     "mime-types": "^3.0.2",
     "prettier": "^3.9.6",
     "rollup-plugin-visualizer": "^7.0.1",
-    "terser": "^5.49.0",
+    "terser": "^5.49.1",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.65.0",
+    "typescript-eslint": "^8.66.0",
     "vite": "^8.2.0",
     "vite-plugin-imagemin": "^0.6.1"
   },
-  "packageManager": "pnpm@11.18.0+sha512.33d83c77da82f49fba836925c6f1b841181ec3132b670639bd012f7075f5c7cf634c5f870147c19aae7478fac01df09d8892e880454896edd23ee9b33757563c"
+  "packageManager": "pnpm@11.20.0+sha512.9a6f330a95b66446ea088faf1521405a8a01f07fde7124cc9958dfed52d4bb436737e65b08f85f37b46fcba375092558ac51262b816844b22f63406ed166bfee"
 }
