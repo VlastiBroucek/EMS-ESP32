@@ -67,7 +67,6 @@ bool LED::loop(uint8_t healthcheck, bool button_busy) {
                 set_led(Color::YELLOW); // Yellow
             } else {
                 reset_led();
-                previous_healthcheck_ = System::HEALTHCHECK_RESET;
             }
             return false;
         }
@@ -75,39 +74,39 @@ bool LED::loop(uint8_t healthcheck, bool button_busy) {
         // check the system health.
         // Set the sequence accordingly, only if the healthcheck is not 0 and has changed
         if (healthcheck != previous_healthcheck_) {
-            previous_healthcheck_ = healthcheck;
-            color_steps_[0]       = Color::OFF;
-            color_steps_[1]       = Color::OFF;
-            color_steps_[2]       = Color::OFF;
+            color_steps_[0] = Color::OFF;
+            color_steps_[1] = Color::OFF;
+            color_steps_[2] = Color::OFF;
 
             // if the healthcheck is 0, i.e. system is healthy, reset the LED
             if (healthcheck == 0) {
                 reset_led();
-                return false;
+            } else {
+                //  1 flash (blue) is the EMS bus is not connected
+                //  2 flashes (red, red) if the network (wifi or ethernet) is not connected
+                //  3 flashes (red, red, blue) is both the bus and the network are not connected
+                bool no_network = (healthcheck & System::HEALTHCHECK_NO_NETWORK) == System::HEALTHCHECK_NO_NETWORK;
+                bool no_bus     = (healthcheck & System::HEALTHCHECK_NO_BUS) == System::HEALTHCHECK_NO_BUS;
+
+                // set step 1
+                if (no_network) {
+                    color_steps_[0] = Color::RED; // red, no network
+                } else if (no_bus) {
+                    color_steps_[0] = Color::BLUE; // blue, no bus
+                }
+
+                // set step 2
+                if (no_network) {
+                    color_steps_[1] = Color::RED; // red, no network
+                }
+
+                // set step 3
+                if (no_network && no_bus) {
+                    color_steps_[2] = Color::BLUE; // blue, no network and no bus
+                }
             }
 
-            //  1 flash (blue) is the EMS bus is not connected
-            //  2 flashes (red, red) if the network (wifi or ethernet) is not connected
-            //  3 flashes (red, red, blue) is both the bus and the network are not connected
-            bool no_network = (healthcheck & System::HEALTHCHECK_NO_NETWORK) == System::HEALTHCHECK_NO_NETWORK;
-            bool no_bus     = (healthcheck & System::HEALTHCHECK_NO_BUS) == System::HEALTHCHECK_NO_BUS;
-
-            // set step 1
-            if (no_network) {
-                color_steps_[0] = Color::RED; // red, no network
-            } else if (no_bus) {
-                color_steps_[0] = Color::BLUE; // blue, no bus
-            }
-
-            // set step 2
-            if (no_network) {
-                color_steps_[1] = Color::RED; // red, no network
-            }
-
-            // set step 3
-            if (no_network && no_bus) {
-                color_steps_[2] = Color::BLUE; // blue, no network and no bus
-            }
+            previous_healthcheck_ = healthcheck; // must be set after reset_led(), which invalidates it
         }
 
         // there's nothing to flash, so leave the LED in the state reset_led() gave it.
@@ -130,6 +129,10 @@ void LED::reset_led() {
     color_steps_[0] = Color::OFF;
     color_steps_[1] = Color::OFF;
     color_steps_[2] = Color::OFF;
+
+    // invalidate the last health state so the sequence is rebuilt on the next check,
+    // needed because the color steps above have been cleared
+    previous_healthcheck_ = System::HEALTHCHECK_RESET;
 
     // rewind the sequence so it starts from the top if the health degrades again
     led_long_timer_  = 1; // 1 will kick it off immediately
