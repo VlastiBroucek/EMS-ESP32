@@ -82,7 +82,13 @@ void Network::begin() {
     WiFi.persistent(false);
     WiFi.setAutoReconnect(false);
     WiFi.mode(WIFI_STA);
-    WiFi.disconnect(true, true); // wipe old settings in NVS. Will give a warning on boot but can be ignored.
+
+    if (WiFi.STA.started()) {
+        WiFi.disconnect(true, true); // wipe old settings; only when STA is up
+    } else {
+        WiFi.disconnect(true, false); // disconnect/off without erase, so no warning is shown
+    }
+
     WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN);
     WiFi.setHostname(hostname_.c_str());     // updates shared default_hostname buffer
     WiFi.enableSTA(true);                    // creates the STA netif
@@ -538,6 +544,17 @@ void Network::startEthernet() {
     if (phy_type_ == PHY_type::PHY_TYPE_NONE) {
         return;
     }
+
+    /*
+    // The Tasmota SDK is built with CONFIG_ESP32_UNIVERSAL_MAC_ADDRESSES=2, so the Ethernet MAC is derived as
+    // a locally-administered address from base+1 instead of the universal base+3 that Arduino Core 2 used.
+    // Seed the MAC table with the old value before the EMAC driver reads it, so DHCP reservations survive an upgrade.
+    uint8_t eth_mac[6];
+    if (esp_read_mac(eth_mac, ESP_MAC_BASE) == ESP_OK) {
+        eth_mac[5] += 3;
+        esp_iface_mac_addr_set(eth_mac, ESP_MAC_ETH);
+    }
+    */
 
     // reset power and add a delay as ETH doesn't not always start up correctly after a warm boot
     if (eth_power_ != -1) {
