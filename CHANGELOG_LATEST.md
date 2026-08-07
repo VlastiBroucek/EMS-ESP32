@@ -19,6 +19,7 @@ This release is based on the latest Espressif/Arduino core version 3. It brings 
 - LED stayed off on a healthy system when "Disable LED" was unchecked
 - Ethernet MAC address changed with the new SDK, breaking DHCP reservations (currently disabled)
 - "IPv4 nameserver" showed an IPv6 address when IPv6 was in use
+- HA Discovery warning on Uptime after EMS-ESP boot due to NTP not ready
 
 ## Changed
 
@@ -29,4 +30,5 @@ This release is based on the latest Espressif/Arduino core version 3. It brings 
 - Gateway and Connect devices are shown in the Devices page, but disabled [3126](https://github.com/emsesp/EMS-ESP32/discussions/3126)
 - show control setting only for master thermostats (0x10) [#3173](https://github.com/emsesp/EMS-ESP32/issues/3173)
 - remove devices without entities not listed in 0x07 telegram
+- changes to the Dialogs in Dashboard page, removed the run icon in the Commands page. Renamed Execute to Run.
 
