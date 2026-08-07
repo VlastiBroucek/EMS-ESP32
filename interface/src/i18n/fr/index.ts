@@ -37,13 +37,11 @@ const fr: Translation = {
   VALUE: 'Valeur',
   DEVICES: 'Appareils',
   SENSORS: 'Capteurs',
-  RUN_COMMAND: 'Lancer une commande',
   CHANGE_VALUE: 'Changer la valeur',
   CANCEL: 'Annuler',
   REMOVE_ALL: 'Supprimer tout',
   APPLY_CHANGES: 'Appliquer les changements ({0})',
   UPDATE: 'Update',
-  EXECUTE: 'Execute',
   REMOVE: 'Enlever',
   PROBLEM_UPDATING: 'Problème lors de la mise à jour',
   PROBLEM_LOADING: 'Problème lors du chargement',
@@ -368,7 +366,8 @@ const fr: Translation = {
   COMMANDS: 'Commandes',
   COMMANDS_UPDATED: 'Commandes mises à jour',
   COMMANDS_HELP_1: 'Définir des commandes personnalisées pour la magistral EMS',
-  EXECUTE_COMMAND_SENT: 'Commande envoyée',
+  COMMAND_SENT: 'Commande envoyée',
+  RUN: 'Exécuter une commande'
 };
 
 export default fr;

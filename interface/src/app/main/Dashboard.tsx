@@ -334,7 +334,7 @@ const Dashboard = memo(() => {
                                 (di.dv.v === '' || di.dv.v === undefined ? (
                                   <IconButton
                                     size="small"
-                                    aria-label={LL.RUN_COMMAND()}
+                                    aria-label={LL.RUN()}
                                     onClick={() => editDashboardValue(di)}
                                     style={{ backgroundColor: 'transparent' }}
                                   >
@@ -402,7 +402,10 @@ const Dashboard = memo(() => {
       {selectedDashboardItem && selectedDashboardItem.dv && (
         <DevicesDialog
           open={deviceValueDialogOpen}
-          onClose={() => setDeviceValueDialogOpen(false)}
+          onClose={() => {
+            setDeviceValueDialogOpen(false);
+            setSelectedDashboardItem(undefined);
+          }}
           onSave={deviceValueDialogSave}
           selectedItem={selectedDashboardItem.dv}
           writeable={true}

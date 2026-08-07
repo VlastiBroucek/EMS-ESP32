@@ -37,13 +37,11 @@ const tr: Translation = {
   VALUE: '{{değer|Değer}}',
   DEVICES: 'Cihazlar',
   SENSORS: 'Sensörler',
-  RUN_COMMAND: 'Çalıştırma Komutu',
   CHANGE_VALUE: 'Değeri Değiştir',
   CANCEL: 'İptal',
   REMOVE_ALL: 'Tümünü Kaldır',
   APPLY_CHANGES: 'Değişiklikleri Uygula ({0})',
   UPDATE: 'Update',
-  EXECUTE: 'Uygulamak',
   REMOVE: 'Kaldır',
   PROBLEM_UPDATING: 'Güncelleme Sorunu',
   PROBLEM_LOADING: 'Yükleme Sorunu',
@@ -368,7 +366,8 @@ const tr: Translation = {
   COMMANDS: 'Komutlar',
   COMMANDS_UPDATED: 'Komutlar güncellendi',
   COMMANDS_HELP_1: 'Özel komutları EMS hattına tanımlayın',
-  EXECUTE_COMMAND_SENT: 'Komut gönderildi',
+  COMMAND_SENT: 'Komut gönderildi',
+  RUN: 'Komutu çalıştır'
 };
 
 export default tr;

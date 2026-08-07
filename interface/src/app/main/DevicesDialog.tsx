@@ -30,7 +30,7 @@ import { ValidationError, validate } from 'validators';
 import type Schema from 'validators/schema';
 import type { ValidateFieldsError } from 'validators/schema';
 
-import { DeviceValueUOM, DeviceValueUOM_s } from './types';
+import { DeviceValueUOM, DeviceValueUOM_s, getDeviceValueKind } from './types';
 import type { DeviceValue } from './types';
 
 interface DevicesDialogProps {
@@ -70,7 +70,7 @@ const DevicesDialog = ({
     { immediate: false }
   )
     .onSuccess(() => {
-      toast.success(LL.EXECUTE_COMMAND_SENT());
+      toast.success(LL.COMMAND_SENT());
     })
     .onError((error) => {
       toast.error(String(error.error?.message || 'An error occurred'));
@@ -119,18 +119,20 @@ const DevicesDialog = ({
     return undefined;
   };
 
-  const isCommand =
-    (selectedItem.v === '' || selectedItem.v === undefined) &&
-    Boolean(selectedItem.c);
-  const isSchedulerImmediate = selectedItem.v === undefined;
-  const dialogTitle = isCommand
-    ? isSchedulerImmediate
-      ? LL.EXECUTE() + ' ' + LL.SCHEDULE(0)
-      : LL.RUN_COMMAND()
-    : writeable
-      ? LL.CHANGE_VALUE()
-      : LL.VALUE(0);
-  const buttonLabel = isCommand ? LL.EXECUTE() : LL.UPDATE();
+  const kind = getDeviceValueKind(selectedItem);
+
+  const dialogTitle =
+    kind === 'command' || kind === 'deviceCommand'
+      ? LL.RUN() + ' ' + LL.COMMAND(0)
+      : kind === 'scheduler'
+        ? LL.UPDATE() + ' ' + LL.SCHEDULE(0)
+        : writeable
+          ? LL.CHANGE_VALUE()
+          : LL.VALUE(0);
+
+  const buttonLabel =
+    kind === 'command' || kind === 'deviceCommand' ? LL.RUN() : LL.UPDATE();
+
   const helperText = showHelperText(editItem);
 
   const valueLabel = LL.VALUE(0);
@@ -142,7 +144,7 @@ const DevicesDialog = ({
         <Typography sx={{ mb: 2 }} color="warning" variant="body2">
           {editItem.id.slice(2)}
         </Typography>
-        {!isSchedulerImmediate && (
+        {kind !== 'command' && (
           <Grid container>
             <Grid size={12}>
               {editItem.l ? (
@@ -227,11 +229,15 @@ const DevicesDialog = ({
             </Button>
             <Button
               startIcon={
-                isCommand ? <PlayArrowIcon /> : <WarningIcon color="warning" />
+                kind === 'command' ? (
+                  <PlayArrowIcon />
+                ) : kind === 'deviceEntity' || kind === 'deviceCommand' ? (
+                  <WarningIcon color="warning" />
+                ) : undefined
               }
               variant="outlined"
               onClick={doAction}
-              color={isCommand ? 'success' : 'primary'}
+              color={kind !== 'value' ? 'success' : 'primary'}
             >
               {buttonLabel}
             </Button>

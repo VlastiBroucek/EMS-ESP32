@@ -37,13 +37,11 @@ const cs: Translation = {
   VALUE: '{{value|Value}}',
   DEVICES: 'Zařízení',
   SENSORS: 'Senzory',
-  RUN_COMMAND: 'Zavolat příkaz',
   CHANGE_VALUE: 'Změnit hodnotu',
   CANCEL: 'Zrušit',
   REMOVE_ALL: 'Odebrat vše',
   APPLY_CHANGES: 'Použít změny ({0})',
   UPDATE: 'Aktualizovat',
-  EXECUTE: 'Provést',
   REMOVE: 'Odebrat',
   PROBLEM_UPDATING: 'Problém s aktualizací',
   PROBLEM_LOADING: 'Problém s načítáním',
@@ -368,7 +366,8 @@ const cs: Translation = {
   COMMANDS: 'Příkazy',
   COMMANDS_UPDATED: 'Příkazy byly aktualizovány',
   COMMANDS_HELP_1: 'Definujte vlastní příkazy pro magistrali EMS',
-  EXECUTE_COMMAND_SENT: 'Příkaz odeslán',
+  COMMAND_SENT: 'Příkaz odeslán',
+  RUN: 'Spustit příkaz'
 };
 
 export default cs;

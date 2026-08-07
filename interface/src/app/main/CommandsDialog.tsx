@@ -95,7 +95,7 @@ const CommandsDialog = ({
     { immediate: false }
   )
     .onSuccess(() => {
-      toast.success(LL.EXECUTE_COMMAND_SENT());
+      toast.success(LL.COMMAND_SENT());
     })
     .onError((error) => {
       toast.error(String(error.error?.message || 'An error occurred'));
@@ -121,8 +121,8 @@ const CommandsDialog = ({
   return (
     <Dialog sx={dialogStyle} open={open} onClose={handleClose}>
       <DialogTitle>
-        {creating ? `${LL.ADD(1)} ${LL.NEW(0)}` : LL.EDIT()}&nbsp;
-        {LL.COMMAND(1)}
+        {creating ? `${LL.ADD(1)} ` : LL.UPDATE() + '/' + LL.RUN()}&nbsp;
+        {LL.COMMAND(0)}
       </DialogTitle>
       <DialogContent dividers>
         <ValidatedTextField
@@ -195,7 +195,7 @@ const CommandsDialog = ({
             onClick={execute}
             color="success"
           >
-            {LL.EXECUTE()}
+            {LL.RUN()}
           </Button>
         )}
       </DialogActions>

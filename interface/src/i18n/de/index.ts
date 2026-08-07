@@ -37,13 +37,11 @@ const de: Translation = {
   VALUE: '{{wert|Wert}}',
   DEVICES: 'Geräte',
   SENSORS: 'Sensoren',
-  RUN_COMMAND: 'Befehl ausführen',
   CHANGE_VALUE: 'Wert ändern',
   CANCEL: 'Abbrechen',
   REMOVE_ALL: 'Alles entfernen',
   APPLY_CHANGES: 'Änderungen anwenden ({0})',
   UPDATE: 'Aktualisieren',
-  EXECUTE: 'Ausführen',
   REMOVE: 'Entfernen',
   PROBLEM_UPDATING: 'Problem beim Aktualisieren',
   PROBLEM_LOADING: 'Problem beim Laden',
@@ -368,7 +366,8 @@ const de: Translation = {
   COMMANDS: 'Befehle',
   COMMANDS_UPDATED: 'Befehle wurden aktualisiert',
   COMMANDS_HELP_1: 'Definieren Sie eigene Befehle für die EMS-Magistral',
-  EXECUTE_COMMAND_SENT: 'Befehl gesendet',
+  COMMAND_SENT: 'Befehl gesendet',
+  RUN: 'Befehl ausführen'
 };
 
 export default de;

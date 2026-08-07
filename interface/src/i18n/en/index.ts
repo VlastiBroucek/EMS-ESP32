@@ -37,13 +37,11 @@ const en: Translation = {
   VALUE: '{{value|Value}}',
   DEVICES: 'Devices',
   SENSORS: 'Sensors',
-  RUN_COMMAND: 'Call Command',
   CHANGE_VALUE: 'Change Value',
   CANCEL: 'Cancel',
   REMOVE_ALL: 'Remove All',
   APPLY_CHANGES: 'Apply Changes ({0})',
   UPDATE: 'Update',
-  EXECUTE: 'Execute',
   REMOVE: 'Remove',
   PROBLEM_UPDATING: 'Problem updating',
   PROBLEM_LOADING: 'Problem loading',
@@ -368,7 +366,8 @@ const en: Translation = {
   COMMANDS: 'Commands',
   COMMANDS_UPDATED: 'Commands updated',
   COMMANDS_HELP_1: 'Define reusable named commands below. These can be executed from the console, API/MQTT, or referenced by the Scheduler',
-  EXECUTE_COMMAND_SENT: 'Command sent',
+  COMMAND_SENT: 'Command sent',
+  RUN: 'Run'
 };
 
 export default en;

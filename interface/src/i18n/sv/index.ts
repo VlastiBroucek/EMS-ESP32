@@ -37,13 +37,11 @@ const sv: Translation = {
   VALUE: '{{värde|Värde}}',
   DEVICES: 'Enheter',
   SENSORS: 'Sensorer',
-  RUN_COMMAND: 'Kör kommando',
   CHANGE_VALUE: 'Ändra värde',
   CANCEL: 'Avbryt',
   REMOVE_ALL: 'Ta bort allt',
   APPLY_CHANGES: 'Utför ändringar ({0})',
   UPDATE: 'Uppdatera',
-  EXECUTE: 'Utför',
   REMOVE: 'Ta bort',
   PROBLEM_UPDATING: 'Problem vid uppdatering',
   PROBLEM_LOADING: 'Problem vid hämtning',
@@ -368,7 +366,8 @@ const sv: Translation = {
   COMMANDS: 'Kommandon',
   COMMANDS_UPDATED: 'Kommandon uppdaterade',
   COMMANDS_HELP_1: 'Definiera egna kommandon för EMS-Magistral',
-  EXECUTE_COMMAND_SENT: 'Kommando skickat',
+  COMMAND_SENT: 'Kommando skickat',
+  RUN: 'Kör kommando'
 };
 
 export default sv;

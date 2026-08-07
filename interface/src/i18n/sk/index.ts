@@ -37,13 +37,11 @@ const sk: Translation = {
   VALUE: '{{hodnota|Hodnota}}',
   DEVICES: 'Zariadenia',
   SENSORS: 'Snímače',
-  RUN_COMMAND: 'Volať príkaz',
   CHANGE_VALUE: 'Zmena hodnoty',
   CANCEL: 'Zrušiť',
   REMOVE_ALL: 'Odstrániť všetko',
   APPLY_CHANGES: 'Aplikovať zmeny ({0})',
   UPDATE: 'Aktualizovať',
-  EXECUTE: 'Spustiť',
   REMOVE: 'Odstrániť',
   PROBLEM_UPDATING: 'Problém s aktualizáciou',
   PROBLEM_LOADING: 'Problém s načítaním',
@@ -368,7 +366,8 @@ const sk: Translation = {
   COMMANDS: 'Príkazy',
   COMMANDS_UPDATED: 'Príkazy aktualizované',
   COMMANDS_HELP_1: 'Definujte vlastné príkazy pre magistrali EMS',
-  EXECUTE_COMMAND_SENT: 'Príkaz odoslaný',
+  COMMAND_SENT: 'Príkaz odoslaný',
+  RUN: 'Volať príkaz'
 };
 
 export default sk;
