@@ -16,6 +16,7 @@ This release is based on the latest Espressif/Arduino core version 3. It brings 
 ## Fixed
 
 - shunting yard show json
+- memory leak when using different timezones for ems-esp and thermostat[#3184](https://github.com/emsesp/EMS-ESP32/issues/3184)
 
 ## Changed
 
