@@ -587,9 +587,8 @@ void Mqtt::ha_status() {
 
     // These come from the info MQTT topic - and handled in the publish_ha_sensor_config function
     publish_system_ha_sensor_config(DeviceValueType::STRING, "Version", "version", DeviceValueUOM::NONE);
-    publish_system_ha_sensor_config(DeviceValueType::STRING, "Boot time", "bootTime", DeviceValueUOM::UPTIME);
+    publish_system_ha_sensor_config(DeviceValueType::STRING, "Uptime", "bootTime", DeviceValueUOM::UPTIME);
 }
-
 // add sub or pub task to the queue.
 // the base is not included in the topic
 bool Mqtt::queue_message(const uint8_t operation, const std::string & topic, const std::string & payload, const bool retain) {
@@ -988,8 +987,9 @@ bool Mqtt::publish_ha_sensor_config(uint8_t               type,        // EMSdev
 
     // set the entity_id. This is breaking change in HA 2025.10.0 - see https://github.com/home-assistant/core/pull/151775
     // extract the string from topic up to the / using std::string
+    // it must be lowercase (although HA will slugify it and not reject it)
     std::string topic_str(topic);
-    doc["def_ent_id"] = topic_str.substr(0, topic_str.find("/")) + "." + uniq_id;
+    doc["def_ent_id"] = Helpers::toLower(topic_str.substr(0, topic_str.find("/"))) + "." + Helpers::toLower(uniq_id);
 
     char sample_val[30] = "0"; // sample, correct(!) entity value, used only to prevent warning/error in HA if real value is not published yet
 
@@ -1067,12 +1067,12 @@ bool Mqtt::publish_ha_sensor_config(uint8_t               type,        // EMSdev
         snprintf(stat_t, sizeof(stat_t), "~/%s", tag_to_topic(device_type, tag).c_str());
 
         // Override - there are exceptions for DeviceType::SYSTEM, which uses the heartbeat topic
-        // and when fetching the version and bootTime we want to take this from the info topic instead
+        // and when fetching the version and uptime we want to take this from the info topic instead
         if (device_type == EMSdevice::DeviceType::SYSTEM) {
             // handle the exceptions
             if (strncmp(entity, "version", 7) == 0) {
                 snprintf(stat_t, sizeof(stat_t), "~/%s", F_(info));
-            } else if (strncmp(entity, "bootTime", 8) == 0) {
+            } else if (strncmp(entity, "bootTime", 6) == 0) {
                 snprintf(stat_t, sizeof(stat_t), "~/%s", F_(info));
             }
         }
@@ -1100,12 +1100,17 @@ bool Mqtt::publish_ha_sensor_config(uint8_t               type,        // EMSdev
 
         // don't bother with value template conditions if using Domoticz which doesn't fully support MQTT Discovery
         if (discovery_type() == discoveryType::HOMEASSISTANT) {
+            // handle special cases for value_template depending on the uom
             if (uom == DeviceValueUOM::TIMESTAMP) {
-                // special case for timestamp, using "value_template": "{{ (value_json.bootTime | as_datetime).isoformat() }}",
+                // uptime
                 char val_tpl[100];
                 snprintf(val_tpl, sizeof(val_tpl), "{{ (value_json.%s | as_datetime).isoformat() }}", entity);
                 doc["val_tpl"] = val_tpl;
+            } else if (uom == DeviceValueUOM::UPTIME) {
+                // uptime
+                doc["val_tpl"] = (std::string) "{{" + val_obj + " if " + val_cond + " else '' }}";
             } else {
+                // default
                 doc["val_tpl"] = (std::string) "{{" + val_obj + " if " + val_cond + " else " + sample_val + "}}";
             }
             add_ha_avty_section(doc.as<JsonObject>(), stat_t, val_cond); // adds availability section
@@ -1141,7 +1146,7 @@ bool Mqtt::publish_ha_sensor_config(uint8_t               type,        // EMSdev
 // https://developers.home-assistant.io/docs/core/entity/sensor/
 // Home Assistant tracks the min, max and mean value during the statistics period
 // For statistics, the sensor must have state_class set to either MEASUREMENT, TOTAL or TOTAL_INCREASING
-// When set to MEASUREMENT the device_class must cannot be DATE, ENUM, ENERGY, GAS, MONETARY, TIMESTAMP, VOLUME or WATER
+// When set to MEASUREMENT the device_class must cannot be DATE, ENUM, ENERGY, GAS, MONETARY, TIMESTAMP, UPTIME, VOLUME or WATER
 //
 void Mqtt::add_ha_classes(JsonObject doc, const uint8_t device_type, const uint8_t type, const uint8_t uom, const char * entity, bool display_only) {
     if (device_type == EMSdevice::DeviceType::SYSTEM) {
@@ -1280,7 +1285,7 @@ void Mqtt::add_ha_classes(JsonObject doc, const uint8_t device_type, const uint8
         doc[sc_ha] = sc_ha_measurement;
         doc[dc_ha] = "timestamp";
         break;
-    case DeviceValueUOM::UPTIME:
+    case DeviceValueUOM::UPTIME: // no state class for uptime
         doc[dc_ha] = "uptime";
         break;
     case DeviceValueUOM::MV:
@@ -1602,9 +1607,6 @@ void Mqtt::add_ha_avty_section(JsonObject doc, const char * state_t, const char 
             avty_json["t"] = state;
             snprintf(tpl, sizeof(tpl), "{{'online' if %s else 'offline'}}", cond1);
             avty_json["val_tpl"] = tpl;
-            if (!avty.add(avty_json)) {
-                LOG_WARNING("Failed to add availability condition 1 (low memory)");
-            }
         }
 
         // condition 2
@@ -1613,9 +1615,6 @@ void Mqtt::add_ha_avty_section(JsonObject doc, const char * state_t, const char 
             avty_json["t"] = state;
             snprintf(tpl, sizeof(tpl), "{{'online' if %s else 'offline'}}", cond2);
             avty_json["val_tpl"] = tpl;
-            if (!avty.add(avty_json)) {
-                LOG_WARNING("Failed to add availability condition 2 (low memory)");
-            }
         }
 
         // negative condition
@@ -1624,9 +1623,6 @@ void Mqtt::add_ha_avty_section(JsonObject doc, const char * state_t, const char 
             avty_json["t"] = state;
             snprintf(tpl, sizeof(tpl), "{{'offline' if %s else 'online'}}", negcond);
             avty_json["val_tpl"] = tpl;
-            if (!avty.add(avty_json)) {
-                LOG_WARNING("Failed to add negative availability condition (low memory)");
-            }
         }
     }
 
