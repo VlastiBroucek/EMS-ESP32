@@ -587,7 +587,10 @@ void Mqtt::ha_status() {
 
     // These come from the info MQTT topic - and handled in the publish_ha_sensor_config function
     publish_system_ha_sensor_config(DeviceValueType::STRING, "Version", "version", DeviceValueUOM::NONE);
-    publish_system_ha_sensor_config(DeviceValueType::STRING, "Uptime", "bootTime", DeviceValueUOM::UPTIME);
+    publish_system_ha_sensor_config(DeviceValueType::STRING,
+                                    "Uptime",
+                                    "bootTime",
+                                    DeviceValueUOM::UPTIME); // called Uptime in HA and derives value from bootTime element in info topic
 }
 // add sub or pub task to the queue.
 // the base is not included in the topic
@@ -1072,7 +1075,7 @@ bool Mqtt::publish_ha_sensor_config(uint8_t               type,        // EMSdev
             // handle the exceptions
             if (strncmp(entity, "version", 7) == 0) {
                 snprintf(stat_t, sizeof(stat_t), "~/%s", F_(info));
-            } else if (strncmp(entity, "bootTime", 6) == 0) {
+            } else if (strncmp(entity, "bootTime", 8) == 0) {
                 snprintf(stat_t, sizeof(stat_t), "~/%s", F_(info));
             }
         }
