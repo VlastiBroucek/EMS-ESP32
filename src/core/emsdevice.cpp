@@ -52,7 +52,7 @@ bool EMSdevice::has_entities() const {
     }
     bool found = false;
     EMSESP::webCustomizationService.read([&](WebCustomization & settings) {
-        for (EntityCustomization entityCustomization : settings.entityCustomizations) {
+        for (const auto & entityCustomization : settings.entityCustomizations) {
             if (entityCustomization.device_id == device_id() && entityCustomization.entity_ids.size()) {
                 found = true;
                 break;
@@ -564,17 +564,17 @@ void EMSdevice::register_telegram_type(const uint16_t telegram_type_id, const ch
 
 // add to device value library, also know now as a "device entity"
 // this function will also apply any customizations to the entity
-void EMSdevice::add_device_value(int8_t                tag,              // to be used to group mqtt together, either as separate topics as a nested object
-                                 void *                value_p,          // pointer to the value from the .h file
-                                 uint8_t               type,             // one of DeviceValueType
-                                 const char * const ** options,          // options for enum, which are translated as a list of lists
-                                 const char * const *  options_single,   // list of names
-                                 int8_t                numeric_operator, // to divide or multiply, see DeviceValueNumOps::
-                                 const char * const *  name,             // list of names, including shortname and translations
-                                 uint8_t               uom,              // unit of measure from DeviceValueUOM
-                                 const cmd_function_p  f,                // command function pointer
-                                 int16_t               min,              // min allowed value
-                                 uint32_t              max               // max allowed value
+void EMSdevice::add_device_value(int8_t                 tag,              // to be used to group mqtt together, either as separate topics as a nested object
+                                 void *                 value_p,          // pointer to the value from the .h file
+                                 uint8_t                type,             // one of DeviceValueType
+                                 const char * const **  options,          // options for enum, which are translated as a list of lists
+                                 const char * const *   options_single,   // list of names
+                                 int8_t                 numeric_operator, // to divide or multiply, see DeviceValueNumOps::
+                                 const char * const *   name,             // list of names, including shortname and translations
+                                 uint8_t                uom,              // unit of measure from DeviceValueUOM
+                                 const cmd_function_p & f,                // command function pointer
+                                 int16_t                min,              // min allowed value
+                                 uint32_t               max               // max allowed value
 ) {
     uint8_t state           = DeviceValueState::DV_DEFAULT; // determine state
     auto    custom_fullname = std::string("");              // custom fullname
@@ -636,7 +636,7 @@ void EMSdevice::add_device_value(int8_t                tag,              // to b
 
     // scan through customizations to see if it's on the exclusion list by matching the productID and deviceID
     EMSESP::webCustomizationService.read([&](WebCustomization & settings) {
-        for (EntityCustomization entityCustomization : settings.entityCustomizations) {
+        for (const auto & entityCustomization : settings.entityCustomizations) {
             if ((entityCustomization.product_id == product_id()) && (entityCustomization.device_id == device_id())) {
                 char entity[70];
                 if (tag < DeviceValueTAG::TAG_HC1) {
@@ -645,7 +645,7 @@ void EMSdevice::add_device_value(int8_t                tag,              // to b
                     snprintf(entity, sizeof(entity), "%s/%s", tag_to_mqtt(tag), short_name);
                 }
 
-                for (const std::string & entity_id : entityCustomization.entity_ids) {
+                for (const auto & entity_id : entityCustomization.entity_ids) {
                     // if there is an appended custom name, strip it to get the true entity name
                     // and extract the new custom name
                     auto        custom_name_pos = entity_id.find('|');
@@ -700,93 +700,93 @@ void EMSdevice::erase_device_values() {
 }
 
 // single list of options
-void EMSdevice::register_device_value(int8_t               tag,
-                                      void *               value_p,
-                                      uint8_t              type,
-                                      const char * const * options_single,
-                                      const char * const * name,
-                                      uint8_t              uom,
-                                      const cmd_function_p f) {
+void EMSdevice::register_device_value(int8_t                 tag,
+                                      void *                 value_p,
+                                      uint8_t                type,
+                                      const char * const *   options_single,
+                                      const char * const *   name,
+                                      uint8_t                uom,
+                                      const cmd_function_p & f) {
     // create a multi-list from the options
     add_device_value(tag, value_p, type, nullptr, options_single, 0, name, uom, f, 0, 0);
 };
 
 // single list of options, with no translations, with min and max
-void EMSdevice::register_device_value(int8_t               tag,
-                                      void *               value_p,
-                                      uint8_t              type,
-                                      const char * const * options_single,
-                                      const char * const * name,
-                                      uint8_t              uom,
-                                      const cmd_function_p f,
-                                      int16_t              min,
-                                      uint32_t             max) {
+void EMSdevice::register_device_value(int8_t                 tag,
+                                      void *                 value_p,
+                                      uint8_t                type,
+                                      const char * const *   options_single,
+                                      const char * const *   name,
+                                      uint8_t                uom,
+                                      const cmd_function_p & f,
+                                      int16_t                min,
+                                      uint32_t               max) {
     // create a multi-list from the options
     add_device_value(tag, value_p, type, nullptr, options_single, 0, name, uom, f, min, max);
 };
 
-void EMSdevice::register_device_value(int8_t               tag,
-                                      void *               value_p,
-                                      uint8_t              type,
-                                      int8_t               numeric_operator,
-                                      const char * const * name,
-                                      uint8_t              uom,
-                                      const cmd_function_p f) {
+void EMSdevice::register_device_value(int8_t                 tag,
+                                      void *                 value_p,
+                                      uint8_t                type,
+                                      int8_t                 numeric_operator,
+                                      const char * const *   name,
+                                      uint8_t                uom,
+                                      const cmd_function_p & f) {
     add_device_value(tag, value_p, type, nullptr, nullptr, numeric_operator, name, uom, f, 0, 0);
 }
 
-void EMSdevice::register_device_value(int8_t               tag,
-                                      void *               value_p,
-                                      uint8_t              type,
-                                      int8_t               numeric_operator,
-                                      const char * const * name,
-                                      uint8_t              uom,
-                                      const cmd_function_p f,
-                                      int16_t              min,
-                                      uint32_t             max) {
+void EMSdevice::register_device_value(int8_t                 tag,
+                                      void *                 value_p,
+                                      uint8_t                type,
+                                      int8_t                 numeric_operator,
+                                      const char * const *   name,
+                                      uint8_t                uom,
+                                      const cmd_function_p & f,
+                                      int16_t                min,
+                                      uint32_t               max) {
     add_device_value(tag, value_p, type, nullptr, nullptr, numeric_operator, name, uom, f, min, max);
 }
 
 // no options, no function
-void EMSdevice::register_device_value(int8_t tag, void * value_p, uint8_t type, const char * const * name, uint8_t uom, const cmd_function_p f) {
+void EMSdevice::register_device_value(int8_t tag, void * value_p, uint8_t type, const char * const * name, uint8_t uom, const cmd_function_p & f) {
     add_device_value(tag, value_p, type, nullptr, nullptr, 0, name, uom, f, 0, 0);
 };
 
 // no options, with min/max
-void EMSdevice::register_device_value(int8_t               tag,
-                                      void *               value_p,
-                                      uint8_t              type,
-                                      const char * const * name,
-                                      uint8_t              uom,
-                                      const cmd_function_p f,
-                                      int16_t              min,
-                                      uint32_t             max) {
+void EMSdevice::register_device_value(int8_t                 tag,
+                                      void *                 value_p,
+                                      uint8_t                type,
+                                      const char * const *   name,
+                                      uint8_t                uom,
+                                      const cmd_function_p & f,
+                                      int16_t                min,
+                                      uint32_t               max) {
     add_device_value(tag, value_p, type, nullptr, nullptr, 0, name, uom, f, min, max);
 };
 
 // function with min and max values
 // adds a new command to the command list
 // in this function we separate out the short and long names and take any translations
-void EMSdevice::register_device_value(int8_t                tag,
-                                      void *                value_p,
-                                      uint8_t               type,
-                                      const char * const ** options,
-                                      const char * const *  name,
-                                      uint8_t               uom,
-                                      const cmd_function_p  f,
-                                      int16_t               min,
-                                      uint32_t              max) {
+void EMSdevice::register_device_value(int8_t                 tag,
+                                      void *                 value_p,
+                                      uint8_t                type,
+                                      const char * const **  options,
+                                      const char * const *   name,
+                                      uint8_t                uom,
+                                      const cmd_function_p & f,
+                                      int16_t                min,
+                                      uint32_t               max) {
     add_device_value(tag, value_p, type, options, nullptr, 0, name, uom, f, min, max);
 }
 
 // function with no min and max values (set to 0)
-void EMSdevice::register_device_value(int8_t                tag,
-                                      void *                value_p,
-                                      uint8_t               type,
-                                      const char * const ** options,
-                                      const char * const *  name,
-                                      uint8_t               uom,
-                                      const cmd_function_p  f) {
+void EMSdevice::register_device_value(int8_t                 tag,
+                                      void *                 value_p,
+                                      uint8_t                type,
+                                      const char * const **  options,
+                                      const char * const *   name,
+                                      uint8_t                uom,
+                                      const cmd_function_p & f) {
     add_device_value(tag, value_p, type, options, nullptr, 0, name, uom, f, 0, 0);
 }
 
@@ -1210,10 +1210,10 @@ void EMSdevice::generate_values_web_customization(JsonArray output) {
     // this is when the mask has it's high bit (0x80) set
     // https://github.com/emsesp/EMS-ESP32/issues/891
     EMSESP::webCustomizationService.read([&](WebCustomization & settings) {
-        for (EntityCustomization entityCustomization : settings.entityCustomizations) {
+        for (const auto & entityCustomization : settings.entityCustomizations) {
             if (entityCustomization.device_id == device_id()) {
                 // entity_ids is a list of all entities with the mask prefixed in the string
-                for (const std::string & entity_id : entityCustomization.entity_ids) {
+                for (const auto & entity_id : entityCustomization.entity_ids) {
                     uint8_t mask = Helpers::hextoint(entity_id.substr(0, 2).c_str());
                     if (mask & 0x80) {
                         JsonObject obj = output.add<JsonObject>();

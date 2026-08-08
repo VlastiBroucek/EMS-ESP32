@@ -153,10 +153,10 @@ bool System::command_sendmail(const char * value, const int8_t) {
     bool success = false;
 
 #ifndef EMSESP_STANDALONE
-    WiFiClient *    basic_client = new WiFiClient;
-    ESP_SSLClient * ssl_client   = new ESP_SSLClient;
-    ReadyClient *   r_client     = new ReadyClient(*ssl_client);
-    SMTPClient *    smtp         = new SMTPClient(*r_client);
+    auto * basic_client = new WiFiClient;
+    auto * ssl_client   = new ESP_SSLClient;
+    auto * r_client     = new ReadyClient(*ssl_client);
+    auto * smtp         = new SMTPClient(*r_client);
 
     ssl_client->setClient(basic_client);
     ssl_client->setInsecure();

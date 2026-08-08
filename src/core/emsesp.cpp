@@ -54,19 +54,19 @@ bool     EMSESP::entity_compaction_pending_ = false;
 AsyncWebServer webServer(80);
 
 #if defined(EMSESP_STANDALONE)
-FS     dummyFS;
-auto & fsRef = dummyFS;
+FS         dummyFS;
+FS * const fsRef = &dummyFS;
 #else
-auto & fsRef = LittleFS;
+FS * const fsRef = &LittleFS;
 #endif
 
-ESP32React              EMSESP::esp32React(&webServer, &fsRef);
-WebSettingsService      EMSESP::webSettingsService      = WebSettingsService(&webServer, &fsRef, EMSESP::esp32React.getSecurityManager());
-WebCustomizationService EMSESP::webCustomizationService = WebCustomizationService(&webServer, &fsRef, EMSESP::esp32React.getSecurityManager());
-WebSchedulerService     EMSESP::webSchedulerService     = WebSchedulerService(&webServer, &fsRef, EMSESP::esp32React.getSecurityManager());
-WebCommandService       EMSESP::webCommandService       = WebCommandService(&webServer, &fsRef, EMSESP::esp32React.getSecurityManager());
-WebCustomEntityService  EMSESP::webCustomEntityService  = WebCustomEntityService(&webServer, &fsRef, EMSESP::esp32React.getSecurityManager());
-WebModulesService       EMSESP::webModulesService       = WebModulesService(&webServer, &fsRef, EMSESP::esp32React.getSecurityManager());
+ESP32React              EMSESP::esp32React(&webServer, fsRef);
+WebSettingsService      EMSESP::webSettingsService      = WebSettingsService(&webServer, fsRef, EMSESP::esp32React.getSecurityManager());
+WebCustomizationService EMSESP::webCustomizationService = WebCustomizationService(&webServer, fsRef, EMSESP::esp32React.getSecurityManager());
+WebSchedulerService     EMSESP::webSchedulerService     = WebSchedulerService(&webServer, fsRef, EMSESP::esp32React.getSecurityManager());
+WebCommandService       EMSESP::webCommandService       = WebCommandService(&webServer, fsRef, EMSESP::esp32React.getSecurityManager());
+WebCustomEntityService  EMSESP::webCustomEntityService  = WebCustomEntityService(&webServer, fsRef, EMSESP::esp32React.getSecurityManager());
+WebModulesService       EMSESP::webModulesService       = WebModulesService(&webServer, fsRef, EMSESP::esp32React.getSecurityManager());
 
 WebActivityService EMSESP::webActivityService = WebActivityService(&webServer, EMSESP::esp32React.getSecurityManager());
 WebStatusService   EMSESP::webStatusService   = WebStatusService(&webServer, EMSESP::esp32React.getSecurityManager());
@@ -184,13 +184,13 @@ void EMSESP::erase_device(const uint8_t type_id) {
     }
 }
 
- // clears list of recognized devices, entities and telegrams
- void EMSESP::clear_all_devices() {
-    for (auto & emsdevice : emsdevices) {
+// clears list of recognized devices, entities and telegrams
+void EMSESP::clear_all_devices() {
+    for (const auto & emsdevice : emsdevices) {
         emsdevice->erase_device_values();
     }
     emsdevices.clear();
- }
+}
 
 // called from EMSdevice/Command whenever an entity or telegram handler is registered.
 // Devices reserve their value/telegram vectors generously (to avoid realloc storms while
@@ -1046,7 +1046,7 @@ void EMSESP::process_UBADevices(const std::shared_ptr<const Telegram> & telegram
                 }
             } else if (device_exists(device_id) && !device_hasEntities(device_id)) {
                 LOG_DEBUG("Remove EMS device with ID 0x%02X", device_id);
-                erase_device(device_id); // 
+                erase_device(device_id); //
             }
             next_byte = next_byte >> 1; // advance 1 bit
         }
@@ -1484,7 +1484,7 @@ bool EMSESP::add_device(const uint8_t device_id, const uint8_t product_id, const
 
     // see if we have a custom device name in our Customizations list, and if so set it
     webCustomizationService.read([&](WebCustomization const & settings) {
-        for (EntityCustomization e : settings.entityCustomizations) {
+        for (const auto & e : settings.entityCustomizations) {
             if ((e.device_id == device_id) && (e.product_id == product_id)) {
                 LOG_DEBUG("Have customizations for %s with deviceID 0x%02X productID %d", e.custom_name.c_str(), device_id, product_id);
                 emsdevices.back()->custom_name(e.custom_name);

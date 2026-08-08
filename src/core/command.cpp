@@ -492,7 +492,7 @@ uint8_t Command::call(const uint8_t device_type, const char * command, const cha
 }
 
 // add a command to the list, which does not return json
-void Command::add(const uint8_t device_type, const uint8_t device_id, const char * cmd, const cmd_function_p cb, const char * const * description, uint8_t flags) {
+void Command::add(const uint8_t device_type, const uint8_t device_id, const char * cmd, const cmd_function_p & cb, const char * const * description, uint8_t flags) {
     // if the command already exists for that device type don't add it
     if (find_command(device_type, device_id, cmd, flags) != nullptr) {
         return;
@@ -508,13 +508,13 @@ void Command::add(const uint8_t device_type, const uint8_t device_id, const char
 
 // add a command with no json output
 // system/temperature/analog devices uses device_id 0
-void Command::add(const uint8_t device_type, const char * cmd, const cmd_function_p cb, const char * const * description, uint8_t flags) {
+void Command::add(const uint8_t device_type, const char * cmd, const cmd_function_p & cb, const char * const * description, uint8_t flags) {
     add(device_type, 0, cmd, cb, description, flags);
 }
 
 // add a command to the list, which does return a json object as output
 // these commands bypass the readonly check (they are actions, not entity setters)
-void Command::add_json(const uint8_t device_type, const char * cmd, const cmd_function_p cb, const char * const * description, uint8_t flags) {
+void Command::add_json(const uint8_t device_type, const char * cmd, const cmd_function_p & cb, const char * const * description, uint8_t flags) {
     // if the command already exists for that device type don't add it
     if (find_command(device_type, 0, cmd, flags) != nullptr) {
         return;
@@ -828,7 +828,7 @@ uint8_t Command::json_message(uint8_t error_code, const char * message, const Js
 // e.g. //one/two////three/// becomes /one/two/three
 std::string SUrlParser::path() {
     std::string s = "/"; // set up the beginning slash
-    for (const std::string & f : m_folders) {
+    for (const auto & f : m_folders) {
         s += f;
         s += "/";
     }

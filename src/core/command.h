@@ -67,13 +67,13 @@ class Command {
         cmd_function_p       cmdfunction_;
         const char * const * description_;
 
-        CmdFunction(const uint8_t        device_type,
-                    const uint8_t        device_id,
-                    const uint8_t        flags,
-                    const bool           has_json_output,
-                    const char *         cmd,
-                    const cmd_function_p cmdfunction,
-                    const char * const * description)
+        CmdFunction(const uint8_t          device_type,
+                    const uint8_t          device_id,
+                    const uint8_t          flags,
+                    const bool             has_json_output,
+                    const char *           cmd,
+                    const cmd_function_p & cmdfunction,
+                    const char * const *   description)
             : device_type_(device_type)
             , device_id_(device_id)
             , flags_(flags)
@@ -105,22 +105,22 @@ class Command {
     static uint8_t call(const uint8_t device_type, const char * cmd, const char * value, const int8_t id = -1);
 
     // with normal call back function taking a value and id
-    static void add(const uint8_t        device_type,
-                    const uint8_t        device_id,
-                    const char *         cmd,
-                    const cmd_function_p cb,
-                    const char * const * description,
-                    uint8_t              flags = CommandFlag::CMD_FLAG_DEFAULT);
+    static void add(const uint8_t          device_type,
+                    const uint8_t          device_id,
+                    const char *           cmd,
+                    const cmd_function_p & cb,
+                    const char * const *   description,
+                    uint8_t                flags = CommandFlag::CMD_FLAG_DEFAULT);
 
     // same for system/temperature/analog devices
     static void
-    add(const uint8_t device_type, const char * cmd, const cmd_function_p cb, const char * const * description, uint8_t flags = CommandFlag::CMD_FLAG_DEFAULT);
+    add(const uint8_t device_type, const char * cmd, const cmd_function_p & cb, const char * const * description, uint8_t flags = CommandFlag::CMD_FLAG_DEFAULT);
     // command that writes a JSON object as its output; bypasses the readonly check
-    static void add_json(const uint8_t        device_type,
-                         const char *         cmd,
-                         const cmd_function_p cb,
-                         const char * const * description,
-                         uint8_t              flags = CommandFlag::CMD_FLAG_DEFAULT);
+    static void add_json(const uint8_t          device_type,
+                         const char *           cmd,
+                         const cmd_function_p & cb,
+                         const char * const *   description,
+                         uint8_t                flags = CommandFlag::CMD_FLAG_DEFAULT);
 
     static void reserve(size_t num) {
         cmdfunctions_.reserve(num);

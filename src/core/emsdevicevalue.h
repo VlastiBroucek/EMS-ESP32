@@ -192,6 +192,11 @@ class DeviceValue {
     int16_t  min; // min range
     uint32_t max; // max range
 
+    // optional custom name from customization. Allocated on heap only when actually set,
+    // so unnamed entities (the vast majority) don't pay for an inline std::string.
+    // Prefer custom_fullname() / set_custom_fullname() / has_custom_fullname() over direct access.
+    std::unique_ptr<std::string> custom_fullname_;
+
     DeviceValue(uint8_t               device_type,    // EMSdevice::DeviceType
                 int8_t                tag,            // DeviceValueTAG::*
                 void *                value_p,        // pointer to variable of any type
@@ -245,11 +250,6 @@ class DeviceValue {
     static const char * const * DeviceValueTAG_s[];
     static const char * const   DeviceValueTAG_mqtt[];
     static uint8_t              NUM_TAGS; // # tags
-
-  private:
-    // optional custom name from customization. Allocated on heap only when actually set,
-    // so unnamed entities (the vast majority) don't pay for an inline std::string.
-    std::unique_ptr<std::string> custom_fullname_;
 };
 
 }; // namespace emsesp

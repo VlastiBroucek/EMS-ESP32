@@ -199,10 +199,9 @@ static void setup_commands(std::shared_ptr<Commands> const & commands) {
                               }
                           });
 
-    commands->add_command(ShellContext::MAIN,
-                          CommandFlags::ADMIN,
-                          string_vector{F_(wifi), F_(reconnect)},
-                          [](Shell &, const std::vector<std::string> &) { EMSESP::network_.reconnect(); });
+    commands->add_command(ShellContext::MAIN, CommandFlags::ADMIN, string_vector{F_(wifi), F_(reconnect)}, [](Shell &, const std::vector<std::string> &) {
+        EMSESP::network_.reconnect();
+    });
 
     //
     // SET commands
@@ -367,9 +366,7 @@ static void setup_commands(std::shared_ptr<Commands> const & commands) {
     // EMS device commands
     //
 
-    commands->add_command(ShellContext::MAIN, CommandFlags::ADMIN, {F_(scan)}, [](Shell &, const std::vector<std::string> &) {
-        EMSESP::scan_devices();
-    });
+    commands->add_command(ShellContext::MAIN, CommandFlags::ADMIN, {F_(scan)}, [](Shell &, const std::vector<std::string> &) { EMSESP::scan_devices(); });
 
     /* removed scan deep
     commands->add_command(ShellContext::MAIN, CommandFlags::ADMIN, {F_(scan)}, {F_(deep_optional)}, [](Shell & shell, const std::vector<std::string> & arguments) {
