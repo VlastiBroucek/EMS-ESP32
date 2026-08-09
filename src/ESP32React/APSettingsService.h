@@ -51,7 +51,7 @@ enum APNetworkStatus { ACTIVE = 0, INACTIVE };
 
 class APSettings {
   public:
-    uint8_t provisionMode = FACTORY_AP_PROVISION_MODE; // 0 = on, 2 = off
+    uint8_t provisionMode = FACTORY_AP_PROVISION_MODE; // 1 = on disconnect, 2 = off
     String  ssid          = FACTORY_AP_SSID;
     String  password      = FACTORY_AP_PASSWORD;
     uint8_t channel       = FACTORY_AP_CHANNEL;
