@@ -61,8 +61,9 @@ class Mqtt {
     enum Operation : uint8_t { PUBLISH, SUBSCRIBE, UNSUBSCRIBE };
     enum NestedFormat : uint8_t { NESTED = 1, SINGLE };
 
-    static constexpr uint8_t  MQTT_TOPIC_MAX_SIZE = 128; // fixed, not a user setting anymore
-    static constexpr uint16_t MQTT_QUEUE_MAX_SIZE = 300;
+    static constexpr uint8_t  MQTT_TOPIC_MAX_SIZE  = 128; // fixed, not a user setting anymore
+    static constexpr uint16_t MQTT_QUEUE_MAX_SIZE  = 300;
+    static constexpr uint32_t MQTT_DISCONNECT_TIMEOUT = 1000; // max ms to flush a graceful disconnect on non-PSRAM boards
 
     static void on_connect();
     static void on_disconnect(espMqttClientTypes::DisconnectReason reason);
@@ -132,11 +133,7 @@ class Mqtt {
         return mqttClient_ ? mqttClient_->connected() : false;
     }
 
-    static void disconnect() {
-        if (mqttClient_) {
-            mqttClient_->disconnect();
-        };
-    }
+    static void disconnect();
 
     static bool enabled() {
         return mqtt_enabled_;

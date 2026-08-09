@@ -586,7 +586,7 @@ void System::system_restart(const char * partitionname) {
     }
     Serial.flush(); // wait for hardware TX buffer to drain
 
-    Mqtt::disconnect(); // gracefully disconnect MQTT, needed for QOS1
+    Mqtt::disconnect(); // gracefully disconnect MQTT (flushes the DISCONNECT before reboot, needed for QOS1)
     EMSuart::stop();    // stop UART so there is no interference
 #ifndef EMSESP_STANDALONE
     delay(1000);   // wait 1 second

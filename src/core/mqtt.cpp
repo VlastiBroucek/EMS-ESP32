@@ -313,6 +313,31 @@ void Mqtt::on_publish(uint16_t packetId) const {
     LOG_DEBUG("Packet %d sent successful", packetId);
 }
 
+// gracefully disconnect from the broker by sending a proper MQTT DISCONNECT packet.
+// this is called just before a restart so the broker ends our session cleanly
+// (avoids a lingering session that shows up as "session taken over" on reconnect).
+//
+// the disconnect is deferred inside espMqttClient - the DISCONNECT packet is only
+// queued and actually sent when loop() runs the state machine. On PSRAM boards the
+// client has its own task that keeps pumping loop(), so it flushes on its own. On
+// non-PSRAM boards (UseInternalTask::NO) nothing drives loop() once we're mid-restart,
+// so we pump it here until the client is fully disconnected, bounded by a timeout.
+void Mqtt::disconnect() {
+    if (!mqttClient_) {
+        return;
+    }
+
+    mqttClient_->disconnect(); // graceful - queues the DISCONNECT packet
+
+    if (EMSESP::system_.PSram() == 0) {
+        uint32_t start = uuid::get_uptime();
+        while (!mqttClient_->disconnected() && (uuid::get_uptime() - start) < MQTT_DISCONNECT_TIMEOUT) {
+            mqttClient_->loop();
+            delay(2);
+        }
+    }
+}
+
 // called when MQTT settings have changed via the MQTT Settings or Application Settings Web pages
 void Mqtt::reset_mqtt() {
     if (!enabled()) {
