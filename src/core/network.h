@@ -138,6 +138,11 @@ class Network {
 
     void reconnect();
 
+    // ask for a reconnect() to run from the next Network::loop()
+    void schedule_reconnect() {
+        reconnect_pending_ = true;
+    }
+
     // map a netif description string (from esp_netif_get_desc) to a NetIface
     static NetIface iface_from_desc(const char * desc) {
         if (!desc) {
@@ -202,11 +207,13 @@ class Network {
 
     volatile bool wifi_connect_pending_     = false;
     volatile bool ethernet_connect_pending_ = false;
+    volatile bool reconnect_pending_        = false; // set by schedule_reconnect(), actioned in loop()
 
     NetPhase phase_ = NetPhase::ETHERNET;
 
     bool wifi_events_registered_          = false; // ensure WiFi.onEvent() handlers are registered only once across begin()/reconnect() cycles
     bool eth_hostname_handler_registered_ = false; // for the ETHERNET_EVENT_START hostname handler
+    bool ethernet_started_                = false; // ETH.begin() succeeded; the driver runs for the lifetime of the boot
     bool wifi_ever_connected_             = false; // set true once we've successfully obtained an IP
     bool ethernet_ever_connected_         = false; // set true once we've successfully obtained an IP
 

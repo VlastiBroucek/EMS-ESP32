@@ -249,11 +249,12 @@ void Network::reconnect() {
 
 // pick the first phase that has the hardware/config to even be attempted on this device.
 // boards without an Ethernet PHY skip straight to WIFI; without a configured SSID, straight to AP
+// (unless AP provision mode is Never — then stay on WIFI and keep waiting)
 NetPhase Network::initialPhase() const {
     if (phy_type_ != PHY_type::PHY_TYPE_NONE) {
         return NetPhase::ETHERNET;
     }
-    if (!ssid_.isEmpty()) {
+    if (!ssid_.isEmpty() || ap_provisionMode_ == AP_MODE_NEVER) {
         return NetPhase::WIFI;
     }
     return NetPhase::AP;
@@ -262,6 +263,12 @@ NetPhase Network::initialPhase() const {
 // network loop, looking for new and disconnecting networks
 void Network::loop() {
 #ifndef EMSESP_STANDALONE
+    // a reconnect was requested from another task, run it here where nothing is mid-request
+    if (reconnect_pending_) {
+        reconnect_pending_ = false;
+        reconnect();
+    }
+
     // if we already have a Wifi or Ethernet connection then re-check every NETWORK_RECONNECTION_DELAY_LONG, otherwise NETWORK_RECONNECTION_DELAY_SHORT
     const unsigned long currentMillis = uuid::get_uptime_ms();
     const uint32_t      reconnectDelay =
@@ -549,8 +556,12 @@ void Network::startEthernet() {
         return;
     }
 
-    // already up and running, nothing to do
-    if (ethernet_connect_pending_ || ethernet_connected()) {
+    // The driver is installed once and then left alone. Re-running the bring-up on a live interface
+    // tears it down behind our back: pinMode() on the PHY power pin hands the pin from the Ethernet
+    // bus back to GPIO, which fires the peripheral manager's deinit callback and calls ETH.end(),
+    // destroying the netif, its event group and the event handlers from the main loop task while the
+    // arduino_events task may be dispatching a link-up on the other core.
+    if (ethernet_started_ || ethernet_connect_pending_ || ethernet_connected()) {
         return;
     }
 
@@ -601,7 +612,8 @@ void Network::startEthernet() {
     }
 
     if (ETH.begin(type, eth_phy_addr_, 23, 18, eth_power_, (eth_clock_mode_t)eth_clock_mode_)) {
-        LOG_DEBUG("Ethernet found - starting");
+        // LOG_DEBUG("Ethernet module found - initialising");
+        ethernet_started_         = true;
         ethernet_connect_pending_ = true;
 
         // check whether DHCP already announced us under lwIP's default hostname, before we correct it
@@ -675,6 +687,11 @@ void Network::findNetworks() {
         }
 
         const NetIface candidate = iface_from_desc(desc);
+        // AP is disabled in settings — don't treat SoftAP as a usable network
+        if (candidate == NetIface::AP && ap_provisionMode_ == AP_MODE_NEVER) {
+            continue;
+        }
+
         if (iface_priority(candidate) <= iface_priority(best_iface)) {
             continue; // already have something at least as good
         }
@@ -753,12 +770,17 @@ void Network::findNetworks() {
                                                : "AP");
 
         // give up on this interface and try the next one. ETHERNET -> WIFI (or straight to AP if no SSID configured); WIFI -> AP.
+        // AP_MODE_NEVER: never promote to the AP phase — keep waiting on the current interface.
         if (connect_retry_ >= MAX_NETWORK_RECONNECTION_ATTEMPTS && phase_ != NetPhase::AP) {
             if (phase_ == NetPhase::ETHERNET) {
                 if (ssid_.isEmpty()) {
                     if (!ethernet_ever_connected_) {
-                        LOG_WARNING("Ethernet failed to connect after %u attempts, falling back to AP", connect_retry_);
-                        phase_ = NetPhase::AP;
+                        if (ap_provisionMode_ == AP_MODE_NEVER) {
+                            LOG_WARNING("Ethernet failed to connect after %u attempts (AP provision mode is Never)", connect_retry_);
+                        } else {
+                            LOG_WARNING("Ethernet failed to connect after %u attempts, falling back to AP", connect_retry_);
+                            phase_ = NetPhase::AP;
+                        }
                     }
                 } else {
                     LOG_WARNING("Ethernet failed to connect after %u attempts, switching to WiFi", connect_retry_);
@@ -767,8 +789,12 @@ void Network::findNetworks() {
                 ethernet_connect_pending_ = false;
             } else if (phase_ == NetPhase::WIFI) {
                 if (!wifi_ever_connected_) {
-                    LOG_WARNING("WiFi failed to connect after %u attempts, falling back to AP", connect_retry_);
-                    phase_ = NetPhase::AP;
+                    if (ap_provisionMode_ == AP_MODE_NEVER) {
+                        LOG_WARNING("WiFi failed to connect after %u attempts (AP provision mode is Never)", connect_retry_);
+                    } else {
+                        LOG_WARNING("WiFi failed to connect after %u attempts, falling back to AP", connect_retry_);
+                        phase_ = NetPhase::AP;
+                    }
                 }
                 wifi_connect_pending_ = false;
             }
