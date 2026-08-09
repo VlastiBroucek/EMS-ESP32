@@ -317,7 +317,7 @@ void WebCustomizationService::customization_entities(AsyncWebServerRequest * req
 
                     // add deleted entities from file
                     read([&](WebCustomization & settings) {
-                        for (EntityCustomization entityCustomization : settings.entityCustomizations) {
+                        for (const auto & entityCustomization : settings.entityCustomizations) {
                             if (entityCustomization.device_id == device_id) {
                                 for (const auto & entity_id : entityCustomization.entity_ids) {
                                     uint8_t     mask = Helpers::hextoint(entity_id.substr(0, 2).c_str());

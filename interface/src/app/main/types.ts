@@ -210,6 +210,18 @@ export enum DeviceValueUOM {
   HERTZ
 }
 
+export type DeviceValueKind =
+  'value' | 'scheduler' | 'command' | 'deviceCommand' | 'deviceEntity';
+
+export function getDeviceValueKind(item: DeviceValue): DeviceValueKind {
+  if (!item.c) return 'value';
+  if (item.v !== undefined && item.l !== undefined && item.u === undefined)
+    return 'scheduler';
+  if (item.v === undefined && item.l === undefined) return 'command';
+  if (item.u === DeviceValueUOM.NONE) return 'deviceCommand';
+  return 'deviceEntity';
+}
+
 export const DeviceValueUOM_s = [
   '',
   '°C',

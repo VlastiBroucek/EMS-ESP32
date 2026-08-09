@@ -592,6 +592,7 @@ const Devices = memo(() => {
 
   const deviceValueDialogClose = () => {
     setDeviceValueDialogOpen(false);
+    setSelectedDeviceValue(undefined);
     if (selectedDevice !== undefined) {
       void sendDeviceData(selectedDevice);
     }

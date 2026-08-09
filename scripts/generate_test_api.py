@@ -7,7 +7,7 @@ Workflow:
   3. Write that block to test/test_api/test_api.h.
   4. Run `pio run -e native-test -t exec`.
   
-run with `python3 scripts/generate_test_api.py`
+run with `python3 ./scripts/generate_test_api.py`
 """
 
 import subprocess

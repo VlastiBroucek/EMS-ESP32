@@ -3,11 +3,9 @@ import { useBlocker } from 'react-router';
 
 import AddIcon from '@mui/icons-material/Add';
 import CancelIcon from '@mui/icons-material/Cancel';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import WarningIcon from '@mui/icons-material/Warning';
-import { Box, Button, IconButton, Typography } from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
 
-import { callAction } from '@/api/app';
 import {
   Body,
   Cell,
@@ -48,7 +46,7 @@ const DEFAULT_COMMAND_ITEM: Omit<CommandItem, 'id'> = {
 
 const commandsTheme = {
   Table: `
-    --data-table-library_grid-template-columns: repeat(1, minmax(100px, 1fr)) repeat(1, minmax(100px, 1fr)) 160px 32px;
+    --data-table-library_grid-template-columns: repeat(1, minmax(100px, 1fr)) repeat(1, minmax(100px, 1fr)) 160px;
   `,
   BaseRow: `
     font-size: 14px;
@@ -143,21 +141,6 @@ const Commands = () => {
     }
   };
 
-  const { send: executeCommand } = useRequest(
-    (id: string) => callAction({ action: 'executeCommand', param: id }),
-    { immediate: false }
-  )
-    .onSuccess(() => {
-      toast.success(LL.EXECUTE_COMMAND_SENT());
-    })
-    .onError((error) => {
-      toast.error(String(error.error?.message || 'An error occurred'));
-    });
-
-  const execute = async (name: string) => {
-    await executeCommand(name);
-  };
-
   const editItem = (ci: CommandItem) => {
     setCreating(false);
     setSelectedItem(ci);
@@ -222,7 +205,6 @@ const Commands = () => {
                 <HeaderCell stiff>{LL.COMMAND(0)}</HeaderCell>
                 <HeaderCell stiff>{LL.VALUE(0)}</HeaderCell>
                 <HeaderCell stiff>{LL.NAME(0)}</HeaderCell>
-                <HeaderCell></HeaderCell>
               </HeaderRow>
             </Header>
             <Body>
@@ -231,16 +213,6 @@ const Commands = () => {
                   <Cell>{ci.cmd}</Cell>
                   <Cell>{ci.value}</Cell>
                   <Cell>{ci.name}</Cell>
-                  <Cell>
-                    {numChanges === 0 && (
-                      <IconButton
-                        onClick={() => execute(ci.name)}
-                        style={{ backgroundColor: 'transparent' }}
-                      >
-                        <PlayArrowIcon color="primary" sx={{ fontSize: 16 }} />
-                      </IconButton>
-                    )}
-                  </Cell>
                 </Row>
               ))}
             </Body>

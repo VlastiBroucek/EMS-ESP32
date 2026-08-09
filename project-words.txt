@@ -1344,3 +1344,4 @@ IILE
 Sumr
 eraseap
 roomtempoffset
+dhcpc

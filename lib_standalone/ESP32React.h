@@ -22,6 +22,10 @@
 #define NTP_SETTINGS_FILE "/config/ntpSettings.json"
 #define EMSESP_SETTINGS_FILE "/config/emsespSettings.json"
 
+// AP provision modes, mirrors src/ESP32React/APSettingsService.h
+#define AP_MODE_DISCONNECTED 1
+#define AP_MODE_NEVER 2
+
 class DummySettings {
   public:
     // SYSTEM
@@ -81,7 +85,7 @@ class DummySettings {
     String password  = "ems-esp";
 
     // AP
-    uint8_t provisionMode = 0;
+    uint8_t provisionMode = AP_MODE_DISCONNECTED; // always
 
     // NTP
     String  server          = "pool.ntp.org";

@@ -153,10 +153,10 @@ bool System::command_sendmail(const char * value, const int8_t) {
     bool success = false;
 
 #ifndef EMSESP_STANDALONE
-    WiFiClient *    basic_client = new WiFiClient;
-    ESP_SSLClient * ssl_client   = new ESP_SSLClient;
-    ReadyClient *   r_client     = new ReadyClient(*ssl_client);
-    SMTPClient *    smtp         = new SMTPClient(*r_client);
+    auto * basic_client = new WiFiClient;
+    auto * ssl_client   = new ESP_SSLClient;
+    auto * r_client     = new ReadyClient(*ssl_client);
+    auto * smtp         = new SMTPClient(*r_client);
 
     ssl_client->setClient(basic_client);
     ssl_client->setInsecure();
@@ -586,7 +586,7 @@ void System::system_restart(const char * partitionname) {
     }
     Serial.flush(); // wait for hardware TX buffer to drain
 
-    Mqtt::disconnect(); // gracefully disconnect MQTT, needed for QOS1
+    Mqtt::disconnect(); // gracefully disconnect MQTT (flushes the DISCONNECT before reboot, needed for QOS1)
     EMSuart::stop();    // stop UART so there is no interference
 #ifndef EMSESP_STANDALONE
     delay(1000);   // wait 1 second
@@ -1545,7 +1545,7 @@ bool System::check_upgrade() {
             EMSESP::esp32React.getAPSettingsService()->update([&](APSettings & apSettings) {
                 if (apSettings.provisionMode == 0) {
                     apSettings.provisionMode = AP_MODE_DISCONNECTED; // AP_MODE_DISCONNECTED is the new default
-                    LOG_INFO("Upgrade: Setting AP provision mode to auto");
+                    LOG_INFO("Upgrade: Setting AP provision mode to on disconnect");
                     return StateUpdateResult::CHANGED;
                 }
                 return StateUpdateResult::UNCHANGED;
@@ -3248,7 +3248,7 @@ bool System::uploadFirmwareURL(const char * url) {
         return false; // error
     }
 
-    LOG_INFO("Firmware uploading (size: %d KB) over %s. Please wait...", firmware_size / 1024, is_https ? "HTTPS" : "HTTP");
+    LOG_INFO("Firmware uploading (size: %dKB) over %s. Please wait...", firmware_size / 1024, is_https ? "HTTPS" : "HTTP");
 
     Shell::loop_all(); // flush log buffers so latest messages are shown in console
 

@@ -4,8 +4,6 @@
 #define EMSESP_SYSTEM_STATUS_SERVICE_PATH "/rest/systemStatus"
 #define EMSESP_ACTION_SERVICE_PATH "/rest/action"
 
-#define EMSESP_VERSIONS_URL "http://emsesp.org/versions.json"
-
 #include "../core/firmwareVersion.h"
 #include "../emsesp_version.h"
 
@@ -71,6 +69,8 @@ class WebStatusService {
     uint32_t    versions_next_fetch_ms_ = 0;     // uuid::get_uptime() of the next attempt; 0 = idle
 
     bool refresh_versions_cache(); // does the actual HTTPS fetch + parse, returns true on success
+
+    static constexpr const char * VERSIONS_URL = "http://emsesp.org/versions.json";
 
     static constexpr uint32_t VERSIONS_REFRESH_INTERVAL_MS    = 60UL * 60UL * 1000UL; // 1 hour on success
     static constexpr uint32_t VERSIONS_RETRY_INTERVAL_MS      = 5UL * 60UL * 1000UL;  // 5 min after failure

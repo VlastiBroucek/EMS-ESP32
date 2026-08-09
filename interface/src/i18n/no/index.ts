@@ -37,13 +37,11 @@ const no: Translation = {
   VALUE: '{{verdi|Verdi}}',
   DEVICES: 'Enheter',
   SENSORS: 'Sensorer',
-  RUN_COMMAND: 'Kjør kommando',
   CHANGE_VALUE: 'Endre Verdi',
   CANCEL: 'Avbryt',
   REMOVE_ALL: 'Fjern alles',
   APPLY_CHANGES: 'Utfør endringer({0})',
   UPDATE: 'Oppdater',
-  EXECUTE: 'Utfør',
   REMOVE: 'Fjern',
   PROBLEM_UPDATING: 'Problem med oppdatering',
   PROBLEM_LOADING: 'Problem med opplasting',
@@ -368,7 +366,8 @@ const no: Translation = {
   COMMANDS: 'Kommandoer',
   COMMANDS_UPDATED: 'Kommandoer oppdatert',
   COMMANDS_HELP_1: 'Definer egne kommandoer for EMS-Magistral',
-  EXECUTE_COMMAND_SENT: 'Kommando sendt',
+  COMMAND_SENT: 'Kommando sendt',
+  RUN: 'Kjør'
 };
 
 export default no;

@@ -37,13 +37,11 @@ const nl: Translation = {
   VALUE: '{{waarde|Waarde}}',
   DEVICES: 'Apparaten',
   SENSORS: 'Sensoren',
-  RUN_COMMAND: 'Call commando',
   CHANGE_VALUE: 'Wijzig waarde',
   CANCEL: 'Annuleren',
   REMOVE_ALL: 'Verwijderen alles',
   APPLY_CHANGES: 'Aanpassen ({0})',
   UPDATE: 'Update',
-  EXECUTE: 'Uitvoeren',
   REMOVE: 'Verwijderen',
   PROBLEM_UPDATING: 'Probleem met updaten',
   PROBLEM_LOADING: 'Probleem met laden',
@@ -368,7 +366,8 @@ const nl: Translation = {
   COMMANDS: 'Commando\'s',
   COMMANDS_UPDATED: 'Commando\'s bijgewerkt',
   COMMANDS_HELP_1: 'Definieer hergebruikbare benoemde commando\'s hieronder. Deze kunnen worden uitgevoerd vanuit de console, API/MQTT, of worden aangeroepen door de Scheduler',
-  EXECUTE_COMMAND_SENT: 'Commando verzonden',
+  COMMAND_SENT: 'Commando verzonden',
+  RUN: 'Commando uitvoeren'
 };
 
 export default nl;

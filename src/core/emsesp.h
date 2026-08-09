@@ -101,7 +101,7 @@ class Module {}; // forward declaration
 
 // for Command Function callbacks (Command::cmd_function_p). The unified callback takes a JsonObject
 // output which entity/setter commands ignore.
-#define MAKE_CF_CB(__f) [&](const char * value, const int8_t id, JsonObject output) { return __f(value, id); }
+#define MAKE_CF_CB(__f) [this](const char * value, const int8_t id, JsonObject output) { return __f(value, id); }
 
 namespace emsesp {
 

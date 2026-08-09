@@ -31,7 +31,8 @@ StateUpdateResult APSettings::update(JsonObject root, APSettings & settings) {
     APSettings newSettings{};
     newSettings.provisionMode = static_cast<uint8_t>(root["provision_mode"] | FACTORY_AP_PROVISION_MODE);
 
-    switch (settings.provisionMode) {
+    // coerce removed/invalid modes (e.g. legacy AP_MODE_ALWAYS = 0) to the current default
+    switch (newSettings.provisionMode) {
     case AP_MODE_DISCONNECTED:
     case AP_MODE_NEVER:
         break;
@@ -53,11 +54,17 @@ StateUpdateResult APSettings::update(JsonObject root, APSettings & settings) {
         return StateUpdateResult::UNCHANGED;
     }
 
-    settings = newSettings;
+    const uint8_t previousProvisionMode = settings.provisionMode;
+    settings                            = newSettings;
 
-    // if the AP mode has changed, force a disconnect and reconnect
-    if (settings.provisionMode != newSettings.provisionMode) {
-        emsesp::EMSESP::network_.reconnect();
+    // FS load at boot uses this updater before Network::begin(); skip reconnect on that first apply.
+    // Subsequent provision-mode changes (UI/API) must reload Network's cached AP settings.
+    static bool appliedOnce = false;
+    const bool  modeChanged = previousProvisionMode != settings.provisionMode;
+    if (appliedOnce && modeChanged) {
+        emsesp::EMSESP::network_.schedule_reconnect();
     }
+    appliedOnce = true;
+
     return StateUpdateResult::CHANGED;
 }

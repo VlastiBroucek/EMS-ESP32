@@ -249,11 +249,12 @@ void Network::reconnect() {
 
 // pick the first phase that has the hardware/config to even be attempted on this device.
 // boards without an Ethernet PHY skip straight to WIFI; without a configured SSID, straight to AP
+// (unless AP provision mode is Never — then stay on WIFI and keep waiting)
 NetPhase Network::initialPhase() const {
     if (phy_type_ != PHY_type::PHY_TYPE_NONE) {
         return NetPhase::ETHERNET;
     }
-    if (!ssid_.isEmpty()) {
+    if (!ssid_.isEmpty() || ap_provisionMode_ == AP_MODE_NEVER) {
         return NetPhase::WIFI;
     }
     return NetPhase::AP;
@@ -262,6 +263,12 @@ NetPhase Network::initialPhase() const {
 // network loop, looking for new and disconnecting networks
 void Network::loop() {
 #ifndef EMSESP_STANDALONE
+    // a reconnect was requested from another task, run it here where nothing is mid-request
+    if (reconnect_pending_) {
+        reconnect_pending_ = false;
+        reconnect();
+    }
+
     // if we already have a Wifi or Ethernet connection then re-check every NETWORK_RECONNECTION_DELAY_LONG, otherwise NETWORK_RECONNECTION_DELAY_SHORT
     const unsigned long currentMillis = uuid::get_uptime_ms();
     const uint32_t      reconnectDelay =
@@ -522,6 +529,22 @@ void Network::startWIFI() {
 #endif
 }
 
+#if CONFIG_IDF_TARGET_ESP32 && !defined(EMSESP_STANDALONE)
+// Unlike WiFi, which stamps the hostname onto the STA netif as it is created, the Arduino ETH class
+// leaves it unset, so lwIP falls back to CONFIG_LWIP_LOCAL_HOSTNAME ("tasmota" in the SDK we build
+// against). esp_eth_start() polls the PHY synchronously, so on a warm reboot where the link never
+// dropped the DHCP DISCOVER can go out before ETH.begin() has even returned. This handler is
+// registered ahead of the esp_netif glue and therefore runs first, applying the hostname before the
+// netif is handed to lwIP.
+static char eth_hostname[33] = {0};
+
+static void ethApplyHostname(void * /*arg*/, esp_event_base_t /*base*/, int32_t /*event_id*/, void * /*event_data*/) {
+    if (eth_hostname[0] != '\0' && ETH.netif() != nullptr) {
+        esp_netif_set_hostname(ETH.netif(), eth_hostname);
+    }
+}
+#endif
+
 // Ethernet management
 // Brings up the ETH driver / netif exactly once. After ETH.begin() returns true the driver
 // continues to run autonomously (link negotiation, DHCP, etc)
@@ -533,8 +556,12 @@ void Network::startEthernet() {
         return;
     }
 
-    // already up and running, nothing to do
-    if (ethernet_connect_pending_ || ethernet_connected()) {
+    // The driver is installed once and then left alone. Re-running the bring-up on a live interface
+    // tears it down behind our back: pinMode() on the PHY power pin hands the pin from the Ethernet
+    // bus back to GPIO, which fires the peripheral manager's deinit callback and calls ETH.end(),
+    // destroying the netif, its event group and the event handlers from the main loop task while the
+    // arduino_events task may be dispatching a link-up on the other core.
+    if (ethernet_started_ || ethernet_connect_pending_ || ethernet_connected()) {
         return;
     }
 
@@ -577,16 +604,45 @@ void Network::startEthernet() {
     eth_phy_type_t type = (phy_type_ == PHY_type::PHY_TYPE_LAN8720)  ? ETH_PHY_LAN8720
                           : (phy_type_ == PHY_type::PHY_TYPE_TLK110) ? ETH_PHY_TLK110
                                                                      : ETH_PHY_RTL8201; // Type of the Ethernet PHY (LAN8720 or TLK110)
+
+    // must be in place before ETH.begin() so it beats the esp_netif glue to the START event
+    strlcpy(eth_hostname, hostname_.c_str(), sizeof(eth_hostname));
+    if (!eth_hostname_handler_registered_ && esp_event_handler_register(ETH_EVENT, ETHERNET_EVENT_START, ethApplyHostname, nullptr) == ESP_OK) {
+        eth_hostname_handler_registered_ = true;
+    }
+
     if (ETH.begin(type, eth_phy_addr_, 23, 18, eth_power_, (eth_clock_mode_t)eth_clock_mode_)) {
-        LOG_DEBUG("Ethernet module found - starting");
+        // LOG_DEBUG("Ethernet module found - initialising");
+        ethernet_started_         = true;
         ethernet_connect_pending_ = true;
-        ETH.setHostname(hostname_.c_str()); // Push hostname to the ETH netif immediately after it's created
+
+        // check whether DHCP already announced us under lwIP's default hostname, before we correct it
+        esp_netif_t * eth_netif    = ETH.netif();
+        const char *  old_hostname = nullptr;
+        bool          stale_dhcp   = false;
+        if (eth_netif != nullptr && !staticIPConfig_) {
+            esp_netif_dhcp_status_t dhcp_status = ESP_NETIF_DHCP_INIT;
+            stale_dhcp = esp_netif_get_hostname(eth_netif, &old_hostname) == ESP_OK && old_hostname != nullptr && hostname_ != old_hostname
+                         && esp_netif_dhcpc_get_status(eth_netif, &dhcp_status) == ESP_OK && dhcp_status == ESP_NETIF_DHCP_STARTED;
+        }
+
+        if (!ETH.setHostname(hostname_.c_str())) {
+            LOG_WARNING("Failed to set Ethernet hostname to %s", hostname_.c_str());
+        }
+
+        // the DHCP server has already been given the wrong name, so re-run the client to re-announce
+        if (stale_dhcp) {
+            LOG_DEBUG("Restarting Ethernet DHCP client to announce hostname %s", hostname_.c_str());
+            esp_netif_dhcpc_stop(eth_netif);
+            esp_netif_dhcpc_start(eth_netif);
+        }
+
         ETH.enableIPv6(true);
         if (staticIPConfig_) {
             ETH.config(localIP_, gatewayIP_, subnetMask_, dnsIP1_, dnsIP2_);
         }
     } else {
-        LOG_ERROR("Failed to start Ethernet module");
+        LOG_ERROR("Failed to start Ethernet");
     }
 #endif
 #endif
@@ -631,6 +687,11 @@ void Network::findNetworks() {
         }
 
         const NetIface candidate = iface_from_desc(desc);
+        // AP is disabled in settings — don't treat SoftAP as a usable network
+        if (candidate == NetIface::AP && ap_provisionMode_ == AP_MODE_NEVER) {
+            continue;
+        }
+
         if (iface_priority(candidate) <= iface_priority(best_iface)) {
             continue; // already have something at least as good
         }
@@ -709,12 +770,17 @@ void Network::findNetworks() {
                                                : "AP");
 
         // give up on this interface and try the next one. ETHERNET -> WIFI (or straight to AP if no SSID configured); WIFI -> AP.
+        // AP_MODE_NEVER: never promote to the AP phase — keep waiting on the current interface.
         if (connect_retry_ >= MAX_NETWORK_RECONNECTION_ATTEMPTS && phase_ != NetPhase::AP) {
             if (phase_ == NetPhase::ETHERNET) {
                 if (ssid_.isEmpty()) {
                     if (!ethernet_ever_connected_) {
-                        LOG_WARNING("Ethernet failed to connect after %u attempts, falling back to AP", connect_retry_);
-                        phase_ = NetPhase::AP;
+                        if (ap_provisionMode_ == AP_MODE_NEVER) {
+                            LOG_WARNING("Ethernet failed to connect after %u attempts (AP provision mode is Never)", connect_retry_);
+                        } else {
+                            LOG_WARNING("Ethernet failed to connect after %u attempts, falling back to AP", connect_retry_);
+                            phase_ = NetPhase::AP;
+                        }
                     }
                 } else {
                     LOG_WARNING("Ethernet failed to connect after %u attempts, switching to WiFi", connect_retry_);
@@ -723,8 +789,12 @@ void Network::findNetworks() {
                 ethernet_connect_pending_ = false;
             } else if (phase_ == NetPhase::WIFI) {
                 if (!wifi_ever_connected_) {
-                    LOG_WARNING("WiFi failed to connect after %u attempts, falling back to AP", connect_retry_);
-                    phase_ = NetPhase::AP;
+                    if (ap_provisionMode_ == AP_MODE_NEVER) {
+                        LOG_WARNING("WiFi failed to connect after %u attempts (AP provision mode is Never)", connect_retry_);
+                    } else {
+                        LOG_WARNING("WiFi failed to connect after %u attempts, falling back to AP", connect_retry_);
+                        phase_ = NetPhase::AP;
+                    }
                 }
                 wifi_connect_pending_ = false;
             }
