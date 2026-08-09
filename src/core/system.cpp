@@ -1545,7 +1545,7 @@ bool System::check_upgrade() {
             EMSESP::esp32React.getAPSettingsService()->update([&](APSettings & apSettings) {
                 if (apSettings.provisionMode == 0) {
                     apSettings.provisionMode = AP_MODE_DISCONNECTED; // AP_MODE_DISCONNECTED is the new default
-                    LOG_INFO("Upgrade: Setting AP provision mode to auto");
+                    LOG_INFO("Upgrade: Setting AP provision mode to on disconnect");
                     return StateUpdateResult::CHANGED;
                 }
                 return StateUpdateResult::UNCHANGED;
@@ -3248,7 +3248,7 @@ bool System::uploadFirmwareURL(const char * url) {
         return false; // error
     }
 
-    LOG_INFO("Firmware uploading (size: %d KB) over %s. Please wait...", firmware_size / 1024, is_https ? "HTTPS" : "HTTP");
+    LOG_INFO("Firmware uploading (size: %dKB) over %s. Please wait...", firmware_size / 1024, is_https ? "HTTPS" : "HTTP");
 
     Shell::loop_all(); // flush log buffers so latest messages are shown in console
 
