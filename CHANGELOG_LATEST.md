@@ -20,6 +20,7 @@ This release is based on the latest Espressif/Arduino core version 3. It brings 
 - Ethernet MAC address changed with the new SDK, breaking DHCP reservations (currently disabled)
 - "IPv4 nameserver" showed an IPv6 address when IPv6 was in use
 - HA Discovery warning on Uptime after EMS-ESP boot due to NTP not ready
+- show MQTT connection error only once on the first connect failure
 
 ## Changed
 
