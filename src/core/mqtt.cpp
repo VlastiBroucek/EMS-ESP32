@@ -1136,7 +1136,7 @@ bool Mqtt::publish_ha_sensor_config(uint8_t               type,        // EMSdev
                 doc["val_tpl"] = val_tpl;
             } else if (uom == DeviceValueUOM::UPTIME) {
                 // uptime
-                doc["val_tpl"] = (std::string) "{{" + val_obj + " if " + val_cond + " else '' }}";
+                doc["val_tpl"] = (std::string) "{{" + val_obj + " if " + val_cond + " else 'None' }}";
             } else {
                 // default
                 doc["val_tpl"] = (std::string) "{{" + val_obj + " if " + val_cond + " else " + sample_val + "}}";
