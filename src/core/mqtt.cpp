@@ -473,7 +473,7 @@ bool Mqtt::get_publish_onchange(uint8_t device_type) {
 }
 void Mqtt::on_disconnect(espMqttClientTypes::DisconnectReason reason) {
     // only show the error once on the first connect failure
-    if (connectcount_) {
+    if (!connecting_) {
         return;
     }
     connecting_ = false;
