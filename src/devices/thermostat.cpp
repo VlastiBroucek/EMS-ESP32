@@ -2401,8 +2401,8 @@ bool Thermostat::set_control(const char * value, const int8_t id) {
         }
         // BC400
         // 1-RC100, 2-RC100H, 3-RC200
-    } else if (model() == EMSdevice::EMS_DEVICE_FLAG_BC400 || model() == EMSdevice::EMS_DEVICE_FLAG_UI800) {
-        if (Helpers::value2enum(value, ctrl, model() == EMSdevice::EMS_DEVICE_FLAG_UI800 ? FL_(enum_control3) : FL_(enum_control2))) {
+    } else if (model() == EMSdevice::EMS_DEVICE_FLAG_BC400) {
+        if (Helpers::value2enum(value, ctrl, FL_(enum_control2))) {
             write_command(hpmode_typeids[hc->hc()], 3, ctrl);
             hc->control = ctrl; // set in advance, dont wait for verify
             if (hc->remotetemp != EMS_VALUE_INT16_NOTSET && ctrl > 0) {
@@ -2413,6 +2413,20 @@ bool Thermostat::set_control(const char * value, const int8_t id) {
                 } else if (ctrl == 5) {
                     Roomctrl::set_remotetemp(Roomctrl::RC120RF, hc->hc(), hc->remotetemp); // RC120
                 } else if (ctrl == 6) {
+                    Roomctrl::set_remotetemp(Roomctrl::RT800, hc->hc(), hc->remotetemp);
+                } else {
+                    hc->remotetemp = EMS_VALUE_INT16_NOTSET;
+                    Roomctrl::set_remotetemp(0, hc->hc(), hc->remotetemp);
+                }
+            }
+            return true;
+        }
+    } else if (model() == EMSdevice::EMS_DEVICE_FLAG_UI800) {
+        if (Helpers::value2enum(value, ctrl, FL_(enum_control3))) {
+            write_command(hpmode_typeids[hc->hc()], 3, ctrl);
+            hc->control = ctrl; // set in advance, dont wait for verify
+            if (hc->remotetemp != EMS_VALUE_INT16_NOTSET && ctrl > 0) {
+                if (ctrl == 6) {
                     Roomctrl::set_remotetemp(Roomctrl::RT800, hc->hc(), hc->remotetemp);
                 } else {
                     hc->remotetemp = EMS_VALUE_INT16_NOTSET;
