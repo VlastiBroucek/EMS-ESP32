@@ -146,8 +146,8 @@ bool System::command_sendmail(const char * value, const int8_t) {
     LOG_DEBUG("Command sendmail port %d%s called with '%s'",
               port,
               security == EMAIL_SECURITY::SSL        ? " (SSL)"
-              : security == EMAIL_SECURITY::STARTTLS ? ""
-                                                     : " (STARTTLS)",
+              : security == EMAIL_SECURITY::STARTTLS ? " (STARTTLS)"
+                                                     : "",
               value);
 
     bool success = false;
