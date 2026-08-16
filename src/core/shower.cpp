@@ -229,7 +229,7 @@ void Shower::create_ha_discovery() {
 
         // don't bother with value template conditions if using Domoticz which doesn't fully support MQTT Discovery
         if (Mqtt::discovery_type() == Mqtt::discoveryType::HOMEASSISTANT) {
-            doc["val_tpl"] = "{{value_json.duration if value_json.duration is defined else 0}}";
+            doc["val_tpl"] = "{{value_json.duration if value_json.duration is defined else 'None'}}";
         } else {
             doc["val_tpl"] = "{{value_json.duration}}";
         }

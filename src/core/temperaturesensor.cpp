@@ -543,7 +543,7 @@ void TemperatureSensor::publish_values(const bool force) {
                 // for the value template, there's a problem still with Domoticz probably due to the special characters.
                 // See https://github.com/emsesp/EMS-ESP32/issues/1360
                 if (Mqtt::discovery_type() == Mqtt::discoveryType::HOMEASSISTANT) {
-                    config["val_tpl"] = (std::string) "{{" + val_obj + " if " + val_cond + " else -55}}";
+                    config["val_tpl"] = (std::string) "{{" + val_obj + " if " + val_cond + " else 'None'}}";
                 } else {
                     config["val_tpl"] = (std::string) "{{" + val_obj + "}}"; // omit value conditional Jinja2 template code
                 }

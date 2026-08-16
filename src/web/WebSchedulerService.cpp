@@ -275,7 +275,7 @@ void WebSchedulerService::publish(const bool force) {
 
                 char val_tpl[150];
                 if (Mqtt::discovery_type() == Mqtt::discoveryType::HOMEASSISTANT) {
-                    snprintf(val_tpl, sizeof(val_tpl), "{{%s if %s}}", val_obj, val_cond);
+                    snprintf(val_tpl, sizeof(val_tpl), "{{%s if %s else 'None'}}", val_obj, val_cond);
                 } else {
                     snprintf(val_tpl, sizeof(val_tpl), "{{%s}}", val_obj); // omit value conditional Jinja2 template code
                 }

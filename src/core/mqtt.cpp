@@ -1019,7 +1019,7 @@ bool Mqtt::publish_ha_sensor_config(uint8_t               type,        // EMSdev
     std::string topic_str(topic);
     doc["def_ent_id"] = Helpers::toLower(topic_str.substr(0, topic_str.find("/"))) + "." + Helpers::toLower(uniq_id);
 
-    char sample_val[30] = "'None'"; // sample, correct(!) entity value, used only to prevent warning/error in HA if real value is not published yet
+    // char sample_val[30] = "'None'"; // sample, correct(!) entity value, used only to prevent warning/error in HA if real value is not published yet
 
     // we add the command topic parameter for commands
     if (has_cmd) {
@@ -1136,10 +1136,11 @@ bool Mqtt::publish_ha_sensor_config(uint8_t               type,        // EMSdev
                 doc["val_tpl"] = val_tpl;
             } else if (uom == DeviceValueUOM::UPTIME) {
                 // uptime
-                doc["val_tpl"] = (std::string) "{{" + val_obj + " if " + val_cond + " else 'None' }}";
+                doc["val_tpl"] = (std::string) "{{" + val_obj + " if " + val_cond + " else 'None'}}";
             } else {
                 // default
-                doc["val_tpl"] = (std::string) "{{" + val_obj + " if " + val_cond + " else " + sample_val + "}}";
+                // doc["val_tpl"] = (std::string) "{{" + val_obj + " if " + val_cond + " else " + sample_val + "}}";
+                doc["val_tpl"] = (std::string) "{{" + val_obj + " if " + val_cond + " else 'None'}}";
             }
             add_ha_avty_section(doc.as<JsonObject>(), stat_t, val_cond); // adds availability section
         } else {

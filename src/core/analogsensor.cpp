@@ -729,7 +729,7 @@ void AnalogSensor::publish_values(const bool force) {
             }
             // don't bother with value template conditions if using Domoticz which doesn't fully support MQTT Discovery
             if (Mqtt::discovery_type() == Mqtt::discoveryType::HOMEASSISTANT) {
-                config["val_tpl"] = (std::string) "{{" + val_obj + " if " + val_cond + "}}";
+                config["val_tpl"] = (std::string) "{{" + val_obj + " if " + val_cond + " else 'None'}}";
             } else {
                 config["val_tpl"] = (std::string) "{{" + val_obj + "}}";
             }
