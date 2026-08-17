@@ -111,6 +111,12 @@ void AnalogSensor::start(const bool factory_settings) {
     Mqtt::subscribe(EMSdevice::DeviceType::ANALOGSENSOR, topic, nullptr); // use empty function callback
 }
 
+void AnalogSensor::ha_reset() {
+    for (const auto & sensor : sensors_) {
+        remove_ha_topic(sensor.type(), sensor.gpio());
+    }
+}
+
 // load settings from the customization file, sorts them and initializes the GPIOs
 void AnalogSensor::reload(bool get_nvs) {
     exclude_types_.clear();

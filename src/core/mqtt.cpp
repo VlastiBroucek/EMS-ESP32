@@ -352,6 +352,7 @@ void Mqtt::reset_mqtt() {
         mqttClient_->disconnect(true); // force a disconnect
     }
     load_settings(); // reload MQTT settings
+    connectcount_ = 0;
 }
 
 // load the settings from service
@@ -512,17 +513,19 @@ void Mqtt::on_connect() {
     connecting_ = true;
     queuecount_ = mqttClient_->queueSize();
 
-    if (ha_enabled_) {
-        queue_unsubscribe_message(discovery_prefix_ + "/+/" + Mqtt::basename() + "/#");
-        EMSESP::reset_mqtt_ha(); // re-create all HA devices if there are any
-        ha_status();             // create the EMS-ESP device in HA, which is MQTT retained
-    } else {
-        // with disabled HA we subscribe and the broker sends all stored HA-emsesp-configs.
-        // Around line 272 they are removed (search for "// remove HA topics if we don't use discover")
-        // If HA is enabled the subscriptions are removed.
-        // As described in the doc (https://emsesp.org/Troubleshooting?id=home-assistant):
-        // disable HA, wait 5 minutes (to allow the broker to send all), than reenable HA again.
-        queue_subscribe_message(discovery_prefix_ + "/+/" + Mqtt::basename() + "/#");
+    if (connectcount_ == 0) { // only on first connect and after reconfigure, HA messages are reain
+        if (ha_enabled_) {
+            queue_unsubscribe_message(discovery_prefix_ + "/+/" + Mqtt::basename() + "/#");
+            EMSESP::reset_mqtt_ha(); // re-create all HA devices if there are any
+            ha_status();             // create the EMS-ESP device in HA, which is MQTT retained
+        } else {
+            // with disabled HA we subscribe and the broker sends all stored HA-emsesp-configs.
+            // Around line 272 they are removed (search for "// remove HA topics if we don't use discover")
+            // If HA is enabled the subscriptions are removed.
+            // As described in the doc (https://emsesp.org/Troubleshooting?id=home-assistant):
+            // disable HA, wait 5 minutes (to allow the broker to send all), than reenable HA again.
+            queue_subscribe_message(discovery_prefix_ + "/+/" + Mqtt::basename() + "/#");
+        }
     }
 
     // re-subscribe to all custom registered MQTT topics

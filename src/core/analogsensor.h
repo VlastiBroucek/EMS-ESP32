@@ -144,6 +144,7 @@ class AnalogSensor {
     void publish_values(const bool force);
     void reload(bool get_nvs = false);
     bool updated_values();
+    void ha_reset();
 
     // return back reference to the sensor list, used by other classes
     const std::vector<Sensor, AllocatorPSRAM<Sensor>> & sensors() const {
