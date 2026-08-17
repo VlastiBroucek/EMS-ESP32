@@ -268,6 +268,10 @@ void Network::loop() {
         reconnect_pending_ = false;
         reconnect();
     }
+    // already have a connection: verify it's still alive
+    if (network_ip_ != 0 || last_disconnect_reason_ != 0) {
+        checkConnection();
+    }
 
     // if we already have a Wifi or Ethernet connection then re-check every NETWORK_RECONNECTION_DELAY_LONG, otherwise NETWORK_RECONNECTION_DELAY_SHORT
     const unsigned long currentMillis = uuid::get_uptime_ms();
@@ -280,11 +284,6 @@ void Network::loop() {
         startEthernet(); // Ethernet
         startWIFI();     // WiFi
         startAP();       // Captive Portal (AP)
-
-        // already have a connection: verify it's still alive
-        if (network_ip_ != 0 || last_disconnect_reason_ != 0) {
-            checkConnection();
-        }
 
         findNetworks(); // detect any new network connections
     }
