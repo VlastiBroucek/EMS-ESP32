@@ -351,6 +351,7 @@ void Mqtt::reset_mqtt() {
     if (mqttClient_->connected()) {
         mqttClient_->disconnect(true); // force a disconnect
     }
+    load_settings(); // reload MQTT settings
 }
 
 // load the settings from service
@@ -502,16 +503,14 @@ void Mqtt::on_disconnect(espMqttClientTypes::DisconnectReason reason) {
 
 // MQTT on_connect - when an MQTT connect is established
 void Mqtt::on_connect() {
-    if (connecting_) {
-        return; // prevent duplicated connections
+    if (connecting_ || !connected()) {
+        return; // prevent duplicated connections and unsuccessful tries
     }
 
     LOG_INFO("MQTT connected");
 
     connecting_ = true;
     queuecount_ = mqttClient_->queueSize();
-
-    load_settings(); // reload MQTT settings - in case they have changes
 
     if (ha_enabled_) {
         queue_unsubscribe_message(discovery_prefix_ + "/+/" + Mqtt::basename() + "/#");
