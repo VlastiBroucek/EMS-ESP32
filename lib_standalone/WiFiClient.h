@@ -39,7 +39,9 @@ class WiFiClient {
     }
     void stop() {
     }
-
+    void setTimeout(uint32_t){
+        
+    }
     // ESP32 socket option passthrough (e.g. TCP_NODELAY)
     int setSocketOption(int, int, const void *, size_t) {
         return 0;
