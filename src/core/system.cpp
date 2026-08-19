@@ -160,7 +160,9 @@ bool System::command_sendmail(const char * value, const int8_t) {
 
     ssl_client->setClient(basic_client);
     ssl_client->setInsecure();
-    ssl_client->setBufferSizes(1024, 1024);
+    ssl_client->setBufferSizes(16384, 1024);
+    basic_client->setTimeout(5000); // socket-level read timeout
+    ssl_client->setTimeout(5000);   // Stream::readBytes timeout used by Update
     r_client->addPort(port,
                       security == EMAIL_SECURITY::NONE  ? readymail_protocol_plain_text
                       : security == EMAIL_SECURITY::SSL ? readymail_protocol_ssl
