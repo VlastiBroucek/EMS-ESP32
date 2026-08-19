@@ -352,7 +352,6 @@ void Mqtt::reset_mqtt() {
         mqttClient_->disconnect(true); // force a disconnect
     }
     load_settings(); // reload MQTT settings
-    connectcount_ = 0;
 }
 
 // load the settings from service
