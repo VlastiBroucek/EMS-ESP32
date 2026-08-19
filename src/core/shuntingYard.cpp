@@ -716,7 +716,7 @@ int http_request(std::string url, const std::string & method, const std::string 
         ssl_client->setSessionTimeout(120); // Set the timeout in seconds (>=120 seconds)
     }
     basic_client->setTimeout(5000);                // socket-level read timeout
-    ssl_client->setTimeout(5000);                  // Stream::readBytes timeout used by Update
+    ssl_client->setTimeout(5);                     // Stream::readBytes timeout used by Update
     ssl_client->setClient(basic_client, is_https); // enableSSL = false for plain HTTP
 
     url.replace(0, is_https ? 8 : 7, "");

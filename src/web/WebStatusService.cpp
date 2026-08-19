@@ -443,7 +443,7 @@ bool WebStatusService::refresh_versions_cache() {
         ssl_client.setSessionTimeout(120);
     }
     basic_client.setTimeout(5000);
-    ssl_client.setTimeout(5000);
+    ssl_client.setTimeout(5);
     ssl_client.setClient(&basic_client, is_https);
 
     // split into host and path
