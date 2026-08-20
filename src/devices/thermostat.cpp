@@ -4715,7 +4715,7 @@ void Thermostat::register_device_values() {
                                   1,
                                   10);
             register_device_value(
-                DeviceValueTAG::TAG_DEVICE_DATA, &coolstart, DeviceValueType::UINT8, FL_(coolstart), DeviceValueUOM::DEGREES, MAKE_CF_CB(set_coolstart), 20, 35);
+                DeviceValueTAG::TAG_DEVICE_DATA, &coolstart, DeviceValueType::UINT8, FL_(coolstart), DeviceValueUOM::DEGREES, MAKE_CF_CB(set_coolstart), 24, 35);
             register_device_value(DeviceValueTAG::TAG_DEVICE_DATA,
                                   &heatondelay,
                                   DeviceValueType::UINT8,
