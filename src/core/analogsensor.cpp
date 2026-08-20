@@ -111,6 +111,12 @@ void AnalogSensor::start(const bool factory_settings) {
     Mqtt::subscribe(EMSdevice::DeviceType::ANALOGSENSOR, topic, nullptr); // use empty function callback
 }
 
+void AnalogSensor::ha_reset() {
+    for (const auto & sensor : sensors_) {
+        remove_ha_topic(sensor.type(), sensor.gpio());
+    }
+}
+
 // load settings from the customization file, sorts them and initializes the GPIOs
 void AnalogSensor::reload(bool get_nvs) {
     exclude_types_.clear();
@@ -729,7 +735,7 @@ void AnalogSensor::publish_values(const bool force) {
             }
             // don't bother with value template conditions if using Domoticz which doesn't fully support MQTT Discovery
             if (Mqtt::discovery_type() == Mqtt::discoveryType::HOMEASSISTANT) {
-                config["val_tpl"] = (std::string) "{{" + val_obj + " if " + val_cond + "}}";
+                config["val_tpl"] = (std::string) "{{" + val_obj + " if " + val_cond + " else 'None'}}";
             } else {
                 config["val_tpl"] = (std::string) "{{" + val_obj + "}}";
             }

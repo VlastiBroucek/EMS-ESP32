@@ -220,13 +220,13 @@ Boiler::Boiler(uint8_t device_type, int8_t device_id, uint8_t product_id, const 
         register_device_value(DeviceValueTAG::TAG_DEVICE_DATA, &fanWork_, DeviceValueType::BOOL, FL_(fanWork), DeviceValueUOM::NONE);
         register_device_value(DeviceValueTAG::TAG_DEVICE_DATA, &ignWork_, DeviceValueType::BOOL, FL_(ignWork), DeviceValueUOM::NONE);
         register_device_value(DeviceValueTAG::TAG_DEVICE_DATA, &oilPreHeat_, DeviceValueType::BOOL, FL_(oilPreHeat), DeviceValueUOM::NONE);
-        // remove burnMinPower, #2918
-        // register_device_value(DeviceValueTAG::TAG_DEVICE_DATA,
-        //                      &burnMinPower_,
-        //                       DeviceValueType::UINT8,
-        //                       FL_(burnMinPower),
-        //                       DeviceValueUOM::PERCENT,
-        //                       MAKE_CF_CB(set_min_power));
+        // remove burnMinPower, #2918, add back for 0xE6, #3193
+        register_device_value(DeviceValueTAG::TAG_DEVICE_DATA,
+                             &burnMinPower_,
+                              DeviceValueType::UINT8,
+                              FL_(burnMinPower),
+                              DeviceValueUOM::PERCENT,
+                              MAKE_CF_CB(set_min_power));
         register_device_value(DeviceValueTAG::TAG_DEVICE_DATA,
                               &burnMaxPower_,
                               DeviceValueType::UINT8,
@@ -1622,7 +1622,7 @@ void Boiler::process_UBAParametersPlus(const std::shared_ptr<const Telegram> & t
     has_update(telegram, heatingActivated_, 0);
     has_update(telegram, heatingTemp_, 1);
     has_update(telegram, burnMaxPower_, 4);
-    // has_update(telegram, burnMinPower_, 5); // removed #2918
+    has_update(telegram, burnMinPower_, 5); // removed #2918
     has_update(telegram, boilHystOff_, 8);
     has_update(telegram, boilHystOn_, 9);
     has_update(telegram, burnMinPeriod_, 10);

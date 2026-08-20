@@ -712,9 +712,11 @@ int http_request(std::string url, const std::string & method, const std::string 
         // assets / large CDN responses. Such servers do not negotiate max_fragment_length, so the body
         // can't be decoded and reads return 0. If this path is ever used to fetch large or CDN-hosted
         // payloads, bump the RX buffer to 16384 (see uploadFirmwareURL in core/system.cpp for reference).
-        ssl_client->setBufferSizes(1024, 1024);
+        ssl_client->setBufferSizes(16384, 1024);
         ssl_client->setSessionTimeout(120); // Set the timeout in seconds (>=120 seconds)
     }
+    basic_client->setTimeout(5000);                // socket-level read timeout
+    ssl_client->setTimeout(5);                     // Stream::readBytes timeout used by Update
     ssl_client->setClient(basic_client, is_https); // enableSSL = false for plain HTTP
 
     url.replace(0, is_https ? 8 : 7, "");

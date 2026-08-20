@@ -45,17 +45,20 @@ void TemperatureSensor::start(const bool factory_settings) {
     Mqtt::subscribe(EMSdevice::DeviceType::TEMPERATURESENSOR, topic, nullptr); // use empty function callback
 }
 
+void TemperatureSensor::ha_reset() {
+    for (auto & sensor : sensors_) {
+        remove_ha_topic(sensor.id());
+        sensor.ha_registered = false; // force HA configs to be re-created
+    }
+}
+
 // load settings
 void TemperatureSensor::reload() {
     EMSESP::webSettingsService.read([&](WebSettings const & settings) {
         dallas_gpio_ = settings.dallas_gpio;
         parasite_    = settings.dallas_parasite;
     });
-
-    for (auto & sensor : sensors_) {
-        remove_ha_topic(sensor.id());
-        sensor.ha_registered = false; // force HA configs to be re-created
-    }
+    ha_reset();
 }
 
 void TemperatureSensor::loop() {
@@ -543,7 +546,7 @@ void TemperatureSensor::publish_values(const bool force) {
                 // for the value template, there's a problem still with Domoticz probably due to the special characters.
                 // See https://github.com/emsesp/EMS-ESP32/issues/1360
                 if (Mqtt::discovery_type() == Mqtt::discoveryType::HOMEASSISTANT) {
-                    config["val_tpl"] = (std::string) "{{" + val_obj + " if " + val_cond + " else -55}}";
+                    config["val_tpl"] = (std::string) "{{" + val_obj + " if " + val_cond + " else 'None'}}";
                 } else {
                     config["val_tpl"] = (std::string) "{{" + val_obj + "}}"; // omit value conditional Jinja2 template code
                 }

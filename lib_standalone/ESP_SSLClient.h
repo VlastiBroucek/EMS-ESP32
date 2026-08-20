@@ -64,8 +64,10 @@ class ESP_SSLClient : public Stream {
     }
     void flush() override {
     }
-
     void stop() {
+    }
+    void setTimeout(uint32_t) {
+
     }
 };
 

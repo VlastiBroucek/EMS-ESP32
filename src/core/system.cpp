@@ -146,8 +146,8 @@ bool System::command_sendmail(const char * value, const int8_t) {
     LOG_DEBUG("Command sendmail port %d%s called with '%s'",
               port,
               security == EMAIL_SECURITY::SSL        ? " (SSL)"
-              : security == EMAIL_SECURITY::STARTTLS ? ""
-                                                     : " (STARTTLS)",
+              : security == EMAIL_SECURITY::STARTTLS ? " (STARTTLS)"
+                                                     : "",
               value);
 
     bool success = false;
@@ -160,7 +160,9 @@ bool System::command_sendmail(const char * value, const int8_t) {
 
     ssl_client->setClient(basic_client);
     ssl_client->setInsecure();
-    ssl_client->setBufferSizes(1024, 1024);
+    ssl_client->setBufferSizes(16384, 1024);
+    basic_client->setTimeout(5000); // socket-level read timeout
+    ssl_client->setTimeout(5);      // Stream::readBytes timeout used by Update
     r_client->addPort(port,
                       security == EMAIL_SECURITY::NONE  ? readymail_protocol_plain_text
                       : security == EMAIL_SECURITY::SSL ? readymail_protocol_ssl
@@ -840,7 +842,7 @@ bool System::loop() {
 void System::send_info_mqtt() {
     static uint8_t _connection = 0;
     uint8_t        connection  = (EMSESP::network_.ethernet_connected() ? 1 : 0) + (EMSESP::network_.wifi_connected() ? 2 : 0) + (ntp_connected_ ? 4 : 0)
-                         + (EMSESP::network_.has_ipv6() ? 8 : 0);
+                                 + (EMSESP::network_.has_ipv6() ? 8 : 0);
     // check if connection status has changed
     if (!Mqtt::connected() || connection == _connection) {
         return;
@@ -853,7 +855,7 @@ void System::send_info_mqtt() {
 
     // if NTP is enabled send the boot_time in local time in ISO 8601 format (eg: 2022-11-15 20:46:38)
     // https://github.com/emsesp/EMS-ESP32/issues/751
-    if (ntp_connected_) {
+    if (time(nullptr) > 1500000000L) {
         char   time_string[25];
         time_t now = time(nullptr) - uuid::get_uptime_sec();
         strftime(time_string, 25, "%FT%T%z", localtime(&now));
@@ -3108,7 +3110,7 @@ bool System::uploadFirmwareURL(const char * url) {
         ssl_client.setSessionTimeout(120);
     }
     basic_client.setTimeout(15000);                // socket-level read timeout
-    ssl_client.setTimeout(15000);                  // Stream::readBytes timeout used by Update
+    ssl_client.setTimeout(15);                     // Stream::readBytes timeout used by Update
     ssl_client.setClient(&basic_client, is_https); // enableSSL = false for plain HTTP
 
     const uint16_t port           = is_https ? 443 : 80;

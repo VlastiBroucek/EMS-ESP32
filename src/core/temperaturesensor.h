@@ -93,6 +93,7 @@ class TemperatureSensor {
     void publish_sensor(const Sensor & sensor);
     void publish_values(const bool force);
     void reload();
+    void ha_reset();
     bool updated_values();
     bool get_value_info(JsonObject output, const char * cmd, const int8_t id = -1);
 
