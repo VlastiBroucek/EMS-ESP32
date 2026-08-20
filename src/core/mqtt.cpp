@@ -504,7 +504,7 @@ void Mqtt::on_disconnect(espMqttClientTypes::DisconnectReason reason) {
 // MQTT on_connect - when an MQTT connect is established
 void Mqtt::on_connect() {
     if (connecting_) {
-        return; // prevent duplicated connections and unsuccessful tries
+        return; // prevent duplicated connections
     }
 
     LOG_INFO("MQTT connected");
