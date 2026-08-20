@@ -1018,8 +1018,6 @@ bool Mqtt::publish_ha_sensor_config(uint8_t               type,        // EMSdev
     std::string topic_str(topic);
     doc["def_ent_id"] = Helpers::toLower(topic_str.substr(0, topic_str.find("/"))) + "." + Helpers::toLower(uniq_id);
 
-    // char sample_val[30] = "'None'"; // sample, correct(!) entity value, used only to prevent warning/error in HA if real value is not published yet
-
     // we add the command topic parameter for commands
     if (has_cmd) {
         // add category
@@ -1042,13 +1040,11 @@ bool Mqtt::publish_ha_sensor_config(uint8_t               type,        // EMSdev
                 for (uint8_t i = 0; i < options_size; i++) {
                     option_list.add(Helpers::itoa(i)); // as a string
                 }
-                // snprintf(sample_val, sizeof(sample_val), "'0'");
             } else {
                 // use strings
                 for (uint8_t i = 0; i < options_size; i++) {
                     option_list.add(Helpers::translated_word(options[i]));
                 }
-                // snprintf(sample_val, sizeof(sample_val), "'%s'", Helpers::translated_word(options[0]));
             }
         } else if (type != DeviceValueType::STRING && type != DeviceValueType::BOOL) {
             // For numeric's add the range and mode
@@ -1070,7 +1066,6 @@ bool Mqtt::publish_ha_sensor_config(uint8_t               type,        // EMSdev
         if (dv_set_min != 0 || dv_set_max != 0) {
             doc["min"] = dv_set_min;
             doc["max"] = dv_set_max;
-            // snprintf(sample_val, sizeof(sample_val), "%i", dv_set_min);
         }
     }
 
@@ -1122,7 +1117,6 @@ bool Mqtt::publish_ha_sensor_config(uint8_t               type,        // EMSdev
         // has no unit of measure or icon, and must be true/false (not on/off or 1/0)
         if (type == DeviceValueType::BOOL) {
             add_ha_bool(doc.as<JsonObject>());
-            // strlcpy(sample_val, "false", sizeof(sample_val)); // default is "false"
         }
 
         // don't bother with value template conditions if using Domoticz which doesn't fully support MQTT Discovery
@@ -1133,12 +1127,8 @@ bool Mqtt::publish_ha_sensor_config(uint8_t               type,        // EMSdev
                 char val_tpl[100];
                 snprintf(val_tpl, sizeof(val_tpl), "{{ (value_json.%s | as_datetime).isoformat() }}", entity);
                 doc["val_tpl"] = val_tpl;
-            } else if (uom == DeviceValueUOM::UPTIME) {
-                // uptime
-                doc["val_tpl"] = (std::string) "{{" + val_obj + " if " + val_cond + " else 'None'}}";
             } else {
                 // default
-                // doc["val_tpl"] = (std::string) "{{" + val_obj + " if " + val_cond + " else " + sample_val + "}}";
                 doc["val_tpl"] = (std::string) "{{" + val_obj + " if " + val_cond + " else 'None'}}";
             }
             add_ha_avty_section(doc.as<JsonObject>(), stat_t, val_cond); // adds availability section
