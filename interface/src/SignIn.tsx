@@ -1,4 +1,4 @@
-import { memo, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { memo, useContext, useEffect, useState } from 'react';
 
 import ForwardIcon from '@mui/icons-material/Forward';
 import { Box, Button, Paper, Typography } from '@mui/material';
@@ -43,17 +43,13 @@ const SignIn = memo(() => {
     }
   });
 
-  const updateLoginRequestValue = useMemo(
-    () =>
-      updateValue((updater) =>
-        setSignInRequest(
-          updater as unknown as (prevState: SignInRequest) => SignInRequest
-        )
-      ),
-    []
+  const updateLoginRequestValue = updateValue((updater) =>
+    setSignInRequest(
+      updater as unknown as (prevState: SignInRequest) => SignInRequest
+    )
   );
 
-  const signIn = useCallback(async () => {
+  const signIn = async () => {
     await callSignIn(signInRequest).catch((event: Error) => {
       if (event.message === 'Unauthorized') {
         toast.warning(LL.INVALID_LOGIN());
@@ -62,7 +58,7 @@ const SignIn = memo(() => {
       }
       setProcessing(false);
     });
-  }, [callSignIn, signInRequest, LL]);
+  };
 
   const validateAndSignIn = async () => {
     setProcessing(true);
@@ -78,7 +74,7 @@ const SignIn = memo(() => {
     }
   };
 
-  const submitOnEnter = useMemo(() => onEnterCallback(signIn), [signIn]);
+  const submitOnEnter = onEnterCallback(signIn);
 
   // get rid of scrollbar
   useEffect(() => {
