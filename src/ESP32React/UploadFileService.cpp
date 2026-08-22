@@ -94,10 +94,13 @@ void UploadFileService::handleUpload(AsyncWebServerRequest * request, const Stri
             }
 #endif
             // it's firmware - initialize the ArduinoOTA updater
-            emsesp::EMSESP::logger().info("Uploading firmware file %s (size: %dKB). Please wait...", filename.c_str(), filesize / 1024);
+            emsesp::EMSESP::logger().info("Firmware uploading (file %s, size: %dKB). Please wait...", filename.c_str(), filesize / 1024);
 
             // turn off UART to prevent interference with the upload
             emsesp::EMSuart::stop();
+
+            // tell main loop we're uploading so services as paused (e.g. MQTT)
+            emsesp::EMSESP::system_.systemStatus(emsesp::SYSTEM_STATUS::SYSTEM_STATUS_UPLOADING);
 
             if (Update.begin(filesize - sizeof(esp_image_header_t))) {
                 if (strlen(_md5.data()) == _md5.size() - 1) {
@@ -111,7 +114,7 @@ void UploadFileService::handleUpload(AsyncWebServerRequest * request, const Stri
             }
         } else if (_is_filesystem) {
             // LittleFS filesystem image - flash directly to the spiffs/littlefs partition
-            emsesp::EMSESP::logger().info("Uploading filesystem image %s (size: %uKB). Please wait...", filename.c_str(), static_cast<unsigned>(filesize / 1024));
+            emsesp::EMSESP::logger().info("Uploading filesystem file %s (size: %uKB). Please wait...", filename.c_str(), static_cast<unsigned>(filesize / 1024));
             emsesp::EMSuart::stop();
             LittleFS.end(); // unmount LittleFS before we overwrite the partition under it
 
