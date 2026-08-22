@@ -426,13 +426,13 @@ bool WebStatusService::refresh_versions_cache() {
     JsonDocument doc;
     auto         http_code = http_request(VERSIONS_URL, "GET", "", doc.as<JsonObjectConst>(), result);
     if (http_code != 200) {
-        EMSESP::logger().warning("versions.json: HTTP error code %d", http_code);
+        EMSESP::logger().warning("refresh_versions_cache() HTTP error code %d", http_code);
         return false;
     }
     DeserializationError err = deserializeJson(doc, result);
     if (err) {
 #if defined(EMSESP_DEBUG)
-        EMSESP::logger().debug("versions.json: parse error");
+        EMSESP::logger().debug("refresh_versions_cache() parse error");
 #endif
         return false;
     }
@@ -455,7 +455,8 @@ bool WebStatusService::refresh_versions_cache() {
 
     versions_cache_valid_ = true;
 #if defined(EMSESP_DEBUG)
-    EMSESP::logger().debug("versions.json: fetched stable=%s, dev=%s, current=%s",
+    EMSESP::logger().debug("Fetched from %s: stable=%s, dev=%s, current=%s",
+                           VERSIONS_URL,
                            versions_stable_.version.c_str(),
                            versions_dev_.version.c_str(),
                            current_version_s.c_str());
