@@ -147,7 +147,9 @@ void MqttSettingsService::onConfigUpdated() {
 bool MqttSettingsService::configureMqtt() {
     // disconnect if already connected
     if (_mqttClient->connected()) {
-        // emsesp::EMSESP::logger().info("Disconnecting to configure");
+#if defined(EMSESP_DEBUG)
+        emsesp::EMSESP::logger().debug("Disconnecting to configure");
+#endif
         _mqttClient->disconnect(true);
     }
 
@@ -184,7 +186,6 @@ bool MqttSettingsService::configureMqtt() {
             static_cast<espMqttClientSecure *>(_mqttClient)->setKeepAlive(_state.keepAlive);
             static_cast<espMqttClientSecure *>(_mqttClient)->setCleanSession(_state.cleanSession);
             static_cast<espMqttClientSecure *>(_mqttClient)->setWill(will_topic, 1, true, "offline"); // QOS 1, retain
-            // return _mqttClient->connect();
             if (_mqttClient->connect()) {
                 emsesp::EMSESP::logger().info("Starting MQTT service");
                 return true;
@@ -199,7 +200,6 @@ bool MqttSettingsService::configureMqtt() {
         static_cast<espMqttClient *>(_mqttClient)->setKeepAlive(_state.keepAlive);
         static_cast<espMqttClient *>(_mqttClient)->setCleanSession(_state.cleanSession);
         static_cast<espMqttClient *>(_mqttClient)->setWill(will_topic, 1, true, "offline"); // QOS 1, retain
-        // return _mqttClient->connect();
         if (_mqttClient->connect()) {
             emsesp::EMSESP::logger().info("Starting MQTT service");
             return true;
