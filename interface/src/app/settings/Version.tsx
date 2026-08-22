@@ -1,4 +1,4 @@
-import { memo, useContext, useMemo, useState } from 'react';
+import { memo, useContext, useState } from 'react';
 import { Link } from 'react-router';
 
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -430,20 +430,12 @@ const Version = () => {
   const [showVersionInfo, setShowVersionInfo] = useState<number>(0); // 1 = stable, 2 = dev, 3 = partition
   const [firmwareSize, setFirmwareSize] = useState<number>(0);
 
-  const latestVersion = useMemo<VersionInfo | undefined>(
-    () =>
-      versions?.stable
-        ? { version: versions.stable.version, date: versions.stable.date }
-        : undefined,
-    [versions?.stable]
-  );
-  const latestDevVersion = useMemo<VersionInfo | undefined>(
-    () =>
-      versions?.dev
-        ? { version: versions.dev.version, date: versions.dev.date }
-        : undefined,
-    [versions?.dev]
-  );
+  const latestVersion: VersionInfo | undefined = versions?.stable
+    ? { version: versions.stable.version, date: versions.stable.date }
+    : undefined;
+  const latestDevVersion: VersionInfo | undefined = versions?.dev
+    ? { version: versions.dev.version, date: versions.dev.date }
+    : undefined;
   const usingDevVersion = versions?.current?.type === 'dev';
   const stableUpgradeAvailable = versions?.stable?.upgradeable ?? false;
   const devUpgradeAvailable = versions?.dev?.upgradeable ?? false;
