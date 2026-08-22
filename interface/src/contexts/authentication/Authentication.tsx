@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { FC } from 'react';
 import { useNavigate } from 'react-router';
 
@@ -88,21 +88,18 @@ const Authentication: FC<RequiredChildrenProps> = ({ children }) => {
     void refresh();
   }, [refresh]);
 
-  const obj = useMemo(
-    () => ({
-      signIn,
-      signOut,
-      refresh,
-      refreshVersions,
-      ...(me && { me }),
-      ...(versions && { versions })
-    }),
-    [signIn, signOut, me, refresh, refreshVersions, versions]
-  );
-
   if (initialized) {
     return (
-      <AuthenticationContext.Provider value={obj}>
+      <AuthenticationContext.Provider
+        value={{
+          signIn,
+          signOut,
+          refresh,
+          refreshVersions,
+          ...(me && { me }),
+          ...(versions && { versions })
+        }}
+      >
         {children}
       </AuthenticationContext.Provider>
     );
