@@ -350,7 +350,6 @@ const no: Translation = {
   THIS_VERSION: 'Denne versjonen',
   PLATFORM: 'Plattform',
   RELEASE_TYPE: 'Utgivelses type',
-  INTERNET_CONNECTION_REQUIRED: 'Internettilkobling kreves for automatisk versjonskontroll og oppgradering',
   SWITCH_RELEASE_TYPE: 'Bytt til {0} utgivelse',
   FIRMWARE_VERSION_INFO: 'Informasjon om firmwareversjon',
   NO_DATA: 'Ingen data',
@@ -367,7 +366,8 @@ const no: Translation = {
   COMMANDS_UPDATED: 'Kommandoer oppdatert',
   COMMANDS_HELP_1: 'Definer egne kommandoer for EMS-Magistral',
   COMMAND_SENT: 'Kommando sendt',
-  RUN: 'Kjør'
+  RUN: 'Kjør',
+  INTERNET_CONNECTION_CHECK: 'Kontrollerer online for tilgjengelige versjoner'
 };
 
 export default no;

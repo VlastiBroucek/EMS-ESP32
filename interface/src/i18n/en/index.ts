@@ -350,7 +350,6 @@ const en: Translation = {
   THIS_VERSION: 'This Version',
   PLATFORM: 'Platform',
   RELEASE_TYPE: 'Release Type',
-  INTERNET_CONNECTION_REQUIRED: 'Internet connection required for automatic version checking and upgrading',
   SWITCH_RELEASE_TYPE: 'Switch to {0} release',
   FIRMWARE_VERSION_INFO: 'Firmware Version Information',
   NO_DATA: 'No data',
@@ -367,7 +366,8 @@ const en: Translation = {
   COMMANDS_UPDATED: 'Commands updated',
   COMMANDS_HELP_1: 'Define reusable named commands below. These can be executed from the console, API/MQTT, or referenced by the Scheduler',
   COMMAND_SENT: 'Command sent',
-  RUN: 'Run'
+  RUN: 'Run',
+  INTERNET_CONNECTION_CHECK: 'Checking online for available versions'
 };
 
 export default en;

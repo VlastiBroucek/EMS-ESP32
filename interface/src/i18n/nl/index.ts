@@ -350,7 +350,6 @@ const nl: Translation = {
   THIS_VERSION: 'Deze Versie',
   PLATFORM: 'Platform',
   RELEASE_TYPE: 'Release Typ',
-  INTERNET_CONNECTION_REQUIRED: 'Internetverbinding vereist voor automatische versiecontrole en -upgrade',
   SWITCH_RELEASE_TYPE: 'Switch naar {0} release',
   FIRMWARE_VERSION_INFO: 'Informatie over firmwareversie',
   NO_DATA: 'Geen data',
@@ -367,7 +366,8 @@ const nl: Translation = {
   COMMANDS_UPDATED: 'Commando\'s bijgewerkt',
   COMMANDS_HELP_1: 'Definieer hergebruikbare benoemde commando\'s hieronder. Deze kunnen worden uitgevoerd vanuit de console, API/MQTT, of worden aangeroepen door de Scheduler',
   COMMAND_SENT: 'Commando verzonden',
-  RUN: 'Commando uitvoeren'
+  RUN: 'Commando uitvoeren',
+  INTERNET_CONNECTION_CHECK: 'Controleren op online beschikbare versies'
 };
 
 export default nl;

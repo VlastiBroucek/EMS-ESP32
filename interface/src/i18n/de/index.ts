@@ -350,7 +350,6 @@ const de: Translation = {
   THIS_VERSION: 'Diese Version',
   PLATFORM: 'Plattform',
   RELEASE_TYPE: 'Release Typ',
-  INTERNET_CONNECTION_REQUIRED: 'Für die automatische Versionsprüfung und Aktualisierung ist eine Internetverbindung erforderlich',
   SWITCH_RELEASE_TYPE: 'Zum {0}-Release wechseln',
   FIRMWARE_VERSION_INFO: 'Firmware-Versionsinformation',
   NO_DATA: 'Keine Daten',
@@ -367,7 +366,8 @@ const de: Translation = {
   COMMANDS_UPDATED: 'Befehle wurden aktualisiert',
   COMMANDS_HELP_1: 'Definieren Sie eigene Befehle für die EMS-Magistral',
   COMMAND_SENT: 'Befehl gesendet',
-  RUN: 'Befehl ausführen'
+  RUN: 'Befehl ausführen',
+  INTERNET_CONNECTION_CHECK: 'Online-Prüfung auf verfügbare Versionen'
 };
 
 export default de;

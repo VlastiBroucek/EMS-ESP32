@@ -807,8 +807,7 @@ const Version = () => {
           </>
         ) : (
           <Typography sx={{ mt: 2 }} color="warning">
-            <WarningIcon color="warning" sx={{ verticalAlign: 'middle', mr: 2 }} />
-            {LL.INTERNET_CONNECTION_REQUIRED()}
+            {LL.INTERNET_CONNECTION_CHECK()}&hellip;
           </Typography>
         )}
         {me.admin && (

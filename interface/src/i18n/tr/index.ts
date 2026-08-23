@@ -350,7 +350,6 @@ const tr: Translation = {
   THIS_VERSION: 'Bu Sürüm',
   PLATFORM: 'Platforma',
   RELEASE_TYPE: 'Sürüm Tipi',
-  INTERNET_CONNECTION_REQUIRED: 'Otomatik sürüm kontrolü ve güncelleme için internet bağlantısı gereklidir',
   SWITCH_RELEASE_TYPE: '{0} sürümüne geç',
   FIRMWARE_VERSION_INFO: 'Firmware Sürüm Bilgisi',
   NO_DATA: 'Hiçbir veri yok',
@@ -367,7 +366,8 @@ const tr: Translation = {
   COMMANDS_UPDATED: 'Komutlar güncellendi',
   COMMANDS_HELP_1: 'Özel komutları EMS hattına tanımlayın',
   COMMAND_SENT: 'Komut gönderildi',
-  RUN: 'Komutu çalıştır'
+  RUN: 'Komutu çalıştır',
+  INTERNET_CONNECTION_CHECK: 'Online bağlantısı kontrol ediliyor'
 };
 
 export default tr;

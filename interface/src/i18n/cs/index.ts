@@ -350,7 +350,6 @@ const cs: Translation = {
   THIS_VERSION: 'Tato verze',
   PLATFORM: 'Platforma',
   RELEASE_TYPE: 'Typ sestavení',
-  INTERNET_CONNECTION_REQUIRED: 'Pro automatickou kontrolu a instalaci aktualizací je třeba internetové připojení',
   SWITCH_RELEASE_TYPE: 'Přepnout na {0} verzi',
   FIRMWARE_VERSION_INFO: 'Informace o verzi firmwaru',
   NO_DATA: 'žádné údaje',
@@ -367,7 +366,8 @@ const cs: Translation = {
   COMMANDS_UPDATED: 'Příkazy byly aktualizovány',
   COMMANDS_HELP_1: 'Definujte vlastní příkazy pro magistrali EMS',
   COMMAND_SENT: 'Příkaz odeslán',
-  RUN: 'Spustit příkaz'
+  RUN: 'Spustit příkaz',
+  INTERNET_CONNECTION_CHECK: 'Kontrola online pro dostupné verze'
 };
 
 export default cs;

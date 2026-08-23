@@ -350,7 +350,6 @@ const fr: Translation = {
   THIS_VERSION: 'Cette version',
   PLATFORM: 'Plateforme',
   RELEASE_TYPE: 'Type de version',
-  INTERNET_CONNECTION_REQUIRED: 'Connexion Internet requise pour la vérification automatique des versions et la mise à niveau',
   SWITCH_RELEASE_TYPE: 'Passer à la version {0}',
   FIRMWARE_VERSION_INFO: 'Informations sur la version du firmware',
   NO_DATA: 'Aucune donnée',
@@ -367,7 +366,8 @@ const fr: Translation = {
   COMMANDS_UPDATED: 'Commandes mises à jour',
   COMMANDS_HELP_1: 'Définir des commandes personnalisées pour la magistral EMS',
   COMMAND_SENT: 'Commande envoyée',
-  RUN: 'Exécuter une commande'
+  RUN: 'Exécuter une commande',
+  INTERNET_CONNECTION_CHECK: 'Vérification en ligne pour les versions disponibles'
 };
 
 export default fr;

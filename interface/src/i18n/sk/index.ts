@@ -350,7 +350,6 @@ const sk: Translation = {
   THIS_VERSION: 'Táto verzia',
   PLATFORM: 'Platforma',
   RELEASE_TYPE: 'Typ vydania',
-  INTERNET_CONNECTION_REQUIRED: 'Internetové pripojenie je potrebné pre automatickú kontrolu a aktualizáciu',
   SWITCH_RELEASE_TYPE: 'Prepnúť na {0} verziu',
   FIRMWARE_VERSION_INFO: 'Informácie o verzii firmware',
   NO_DATA: 'Žiadne dáta',
@@ -367,7 +366,8 @@ const sk: Translation = {
   COMMANDS_UPDATED: 'Príkazy aktualizované',
   COMMANDS_HELP_1: 'Definujte vlastné príkazy pre magistrali EMS',
   COMMAND_SENT: 'Príkaz odoslaný',
-  RUN: 'Volať príkaz'
+  RUN: 'Volať príkaz',
+  INTERNET_CONNECTION_CHECK: 'Kontrola online pre dostupné verzie'
 };
 
 export default sk;
