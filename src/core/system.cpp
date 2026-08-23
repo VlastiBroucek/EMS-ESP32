@@ -2922,7 +2922,7 @@ bool System::command_restart(const char * value, const int8_t id) {
         return true;
     }
 
-    LOG_INFO("Restarting system immediately");
+    LOG_INFO("Restarting system...");
     // restart will be handled by the main loop
     EMSESP::system_.systemStatus(SYSTEM_STATUS::SYSTEM_STATUS_RESTART_REQUESTED);
     return true;
