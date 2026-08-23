@@ -911,20 +911,13 @@ const Version = () => {
             sx={{
               mt: 2,
               display: 'flex',
-              justifyContent: 'flex-end',
+              justifyContent: 'space-between',
+              alignItems: 'center',
               flexWrap: 'nowrap',
               whiteSpace: 'nowrap',
               gap: 1
             }}
           >
-            <Button
-              startIcon={<PowerSettingsNewIcon />}
-              variant="outlined"
-              onClick={handleRestartClick}
-              color="error"
-            >
-              {LL.RESTART()}
-            </Button>
             {!data.disable_reset && (
               <Button
                 startIcon={<SettingsBackupRestoreIcon />}
@@ -935,6 +928,14 @@ const Version = () => {
                 {LL.FACTORY_RESET()}
               </Button>
             )}
+            <Button
+              startIcon={<PowerSettingsNewIcon />}
+              variant="outlined"
+              onClick={handleRestartClick}
+              color="success"
+            >
+              {LL.RESTART()}
+            </Button>
           </Box>
         </>
       )}
