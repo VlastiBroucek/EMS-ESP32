@@ -900,7 +900,7 @@ const Version = () => {
                 startIcon={<PowerSettingsNewIcon />}
                 variant="outlined"
                 onClick={doRestart}
-                color="error"
+                color="success"
               >
                 {LL.RESTART()}
               </Button>
