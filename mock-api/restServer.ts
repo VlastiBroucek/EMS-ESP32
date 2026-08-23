@@ -450,6 +450,8 @@ function upgradeImportantMessages(version: string) {
 // called by Action endpoint getVersions
 // Set MOCK_OFFLINE = true to simulate a device with no internet (omits stable/dev).
 const MOCK_OFFLINE = false;
+// const MOCK_OFFLINE = true;
+
 function get_versions() {
   const isDev = THIS_VERSION.includes('dev');
   const currentUpgradeable =
@@ -457,6 +459,7 @@ function get_versions() {
     (isDev ? DEV_VERSION_IS_UPGRADEABLE : STABLE_VERSION_IS_UPGRADEABLE);
 
   const data: {
+    system_name: string;
     current: {
       version: string;
       type: 'stable' | 'dev';
@@ -466,6 +469,7 @@ function get_versions() {
     stable?: { version: string; date: string; upgradeable: boolean };
     dev?: { version: string; date: string; upgradeable: boolean };
   } = {
+    system_name: settings.system_name,
     current: {
       version: THIS_VERSION,
       type: isDev ? 'dev' : 'stable',
