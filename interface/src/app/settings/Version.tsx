@@ -1,4 +1,4 @@
-import { memo, useContext, useState } from 'react';
+import { memo, useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router';
 
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -412,7 +412,7 @@ const getPlatform = (data: VersionData): string => {
 
 const Version = () => {
   const { LL, locale } = useI18nContext();
-  const { me, versions } = useContext(AuthenticatedContext);
+  const { me, versions, refreshVersions } = useContext(AuthenticatedContext);
 
   const [restarting, setRestarting] = useState<boolean>(false);
   const [confirmFactoryReset, setConfirmFactoryReset] = useState<boolean>(false);
@@ -440,6 +440,16 @@ const Version = () => {
   const stableUpgradeAvailable = versions?.stable?.upgradeable ?? false;
   const devUpgradeAvailable = versions?.dev?.upgradeable ?? false;
   const internetLive = Boolean(versions?.stable || versions?.dev);
+
+  useEffect(() => {
+    if (internetLive) {
+      return;
+    }
+    const interval = setInterval(() => {
+      void refreshVersions();
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [internetLive, refreshVersions]);
 
   const { send: sendSetPartition } = useRequest(
     (partition: string) => callAction({ action: 'setPartition', param: partition }),
