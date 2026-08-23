@@ -472,25 +472,39 @@ bool Mqtt::get_publish_onchange(uint8_t device_type) {
     }
     return false;
 }
+
+// human-readable cause for a MQTT disconnect reason, nullptr if not recognized
+static const char * mqtt_disconnect_cause(espMqttClientTypes::DisconnectReason reason) {
+    using espMqttClientTypes::DisconnectReason;
+
+    switch (reason) {
+    case DisconnectReason::TCP_DISCONNECTED:
+        return "TCP";
+    case DisconnectReason::MQTT_UNACCEPTABLE_PROTOCOL_VERSION:
+        return "Unaccepted protocol version";
+    case DisconnectReason::MQTT_IDENTIFIER_REJECTED:
+        return "Identifier Rejected";
+    case DisconnectReason::MQTT_SERVER_UNAVAILABLE:
+        return "Server unavailable";
+    case DisconnectReason::MQTT_MALFORMED_CREDENTIALS:
+        return "Malformed credentials";
+    case DisconnectReason::MQTT_NOT_AUTHORIZED:
+        return "Not authorized";
+    case DisconnectReason::TLS_BAD_FINGERPRINT:
+        return "Server fingerprint invalid";
+    default:
+        return nullptr;
+    }
+}
+
 void Mqtt::on_disconnect(espMqttClientTypes::DisconnectReason reason) {
     connected_ = false;
 
-    if (reason == espMqttClientTypes::DisconnectReason::TCP_DISCONNECTED) {
-        LOG_ERROR("MQTT connection failure: TCP");
-    } else if (reason == espMqttClientTypes::DisconnectReason::MQTT_UNACCEPTABLE_PROTOCOL_VERSION) {
-        LOG_ERROR("MQTT connection failure: Unaccepted protocol version");
-    } else if (reason == espMqttClientTypes::DisconnectReason::MQTT_IDENTIFIER_REJECTED) {
-        LOG_ERROR("MQTT connection failure: Identifier Rejected");
-    } else if (reason == espMqttClientTypes::DisconnectReason::MQTT_SERVER_UNAVAILABLE) {
-        LOG_ERROR("MQTT connection failure: Server unavailable");
-    } else if (reason == espMqttClientTypes::DisconnectReason::MQTT_MALFORMED_CREDENTIALS) {
-        LOG_ERROR("MQTT connection failure: Malformed credentials");
-    } else if (reason == espMqttClientTypes::DisconnectReason::MQTT_NOT_AUTHORIZED) {
-        LOG_ERROR("MQTT connection failure: Not authorized");
-    } else if (reason == espMqttClientTypes::DisconnectReason::TLS_BAD_FINGERPRINT) {
-        LOG_ERROR("MQTT connection failure: Server fingerprint invalid");
+    const char * cause = mqtt_disconnect_cause(reason);
+    if (cause) {
+        LOG_ERROR("MQTT connection failure: %s. Retrying...", cause);
     } else {
-        LOG_ERROR("MQTT connection failure: code %d", reason);
+        LOG_ERROR("MQTT connection failure: code %d. Retrying...", static_cast<int>(reason));
     }
 
     mqttClient_->clearQueue(true);
