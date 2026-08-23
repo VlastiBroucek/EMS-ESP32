@@ -9,6 +9,8 @@ export interface AuthenticationContextValue {
   me?: Me;
   versions?: VersionsResponse;
   refreshVersions: () => Promise<void>;
+  systemName?: string;
+  setSystemName: (systemName: string) => void;
 }
 
 const AuthenticationContextDefaultValue = {} as AuthenticationContextValue;

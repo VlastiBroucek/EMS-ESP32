@@ -321,11 +321,14 @@ uint8_t WebStatusService::upgradeImportantMessages(std::string & version) {
 }
 
 // action = getVersions
-// returns the device's current version for dev and stable
+// returns the device's current version for dev and stable, plus the system name
 // The remote fetch runs from the main loop task via WebStatusService::loop() so that we never block the AsyncTCP callback
 void WebStatusService::getVersions(JsonObject root) {
     FirmwareVersion current_version(current_version_s);
     bool            is_dev = current_version.prerelease().find("dev") != std::string::npos;
+
+    // the WebUI shows this in the menu drawer. It's included here because this action is called once after login
+    root["system_name"] = EMSESP::system_.system_name();
 
     JsonObject current     = root["current"].to<JsonObject>();
     current["version"]     = current_version_s;

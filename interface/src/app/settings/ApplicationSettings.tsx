@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 
 import CancelIcon from '@mui/icons-material/Cancel';
 import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
@@ -31,6 +31,7 @@ import {
   useLayoutTitle
 } from 'components';
 import { toast } from 'components/toast';
+import { AuthenticatedContext } from 'contexts/authentication';
 import { useI18nContext } from 'i18n/i18n-react';
 import { numberValue, updateValueDirty, useRest } from 'utils';
 import { ValidationError, validate } from 'validators';
@@ -67,6 +68,14 @@ const ApplicationSettings = () => {
     read: readSettings,
     update: writeSettings
   });
+
+  // the menu drawer reads the system name from the authentication context
+  const { setSystemName } = useContext(AuthenticatedContext);
+  useEffect(() => {
+    if (origData?.system_name !== undefined) {
+      setSystemName(origData.system_name);
+    }
+  }, [origData?.system_name, setSystemName]);
 
   const [restarting, setRestarting] = useState<boolean>();
 
