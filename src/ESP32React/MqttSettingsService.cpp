@@ -41,6 +41,7 @@ void MqttSettingsService::startClient() {
         delete _mqttClient;
         _mqttClient = nullptr;
     }
+
     if (_state.enableTLS) {
         isSecure = true;
         if (emsesp::EMSESP::system_.PSram() == 0) {
@@ -82,7 +83,10 @@ void MqttSettingsService::loop() {
         _mqttClient->disconnect(true);
     }
     if (_reconfigureMqtt || (_disconnectedAt && static_cast<uint32_t>(uuid::get_uptime() - _disconnectedAt) >= MQTT_RECONNECTION_DELAY)) {
-        // reconfigure MQTT client
+        // configure MQTT client
+        if (_reconfigureMqtt) {
+            emsesp::EMSESP::logger().info("Starting MQTT service");
+        }
         _disconnectedAt  = configureMqtt() ? 0 : uuid::get_uptime();
         _reconfigureMqtt = false;
     }
@@ -186,11 +190,7 @@ bool MqttSettingsService::configureMqtt() {
             static_cast<espMqttClientSecure *>(_mqttClient)->setKeepAlive(_state.keepAlive);
             static_cast<espMqttClientSecure *>(_mqttClient)->setCleanSession(_state.cleanSession);
             static_cast<espMqttClientSecure *>(_mqttClient)->setWill(will_topic, 1, true, "offline"); // QOS 1, retain
-            if (_mqttClient->connect()) {
-                emsesp::EMSESP::logger().info("Starting MQTT service");
-                return true;
-            }
-            return false;
+            return (_mqttClient->connect());
         }
         static_cast<espMqttClient *>(_mqttClient)->setServer(_state.host.c_str(), _state.port);
         if (_state.username.length() > 0) {
@@ -200,10 +200,7 @@ bool MqttSettingsService::configureMqtt() {
         static_cast<espMqttClient *>(_mqttClient)->setKeepAlive(_state.keepAlive);
         static_cast<espMqttClient *>(_mqttClient)->setCleanSession(_state.cleanSession);
         static_cast<espMqttClient *>(_mqttClient)->setWill(will_topic, 1, true, "offline"); // QOS 1, retain
-        if (_mqttClient->connect()) {
-            emsesp::EMSESP::logger().info("Starting MQTT service");
-            return true;
-        }
+        return (_mqttClient->connect());
     }
 
     return false;
