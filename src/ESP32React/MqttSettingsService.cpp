@@ -7,7 +7,7 @@ MqttSettingsService::MqttSettingsService(AsyncWebServer * server, FS * fs, Secur
     , _fsPersistence(MqttSettings::read, MqttSettings::update, this, fs, MQTT_SETTINGS_FILE)
     , _reconfigureMqtt(false)
     , _disconnectedAt(0)
-    , _disconnectReason(espMqttClientTypes::DisconnectReason::TCP_DISCONNECTED)
+    , _disconnectReason(espMqttClientTypes::DisconnectReason::USER_OK)
     , _mqttClient(nullptr) {
     addUpdateHandler([this] { onConfigUpdated(); }, false);
 }
@@ -133,11 +133,14 @@ void MqttSettingsService::onMqttConnect(bool sessionPresent) {
 }
 
 void MqttSettingsService::onMqttDisconnect(espMqttClientTypes::DisconnectReason reason) {
-    _disconnectReason = reason;
+    if (reason != _disconnectReason) {
+        emsesp::EMSESP::mqtt_.on_disconnect(reason);
+        _disconnectReason = reason;
+    }
+
     if (!_disconnectedAt) {
         _disconnectedAt = uuid::get_uptime();
     }
-    emsesp::EMSESP::mqtt_.on_disconnect(reason);
 }
 
 void MqttSettingsService::onConfigUpdated() {
