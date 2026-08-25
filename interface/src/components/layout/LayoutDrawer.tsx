@@ -1,10 +1,8 @@
-import { memo } from 'react';
+import { memo, useContext } from 'react';
 
 import { Box, Divider, Drawer, Toolbar, Typography, styled } from '@mui/material';
 
-import { readSettings } from 'api/app';
-
-import { useRequest } from 'alova/client';
+import { AuthenticatedContext } from 'contexts/authentication';
 import { PROJECT_NAME } from 'env';
 
 import { DRAWER_WIDTH } from './Layout';
@@ -27,8 +25,7 @@ interface LayoutDrawerProps {
 }
 
 const LayoutDrawerComponent = ({ mobileOpen, onClose }: LayoutDrawerProps) => {
-  const { data: settings } = useRequest(readSettings);
-  const system_name = settings?.system_name;
+  const { systemName } = useContext(AuthenticatedContext);
 
   const drawer = (
     <>
@@ -43,9 +40,9 @@ const LayoutDrawerComponent = ({ mobileOpen, onClose }: LayoutDrawerProps) => {
             }}
           >
             <Typography>{PROJECT_NAME}</Typography>
-            {system_name && (
+            {systemName && (
               <Typography color="secondary" variant="body2">
-                {system_name}
+                {systemName}
               </Typography>
             )}
           </Box>

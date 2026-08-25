@@ -1,4 +1,4 @@
-import { memo, useContext, useMemo, useState } from 'react';
+import { memo, useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router';
 
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -412,7 +412,7 @@ const getPlatform = (data: VersionData): string => {
 
 const Version = () => {
   const { LL, locale } = useI18nContext();
-  const { me, versions } = useContext(AuthenticatedContext);
+  const { me, versions, refreshVersions } = useContext(AuthenticatedContext);
 
   const [restarting, setRestarting] = useState<boolean>(false);
   const [confirmFactoryReset, setConfirmFactoryReset] = useState<boolean>(false);
@@ -430,24 +430,26 @@ const Version = () => {
   const [showVersionInfo, setShowVersionInfo] = useState<number>(0); // 1 = stable, 2 = dev, 3 = partition
   const [firmwareSize, setFirmwareSize] = useState<number>(0);
 
-  const latestVersion = useMemo<VersionInfo | undefined>(
-    () =>
-      versions?.stable
-        ? { version: versions.stable.version, date: versions.stable.date }
-        : undefined,
-    [versions?.stable]
-  );
-  const latestDevVersion = useMemo<VersionInfo | undefined>(
-    () =>
-      versions?.dev
-        ? { version: versions.dev.version, date: versions.dev.date }
-        : undefined,
-    [versions?.dev]
-  );
+  const latestVersion: VersionInfo | undefined = versions?.stable
+    ? { version: versions.stable.version, date: versions.stable.date }
+    : undefined;
+  const latestDevVersion: VersionInfo | undefined = versions?.dev
+    ? { version: versions.dev.version, date: versions.dev.date }
+    : undefined;
   const usingDevVersion = versions?.current?.type === 'dev';
   const stableUpgradeAvailable = versions?.stable?.upgradeable ?? false;
   const devUpgradeAvailable = versions?.dev?.upgradeable ?? false;
   const internetLive = Boolean(versions?.stable || versions?.dev);
+
+  useEffect(() => {
+    if (internetLive) {
+      return;
+    }
+    const interval = setInterval(() => {
+      void refreshVersions();
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [internetLive, refreshVersions]);
 
   const { send: sendSetPartition } = useRequest(
     (partition: string) => callAction({ action: 'setPartition', param: partition }),
@@ -805,8 +807,7 @@ const Version = () => {
           </>
         ) : (
           <Typography sx={{ mt: 2 }} color="warning">
-            <WarningIcon color="warning" sx={{ verticalAlign: 'middle', mr: 2 }} />
-            {LL.INTERNET_CONNECTION_REQUIRED()}
+            {LL.INTERNET_CONNECTION_CHECK()}&hellip;
           </Typography>
         )}
         {me.admin && (
@@ -899,7 +900,7 @@ const Version = () => {
                 startIcon={<PowerSettingsNewIcon />}
                 variant="outlined"
                 onClick={doRestart}
-                color="error"
+                color="success"
               >
                 {LL.RESTART()}
               </Button>
@@ -910,20 +911,13 @@ const Version = () => {
             sx={{
               mt: 2,
               display: 'flex',
-              justifyContent: 'flex-end',
+              justifyContent: 'space-between',
+              alignItems: 'center',
               flexWrap: 'nowrap',
               whiteSpace: 'nowrap',
               gap: 1
             }}
           >
-            <Button
-              startIcon={<PowerSettingsNewIcon />}
-              variant="outlined"
-              onClick={handleRestartClick}
-              color="error"
-            >
-              {LL.RESTART()}
-            </Button>
             {!data.disable_reset && (
               <Button
                 startIcon={<SettingsBackupRestoreIcon />}
@@ -934,6 +928,14 @@ const Version = () => {
                 {LL.FACTORY_RESET()}
               </Button>
             )}
+            <Button
+              startIcon={<PowerSettingsNewIcon />}
+              variant="outlined"
+              onClick={handleRestartClick}
+              color="success"
+            >
+              {LL.RESTART()}
+            </Button>
           </Box>
         </>
       )}

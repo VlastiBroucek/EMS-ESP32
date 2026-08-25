@@ -257,6 +257,9 @@ export default defineConfig(
           minify: 'terser' as const,
           terserOptions: createHostedTerserOptions(),
           rollupOptions: {
+            checks: {
+              pluginTimings: false
+            },
             treeshake: {
               moduleSideEffects: false
             },
@@ -292,6 +295,9 @@ export default defineConfig(
         minify: 'terser' as const,
         terserOptions: createProductionTerserOptions(),
         rollupOptions: {
+          checks: {
+            pluginTimings: false
+          },
           treeshake: {
             moduleSideEffects: false,
             propertyReadSideEffects: false as const,

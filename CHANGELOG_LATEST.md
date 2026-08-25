@@ -34,4 +34,5 @@ This release is based on the latest Espressif/Arduino core version 3. It brings 
 - remove devices without entities not listed in 0x07 telegram
 - changes to the Dialogs in Dashboard page, removed the run icon in the Commands page. Renamed Execute to Run.
 - set `None` for undefined values in HA `val_tpl`
+- changes in WebUI - remove multiple calls systemInfo endpoint, Vewrsion pages checks for internet connection [#3195](https://github.com/emsesp/EMS-ESP32/pull/3195)
 

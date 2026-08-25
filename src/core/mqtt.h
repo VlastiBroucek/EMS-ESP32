@@ -61,8 +61,8 @@ class Mqtt {
     enum Operation : uint8_t { PUBLISH, SUBSCRIBE, UNSUBSCRIBE };
     enum NestedFormat : uint8_t { NESTED = 1, SINGLE };
 
-    static constexpr uint8_t  MQTT_TOPIC_MAX_SIZE  = 128; // fixed, not a user setting anymore
-    static constexpr uint16_t MQTT_QUEUE_MAX_SIZE  = 300;
+    static constexpr uint8_t  MQTT_TOPIC_MAX_SIZE     = 128; // fixed, not a user setting anymore
+    static constexpr uint16_t MQTT_QUEUE_MAX_SIZE     = 300;
     static constexpr uint32_t MQTT_DISCONNECT_TIMEOUT = 1000; // max ms to flush a graceful disconnect on non-PSRAM boards
 
     static void on_connect();
@@ -297,7 +297,7 @@ class Mqtt {
     uint32_t last_publish_heartbeat_  = 0;
     // uint32_t last_publish_queue_      = 0;
 
-    static bool     connecting_;
+    static bool     connected_;
     static bool     initialized_;
     static uint32_t mqtt_publish_fails_;
     static uint16_t queuecount_;

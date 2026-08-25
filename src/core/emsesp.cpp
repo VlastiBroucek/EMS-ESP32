@@ -1893,7 +1893,7 @@ void EMSESP::shell_prompt() {
 void EMSESP::loop() {
     uuid::loop(); // store system uptime
 
-    // handle network
+    // handle network (Wifi, ETH and AP)
     network_.loop();
 
     // handles LED and checks system health, and syslog service
@@ -1901,14 +1901,13 @@ void EMSESP::loop() {
         return; // LED flashing is active meaning its about to reboot, skip the rest of the loop
     }
 
-    esp32React.loop();    // core services: Network, AP, MQTT and NTP
     webLogService.loop(); // log in Web UI
 
-    // run the loop, unless we're in the middle of an OTA upload
+    // run the main loop, unless we're in the middle of an OTA upload
     // if (EMSESP::system_.systemStatus() == SYSTEM_STATUS::SYSTEM_STATUS_NORMAL || EMSESP::system_.systemStatus() == SYSTEM_STATUS::SYSTEM_STATUS_INVALID_GPIO) {
     if (EMSESP::system_.systemStatus() != SYSTEM_STATUS::SYSTEM_STATUS_PENDING_UPLOAD
         && EMSESP::system_.systemStatus() != SYSTEM_STATUS::SYSTEM_STATUS_UPLOADING) {
-        // loop through the services
+        esp32React.loop();            // MQTT and NTP
         webStatusService.loop();      // periodic refresh of cached versions.json
         rxservice_.loop();            // process any incoming Rx telegrams
         shower_.loop();               // check for shower on/off
@@ -1921,6 +1920,7 @@ void EMSESP::loop() {
         scheduled_fetch_values();     // force a query on the EMS devices to fetch latest data at a set interval (1 min)
         compact_entities_if_stable(); // reclaim over-reserved entity vector capacity once device discovery settles
     }
+
     // check for GPIO Errors - this is called once when booting
     if (EMSESP::system_.systemStatus() == SYSTEM_STATUS::SYSTEM_STATUS_INVALID_GPIO) {
         static bool only_once = false;
