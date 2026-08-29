@@ -20,6 +20,7 @@
 #include "WebCommandService.h"
 
 #include "shuntingYard.h"
+#include "httpClient.h"
 
 namespace emsesp {
 
@@ -267,7 +268,7 @@ bool WebCommandService::executeCommand(const char * name, const std::string & co
         auto lower_url = Helpers::toLower(url.c_str());
         if (lower_url.starts_with("http://") || lower_url.starts_with("https://")) {
             std::string result;
-            int         httpResult = http_request(url, method, value, doc["header"].as<JsonObjectConst>(), result);
+            int         httpResult = HttpClient::request(url, method, value, doc["header"].as<JsonObjectConst>(), result);
             if (httpResult != 200) {
                 EMSESP::logger().warning("Command '%s': URL command failed with http code %d", name, httpResult);
                 return false;
