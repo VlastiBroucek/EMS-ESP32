@@ -78,20 +78,20 @@ void Network::begin() {
 
     phase_ = initialPhase();
 
-    // Initialise WiFi once when the Network service starts
+    // Initialise WiFi once when the Network service starts.
+    // persistent(false) keeps credentials in RAM so we don't auto-join leftover NVS config.
     WiFi.persistent(false);
     WiFi.setAutoReconnect(false);
     WiFi.mode(WIFI_STA);
 
+    // Keep the radio up. disconnect(wifioff=true) maps to STA.end() -> esp_wifi_stop()
     if (WiFi.STA.started()) {
-        WiFi.disconnect(true, true); // wipe old settings; only when STA is up
-    } else {
-        WiFi.disconnect(true, false); // disconnect/off without erase, so no warning is shown
+        WiFi.disconnect(false, true); // drop leftover association, wipe RAM config
     }
 
     WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN);
     WiFi.setHostname(hostname_.c_str());     // updates shared default_hostname buffer
-    WiFi.enableSTA(true);                    // creates the STA netif
+    WiFi.enableSTA(true);                    // no-op if already STA; recreates netif after a full off
     WiFi.STA.setHostname(hostname_.c_str()); // pushes to esp_netif_set_hostname
     WiFi.enableIPv6(true);
     if (staticIPConfig_) {
@@ -220,10 +220,10 @@ void Network::reconnect() {
     LOG_DEBUG("Reconnecting all networks");
 
 #ifndef EMSESP_STANDALONE
-    // disconnect WiFi
+    // Drop STA association but leave the driver running. begin() re-applies hostname
+    // and IPv6; tearing the radio down here races with WIFI_EVENT_STA_START (12289/259).
     if (wifi_connected()) {
-        WiFi.disconnect(true, true);
-        WiFi.mode(WIFI_STA); // reset mode
+        WiFi.disconnect(false, true);
     }
 
     // disconnect AP
