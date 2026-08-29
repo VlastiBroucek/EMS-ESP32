@@ -430,15 +430,7 @@ const ApplicationSettings = () => {
                   label={LL.SECURITY(0)}
                   value={data.email_security}
                   variant="outlined"
-                  onChange={(event) =>
-                    updateFormValue({
-                      target: {
-                        name: 'email_security',
-                        type: 'number',
-                        value: event.target.value
-                      }
-                    } as React.ChangeEvent<HTMLInputElement>)
-                  }
+                  onChange={updateFormValue}
                   margin="normal"
                   select
                 >
