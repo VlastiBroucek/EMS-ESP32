@@ -65,7 +65,16 @@ let settings = {
   modbus_max_clients: 10,
   modbus_timeout: 10000,
   developer_mode: true,
-  disable_reset: false
+  disable_reset: false,
+  email_enabled: false,
+  email_security: 2,
+  email_server: 'smtp.gmail.com',
+  email_port: 587,
+  email_login: 'test@emsesp.org',
+  email_pass: 'password',
+  email_sender: 'test@emsesp.org',
+  email_recp: 'test@emsesp.org',
+  email_subject: 'ems-esp notification'
 };
 
 // EMS-ESP System Settings

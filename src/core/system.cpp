@@ -147,7 +147,7 @@ bool System::command_sendmail(const char * value, const int8_t) {
               port,
               security == EMAIL_SECURITY::SSL        ? " (SSL)"
               : security == EMAIL_SECURITY::STARTTLS ? " (STARTTLS)"
-                                                     : "",
+                                                     : " (plain)",
               value);
 
     bool success = false;
@@ -158,7 +158,11 @@ bool System::command_sendmail(const char * value, const int8_t) {
     auto * r_client     = new ReadyClient(*ssl_client);
     auto * smtp         = new SMTPClient(*r_client);
 
-    ssl_client->setClient(basic_client);
+    // enableSSL is baked in at setClient() time (same as HTTP fetch). Default true
+    // would send a TLS Client Hello on connect — which a plain port-25 server
+    // logs as "SMTP syntax error" / NUL characters.
+    const bool implicit_ssl = (security == EMAIL_SECURITY::SSL);
+    ssl_client->setClient(basic_client, implicit_ssl);
     ssl_client->setInsecure();
     ssl_client->setBufferSizes(16384, 1024);
     basic_client->setTimeout(5000); // socket-level read timeout
@@ -167,7 +171,6 @@ bool System::command_sendmail(const char * value, const int8_t) {
                       security == EMAIL_SECURITY::NONE  ? readymail_protocol_plain_text
                       : security == EMAIL_SECURITY::SSL ? readymail_protocol_ssl
                                                         : readymail_protocol_tls);
-
 
     // smtp->connect(server, port, sendmailCallback);
     smtp->connect(server, port);
@@ -180,15 +183,17 @@ bool System::command_sendmail(const char * value, const int8_t) {
         return false;
     }
 
-    // LOG_INFO("authenticate %s:%s", login.c_str(), pass.c_str());
-    smtp->authenticate(login, pass, readymail_auth_password);
-    if (!smtp->isAuthenticated()) {
-        LOG_ERROR("send email authentication error");
-        delete smtp;
-        delete r_client;
-        delete ssl_client;
-        delete basic_client;
-        return false;
+    // internal/open relays often have no AUTH; empty login means skip it
+    if (!login.isEmpty()) {
+        smtp->authenticate(login, pass, readymail_auth_password);
+        if (!smtp->isAuthenticated()) {
+            LOG_ERROR("send email authentication error");
+            delete smtp;
+            delete r_client;
+            delete ssl_client;
+            delete basic_client;
+            return false;
+        }
     }
     JsonDocument doc(PSRAM_DOC);
     String       body = value;
