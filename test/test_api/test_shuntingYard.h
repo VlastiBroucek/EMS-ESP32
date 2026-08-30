@@ -120,6 +120,31 @@ void shuntingYard_test28() {
     run_shuntingYard_test("", "-x");
 }
 
+// quoted text keeps its spaces and punctuation, unquoted text does not
+void shuntingYard_test29() {
+    run_shuntingYard_test("email test!", "\"email test!\"");
+}
+
+// a trailing '!' on unquoted text is read as a logical NOT and has no valid operand
+void shuntingYard_test30() {
+    run_shuntingYard_test("", "email test!");
+}
+
+// computing an already computed value is lossy - callers must run compute() only once
+void shuntingYard_test31() {
+    run_shuntingYard_test("", emsesp::compute("\"email test!\""));
+}
+
+// a '?' inside quotes is literal text, not a ternary
+void shuntingYard_test32() {
+    run_shuntingYard_test("Is it hot?", "\"Is it hot?\"");
+}
+
+// mixing quoted text with entity values keeps the punctuation of both parts
+void shuntingYard_test33() {
+    run_shuntingYard_test("temp is 40 C!", "\"temp is \" + boiler/flowtempoffset + \" C!\"");
+}
+
 void run_shuntingYard_tests() {
     RUN_TEST(shuntingYard_test1);
     RUN_TEST(shuntingYard_test2);
@@ -149,4 +174,9 @@ void run_shuntingYard_tests() {
     RUN_TEST(shuntingYard_test26);
     RUN_TEST(shuntingYard_test27);
     RUN_TEST(shuntingYard_test28);
+    RUN_TEST(shuntingYard_test29);
+    RUN_TEST(shuntingYard_test30);
+    RUN_TEST(shuntingYard_test31);
+    RUN_TEST(shuntingYard_test32);
+    RUN_TEST(shuntingYard_test33);
 }

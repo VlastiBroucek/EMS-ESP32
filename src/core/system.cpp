@@ -154,6 +154,26 @@ bool System::command_sendmail(const char * value, const int8_t) {
                                                      : " (plain)",
               value);
 
+    // Resolve the message before opening the SMTP session: compute() can do entity lookups and a
+    // blocking {url} fetch, which would otherwise leave the connection idle long enough to time out.
+    // The value is either a plain body or a JSON envelope overriding the configured subject/to/from.
+    JsonDocument doc(PSRAM_DOC);
+    String       body = value;
+    if (body.length()) {
+        auto error = deserializeJson(doc, (const char *)value);
+        if (!error && doc.is<JsonObject>()) {
+            subject = doc["subject"] | subject;
+            recp    = doc["to"] | recp;
+            sender  = doc["from"] | sender;
+            body    = doc["body"] | body;
+        }
+    }
+    // keep the original body if the calculator returns nothing, so unquoted literal text still gets sent
+    std::string computed_body = compute(body.c_str());
+    if (!computed_body.empty()) {
+        body = computed_body.c_str();
+    }
+
     bool success = false;
 
 #ifndef EMSESP_STANDALONE
@@ -213,18 +233,6 @@ bool System::command_sendmail(const char * value, const int8_t) {
             return false;
         }
     }
-    JsonDocument doc(PSRAM_DOC);
-    String       body = value;
-    if (body.length()) {
-        auto error = deserializeJson(doc, (const char *)value);
-        if (!error && doc.as<JsonObject>().size() >= 0) {
-            subject = doc["subject"] | subject;
-            recp    = doc["to"] | recp;
-            sender  = doc["from"] | sender;
-            body    = doc["body"] | body;
-        }
-    }
-
     SMTPMessage & msg = smtp->getMessage();
     msg.headers.add(rfc822_subject, subject);
     msg.headers.add(rfc822_from, sender);
@@ -234,12 +242,6 @@ bool System::command_sendmail(const char * value, const int8_t) {
     // msg.headers.addCustom("Importance", PRIORITY);
     // msg.headers.addCustom("X-MSMail-Priority", PRIORITY);
     // msg.headers.addCustom("X-Priority", PRIORITY_NUM);
-    // run the body through the Shunting Yard calculator (entity substitution, expressions, optional {url} fetch)
-    // keep the original body if the calculator returns nothing
-    std::string computed_body = compute(body.c_str());
-    if (!computed_body.empty()) {
-        body = computed_body.c_str();
-    }
     msg.text.body(body);
 
     // bodyText.replace("\r\n", "<br>\r\n");

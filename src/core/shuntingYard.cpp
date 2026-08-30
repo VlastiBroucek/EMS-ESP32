@@ -479,14 +479,14 @@ std::string calculate(const std::string & expr) {
             const auto rhs = stack.back();
             stack.pop_back();
             if (token.str[0] == '!') {
-                if (to_logic(rhs) < 0) {
-                }
-                if (to_logic(rhs) >= 0) {
-                    stack.push_back(to_logic(rhs) == 0 ? "1" : "0");
+                const auto logic = to_logic(rhs);
+                if (logic >= 0) {
+                    stack.push_back(logic == 0 ? "1" : "0");
                 } else if (isnum(rhs)) {
                     stack.push_back(std::stod(rhs) == 0 ? "1" : "0");
                 } else {
-                    EMSESP::logger().warning("missing operator");
+                    // usually literal text that was left unquoted, so its '!' got read as a logical NOT
+                    EMSESP::logger().warning("'!' needs a boolean or numeric operand, got '%s'. Literal text must be quoted", rhs.c_str());
                     return "";
                 }
                 break;
@@ -689,6 +689,24 @@ std::string calculate(const std::string & expr) {
     return result;
 }
 
+// find the next occurrence of c at or after `from` that is not inside a quoted string, so that
+// literal text like "too hot?" is not mistaken for a ternary. Always scans from the start of the
+// string because the quote state at `from` depends on everything before it.
+static size_t find_unquoted(const std::string & s, char c, size_t from = 0) {
+    bool in_single = false;
+    bool in_double = false;
+    for (size_t i = 0; i < s.length(); i++) {
+        if (!in_single && s[i] == '"') {
+            in_double = !in_double;
+        } else if (!in_double && s[i] == '\'') {
+            in_single = !in_single;
+        } else if (!in_single && !in_double && s[i] == c && i >= from) {
+            return i;
+        }
+    }
+    return std::string::npos;
+}
+
 // check for multiple instances of <cond> ? <expr1> : <expr2>
 std::string compute(const std::string & expr) {
     std::string expr_new = expr;
@@ -772,14 +790,14 @@ std::string compute(const std::string & expr) {
     }
 
     // positions: q-questionmark, c-colon
-    auto q = expr_new.find_first_of('?');
+    auto q = find_unquoted(expr_new, '?');
     while (q != std::string::npos) {
         // find corresponding colon
-        auto c1 = expr_new.find_first_of(':', q + 1);
-        auto q1 = expr_new.find_first_of('?', q + 1);
+        auto c1 = find_unquoted(expr_new, ':', q + 1);
+        auto q1 = find_unquoted(expr_new, '?', q + 1);
         while (q1 < c1 && q1 != std::string::npos && c1 != std::string::npos) {
-            q1 = expr_new.find_first_of('?', q1 + 1);
-            c1 = expr_new.find_first_of(':', c1 + 1);
+            q1 = find_unquoted(expr_new, '?', q1 + 1);
+            c1 = find_unquoted(expr_new, ':', c1 + 1);
         }
         if (c1 == std::string::npos) {
             return ""; // error: missing colon
@@ -810,7 +828,7 @@ std::string compute(const std::string & expr) {
         } else {
             return ""; // error
         }
-        q = expr_new.find_first_of('?'); // search next instance
+        q = find_unquoted(expr_new, '?'); // search next instance
     }
 
     return calculate(expr_new);

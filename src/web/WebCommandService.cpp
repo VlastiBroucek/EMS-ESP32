@@ -100,6 +100,13 @@ bool WebCommandService::isUrlCommand(const std::string & command) {
     return lower_url.starts_with("http://") || lower_url.starts_with("https://");
 }
 
+// true if the command runs the shunting-yard on its own argument. Those values must be passed
+// through raw: a first pass strips the quotes from literal text, so the command's own pass then
+// re-parses that text as an expression and chokes on characters like '!' or drops the spaces.
+bool WebCommandService::computesOwnValue(const std::string & cmd) {
+    return cmd == "system/message" || cmd == "system/sendmail";
+}
+
 // true if a value expression contains an embedded {"url":...} JSON snippet, which compute()
 // will resolve with a blocking HTTP request. Mirrors the scan compute() does in shuntingYard.cpp
 bool WebCommandService::valueContainsUrl(const std::string & value) {
@@ -239,13 +246,13 @@ bool WebCommandService::executeCommand(const char * name, const std::string & co
     // run the value through the shunting-yard calculator so expressions like "custom/heatcnt + 1"
     // are resolved (entity references replaced by their values, then computed). Plain values pass
     // through unchanged. Applies to both URL and internal commands, like the old scheduler code
-    // which computed the value before executing. system/message runs the shunting-yard on its own
-    // argument, so pre-computing it here would run it twice - pass it through raw.
+    // which computed the value before executing. Commands that compute their own argument are
+    // skipped here so the value is only ever evaluated once.
     std::string computed_data = data;
-    if (!data.empty() && cmd != "system/message") {
+    if (!data.empty() && !computesOwnValue(cmd)) {
         computed_data = compute(data);
         if (computed_data.empty()) {
-            EMSESP::logger().warning("Command '%s': cannot compute value '%s'", name, data.c_str());
+            EMSESP::logger().warning("Command '%s': cannot compute value '%s'. Literal text must be quoted", name, data.c_str());
             return false;
         }
     }
