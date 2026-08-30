@@ -347,7 +347,7 @@ const it: Translation = {
   SYSTEM_NAME: 'Nome del sistema',
   COMMANDS: 'Comandi',
   COMMANDS_HELP_1: 'Definisci comandi personalizzati per la magistrali EMS',
-  COMMAND_SENT: 'Comando inviato',
+  COMMAND_EXECUTED: 'Comando eseguito con successo',
   RUN: 'Esegui comando',
   INTERNET_CONNECTION_CHECK: 'Controllo online per le versioni disponibili'
 };

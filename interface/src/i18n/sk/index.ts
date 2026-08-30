@@ -347,7 +347,7 @@ const sk: Translation = {
   SYSTEM_NAME: 'Názov systému',
   COMMANDS: 'Príkazy',
   COMMANDS_HELP_1: 'Definujte vlastné príkazy pre magistrali EMS',
-  COMMAND_SENT: 'Príkaz odoslaný',
+  COMMAND_EXECUTED: 'Príkaz vykonaný úspešne',
   RUN: 'Volať príkaz',
   INTERNET_CONNECTION_CHECK: 'Kontrola online pre dostupné verzie'
 };

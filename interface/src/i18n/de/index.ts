@@ -347,7 +347,7 @@ const de: Translation = {
   SYSTEM_NAME: 'Systemname',
   COMMANDS: 'Befehle',
   COMMANDS_HELP_1: 'Definieren Sie eigene Befehle für die EMS-Magistral',
-  COMMAND_SENT: 'Befehl gesendet',
+  COMMAND_EXECUTED: 'Befehl erfolgreich ausgeführt',
   RUN: 'Befehl ausführen',
   INTERNET_CONNECTION_CHECK: 'Online-Prüfung auf verfügbare Versionen'
 };

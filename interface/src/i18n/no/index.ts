@@ -347,7 +347,7 @@ const no: Translation = {
   SYSTEM_NAME: 'Systemnavn',
   COMMANDS: 'Kommandoer',
   COMMANDS_HELP_1: 'Definer egne kommandoer for EMS-Magistral',
-  COMMAND_SENT: 'Kommando sendt',
+  COMMAND_EXECUTED: 'Kommando kjørt lykkes',
   RUN: 'Kjør',
   INTERNET_CONNECTION_CHECK: 'Kontrollerer online for tilgjengelige versjoner'
 };

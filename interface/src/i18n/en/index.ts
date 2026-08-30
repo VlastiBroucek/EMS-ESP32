@@ -347,7 +347,7 @@ const en: Translation = {
   SYSTEM_NAME: 'System Name',
   COMMANDS: 'Commands',
   COMMANDS_HELP_1: 'Define reusable named commands below. These can be executed from the console, API/MQTT, or referenced by the Scheduler',
-  COMMAND_SENT: 'Command sent',
+  COMMAND_EXECUTED: 'Command executed successfully',
   RUN: 'Run',
   INTERNET_CONNECTION_CHECK: 'Checking online for available versions'
 };

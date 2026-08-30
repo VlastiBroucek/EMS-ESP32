@@ -347,7 +347,7 @@ const nl: Translation = {
   SYSTEM_NAME: 'Systeemnaam',
   COMMANDS: 'Commando\'s',
   COMMANDS_HELP_1: 'Definieer hergebruikbare benoemde commando\'s hieronder. Deze kunnen worden uitgevoerd vanuit de console, API/MQTT, of worden aangeroepen door de Scheduler',
-  COMMAND_SENT: 'Commando verzonden',
+  COMMAND_EXECUTED: 'Commando uitgevoerd succesvol',
   RUN: 'Commando uitvoeren',
   INTERNET_CONNECTION_CHECK: 'Controleren op online beschikbare versies'
 };

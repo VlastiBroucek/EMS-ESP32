@@ -347,7 +347,7 @@ const tr: Translation = {
   SYSTEM_NAME: 'Sistem Adı',
   COMMANDS: 'Komutlar',
   COMMANDS_HELP_1: 'Özel komutları EMS hattına tanımlayın',
-  COMMAND_SENT: 'Komut gönderildi',
+  COMMAND_EXECUTED: 'Komut başarıyla çalıştırıldı',
   RUN: 'Komutu çalıştır',
   INTERNET_CONNECTION_CHECK: 'Online bağlantısı kontrol ediliyor'
 };

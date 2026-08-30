@@ -347,7 +347,7 @@ const sv: Translation = {
   SYSTEM_NAME: 'Systemnamn',
   COMMANDS: 'Kommandon',
   COMMANDS_HELP_1: 'Definiera egna kommandon för EMS-Magistral',
-  COMMAND_SENT: 'Kommando skickat',
+  COMMAND_EXECUTED: 'Kommando kört lyckades',
   RUN: 'Kör kommando',
   INTERNET_CONNECTION_CHECK: 'Kontrollerar online för tillgängliga versioner'
 };
