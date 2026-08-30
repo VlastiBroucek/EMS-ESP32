@@ -187,6 +187,7 @@ bool System::command_sendmail(const char * value, const int8_t) {
 
     const bool implicit_ssl = (security == EMAIL_SECURITY::SSL);
     const bool start_tls    = (security == EMAIL_SECURITY::STARTTLS);
+    const bool tls_enabled  = (security != EMAIL_SECURITY::NONE);
 
     if (security == EMAIL_SECURITY::NONE) {
         smtp = new SMTPClient(*basic_client);
@@ -212,14 +213,13 @@ bool System::command_sendmail(const char * value, const int8_t) {
         delete basic_client;
     };
 
-    // ssl defaults to true; Off and STARTTLS must start as plain SMTP
-    if (!smtp->connect(server, port, String(""), static_cast<SMTPResponseCallback>(nullptr), implicit_ssl)) {
-        LOG_ERROR("send email connection error");
+    if (!smtp->connect(server, port, String(""), static_cast<SMTPResponseCallback>(nullptr), tls_enabled)) {
+        LOG_ERROR("send email connection error: %s", smtp->status().text.c_str());
         cleanup();
         return false;
     }
     if (!smtp->isConnected()) {
-        LOG_ERROR("send email connection error");
+        LOG_ERROR("send email connection error: %s", smtp->status().text.c_str());
         cleanup();
         return false;
     }
@@ -228,7 +228,7 @@ bool System::command_sendmail(const char * value, const int8_t) {
     if (!login.isEmpty()) {
         smtp->authenticate(login, pass, readymail_auth_password);
         if (!smtp->isAuthenticated()) {
-            LOG_ERROR("send email authentication error");
+            LOG_ERROR("send email authentication error: %s", smtp->status().text.c_str());
             cleanup();
             return false;
         }
@@ -255,6 +255,9 @@ bool System::command_sendmail(const char * value, const int8_t) {
     msg.timestamp = time(nullptr);
 
     success = smtp->send(msg);
+    if (!success) {
+        LOG_ERROR("send email failed: %s", smtp->status().text.c_str());
+    }
 
     cleanup();
 #endif
