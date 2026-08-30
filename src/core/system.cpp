@@ -40,9 +40,6 @@
 
 #ifndef EMSESP_STANDALONE
 #define ENABLE_SMTP
-#define USE_ESP_SSLCLIENT
-#define READYCLIENT_SSL_CLIENT ESP_SSLClient
-#define READYCLIENT_TYPE_1 // TYPE 1 when using ESP_SSLClient
 #include <ESP_SSLClient.h>
 #include <ReadyMail.h>
 #endif
@@ -94,6 +91,13 @@ std::vector<uint8_t, AllocatorPSRAM<uint8_t>>                     System::valid_
 std::vector<System::GpioUsage, AllocatorPSRAM<System::GpioUsage>> System::used_gpios_;
 
 #ifndef EMSESP_STANDALONE
+// TLSHandshakeCallback is a C function pointer, so STARTTLS needs a process-wide client slot.
+static ESP_SSLClient * sendmail_ssl_client = nullptr;
+
+static void sendmail_tls_handshake(bool & success) {
+    success = sendmail_ssl_client != nullptr && sendmail_ssl_client->connectSSL();
+}
+
 // The DNS slots are shared between IPv4 and IPv6, so with IPv6 enabled the first slot can hold an
 // IPv6 server. Pick the first IPv4 one so it matches the label we print it under.
 static IPAddress dns_ipv4(const NetworkInterface & netif) {
@@ -153,33 +157,50 @@ bool System::command_sendmail(const char * value, const int8_t) {
     bool success = false;
 
 #ifndef EMSESP_STANDALONE
-    auto * basic_client = new WiFiClient;
-    auto * ssl_client   = new ESP_SSLClient;
-    auto * r_client     = new ReadyClient(*ssl_client);
-    auto * smtp         = new SMTPClient(*r_client);
+    // Do not use ReadyClient: after the 220 greeting it calls connectSSL() whenever
+    // STARTTLS is off, so Security=Off still sends a TLS Client Hello on port 25.
+    auto *          basic_client = new WiFiClient;
+    ESP_SSLClient * ssl_client   = nullptr;
+    SMTPClient *    smtp         = nullptr;
 
-    // enableSSL is baked in at setClient() time (same as HTTP fetch). Default true
-    // would send a TLS Client Hello on connect — which a plain port-25 server
-    // logs as "SMTP syntax error" / NUL characters.
+    basic_client->setTimeout(5000);
+
     const bool implicit_ssl = (security == EMAIL_SECURITY::SSL);
-    ssl_client->setClient(basic_client, implicit_ssl);
-    ssl_client->setInsecure();
-    ssl_client->setBufferSizes(16384, 1024);
-    basic_client->setTimeout(5000); // socket-level read timeout
-    ssl_client->setTimeout(5);      // Stream::readBytes timeout used by Update
-    r_client->addPort(port,
-                      security == EMAIL_SECURITY::NONE  ? readymail_protocol_plain_text
-                      : security == EMAIL_SECURITY::SSL ? readymail_protocol_ssl
-                                                        : readymail_protocol_tls);
+    const bool start_tls    = (security == EMAIL_SECURITY::STARTTLS);
 
-    // smtp->connect(server, port, sendmailCallback);
-    smtp->connect(server, port);
-    if (!smtp->isConnected()) {
-        LOG_ERROR("send email connection error");
+    if (security == EMAIL_SECURITY::NONE) {
+        smtp = new SMTPClient(*basic_client);
+    } else {
+        ssl_client = new ESP_SSLClient;
+        ssl_client->setInsecure();
+        ssl_client->setBufferSizes(16384, 1024);
+        ssl_client->setTimeout(5);
+        // enableSSL is baked in at setClient() — true only for implicit SSL (port 465)
+        ssl_client->setClient(basic_client, implicit_ssl);
+        if (start_tls) {
+            sendmail_ssl_client = ssl_client;
+            smtp                = new SMTPClient(*ssl_client, sendmail_tls_handshake, true);
+        } else {
+            smtp = new SMTPClient(*ssl_client);
+        }
+    }
+
+    auto cleanup = [&]() {
         delete smtp;
-        delete r_client;
+        sendmail_ssl_client = nullptr;
         delete ssl_client;
         delete basic_client;
+    };
+
+    // ssl defaults to true; Off and STARTTLS must start as plain SMTP
+    if (!smtp->connect(server, port, String(""), static_cast<SMTPResponseCallback>(nullptr), implicit_ssl)) {
+        LOG_ERROR("send email connection error");
+        cleanup();
+        return false;
+    }
+    if (!smtp->isConnected()) {
+        LOG_ERROR("send email connection error");
+        cleanup();
         return false;
     }
 
@@ -188,10 +209,7 @@ bool System::command_sendmail(const char * value, const int8_t) {
         smtp->authenticate(login, pass, readymail_auth_password);
         if (!smtp->isAuthenticated()) {
             LOG_ERROR("send email authentication error");
-            delete smtp;
-            delete r_client;
-            delete ssl_client;
-            delete basic_client;
+            cleanup();
             return false;
         }
     }
@@ -236,10 +254,7 @@ bool System::command_sendmail(const char * value, const int8_t) {
 
     success = smtp->send(msg);
 
-    delete smtp;
-    delete r_client;
-    delete ssl_client;
-    delete basic_client;
+    cleanup();
 #endif
     return success;
 }
