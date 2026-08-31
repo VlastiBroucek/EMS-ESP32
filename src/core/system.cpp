@@ -40,9 +40,6 @@
 
 #ifndef EMSESP_STANDALONE
 #define ENABLE_SMTP
-#define USE_ESP_SSLCLIENT
-#define READYCLIENT_SSL_CLIENT ESP_SSLClient
-#define READYCLIENT_TYPE_1 // TYPE 1 when using ESP_SSLClient
 #include <ESP_SSLClient.h>
 #include <ReadyMail.h>
 #endif
@@ -94,6 +91,13 @@ std::vector<uint8_t, AllocatorPSRAM<uint8_t>>                     System::valid_
 std::vector<System::GpioUsage, AllocatorPSRAM<System::GpioUsage>> System::used_gpios_;
 
 #ifndef EMSESP_STANDALONE
+// TLSHandshakeCallback is a C function pointer, so STARTTLS needs a process-wide client slot.
+static ESP_SSLClient * sendmail_ssl_client = nullptr;
+
+static void sendmail_tls_handshake(bool & success) {
+    success = sendmail_ssl_client != nullptr && sendmail_ssl_client->connectSSL();
+}
+
 // The DNS slots are shared between IPv4 and IPv6, so with IPv6 enabled the first slot can hold an
 // IPv6 server. Pick the first IPv4 one so it matches the label we print it under.
 static IPAddress dns_ipv4(const NetworkInterface & netif) {
@@ -147,61 +151,88 @@ bool System::command_sendmail(const char * value, const int8_t) {
               port,
               security == EMAIL_SECURITY::SSL        ? " (SSL)"
               : security == EMAIL_SECURITY::STARTTLS ? " (STARTTLS)"
-                                                     : "",
+                                                     : " (plain)",
               value);
 
-    bool success = false;
-
-#ifndef EMSESP_STANDALONE
-    auto * basic_client = new WiFiClient;
-    auto * ssl_client   = new ESP_SSLClient;
-    auto * r_client     = new ReadyClient(*ssl_client);
-    auto * smtp         = new SMTPClient(*r_client);
-
-    ssl_client->setClient(basic_client);
-    ssl_client->setInsecure();
-    ssl_client->setBufferSizes(16384, 1024);
-    basic_client->setTimeout(5000); // socket-level read timeout
-    ssl_client->setTimeout(5);      // Stream::readBytes timeout used by Update
-    r_client->addPort(port,
-                      security == EMAIL_SECURITY::NONE  ? readymail_protocol_plain_text
-                      : security == EMAIL_SECURITY::SSL ? readymail_protocol_ssl
-                                                        : readymail_protocol_tls);
-
-
-    // smtp->connect(server, port, sendmailCallback);
-    smtp->connect(server, port);
-    if (!smtp->isConnected()) {
-        LOG_ERROR("send email connection error");
-        delete smtp;
-        delete r_client;
-        delete ssl_client;
-        delete basic_client;
-        return false;
-    }
-
-    // LOG_INFO("authenticate %s:%s", login.c_str(), pass.c_str());
-    smtp->authenticate(login, pass, readymail_auth_password);
-    if (!smtp->isAuthenticated()) {
-        LOG_ERROR("send email authentication error");
-        delete smtp;
-        delete r_client;
-        delete ssl_client;
-        delete basic_client;
-        return false;
-    }
+    // Resolve the message before opening the SMTP session: compute() can do entity lookups and a
+    // blocking {url} fetch, which would otherwise leave the connection idle long enough to time out.
+    // The value is either a plain body or a JSON envelope overriding the configured subject/to/from.
     JsonDocument doc(PSRAM_DOC);
     String       body = value;
     if (body.length()) {
         auto error = deserializeJson(doc, (const char *)value);
-        if (!error && doc.as<JsonObject>().size() >= 0) {
+        if (!error && doc.is<JsonObject>()) {
             subject = doc["subject"] | subject;
             recp    = doc["to"] | recp;
             sender  = doc["from"] | sender;
             body    = doc["body"] | body;
         }
     }
+    // keep the original body if the calculator returns nothing, so unquoted literal text still gets sent
+    std::string computed_body = compute(body.c_str());
+    if (!computed_body.empty()) {
+        body = computed_body.c_str();
+    }
 
+    bool success = false;
+
+#ifndef EMSESP_STANDALONE
+    // Do not use ReadyClient: after the 220 greeting it calls connectSSL() whenever
+    // STARTTLS is off, so Security=Off still sends a TLS Client Hello on port 25.
+    auto *          basic_client = new WiFiClient;
+    ESP_SSLClient * ssl_client   = nullptr;
+    SMTPClient *    smtp         = nullptr;
+
+    basic_client->setTimeout(5000);
+
+    const bool implicit_ssl = (security == EMAIL_SECURITY::SSL);
+    const bool start_tls    = (security == EMAIL_SECURITY::STARTTLS);
+    const bool tls_enabled  = (security != EMAIL_SECURITY::NONE);
+
+    if (security == EMAIL_SECURITY::NONE) {
+        smtp = new SMTPClient(*basic_client);
+    } else {
+        ssl_client = new ESP_SSLClient;
+        ssl_client->setInsecure();
+        ssl_client->setBufferSizes(16384, 1024);
+        ssl_client->setTimeout(5);
+        // enableSSL is baked in at setClient() — true only for implicit SSL (port 465)
+        ssl_client->setClient(basic_client, implicit_ssl);
+        if (start_tls) {
+            sendmail_ssl_client = ssl_client;
+            smtp                = new SMTPClient(*ssl_client, sendmail_tls_handshake, true);
+        } else {
+            smtp = new SMTPClient(*ssl_client);
+        }
+    }
+
+    auto cleanup = [&]() {
+        delete smtp;
+        sendmail_ssl_client = nullptr;
+        delete ssl_client;
+        delete basic_client;
+    };
+
+    if (!smtp->connect(server, port, String(""), static_cast<SMTPResponseCallback>(nullptr), tls_enabled)) {
+        LOG_ERROR("send email connection error: %s", smtp->status().text.c_str());
+        cleanup();
+        return false;
+    }
+    if (!smtp->isConnected()) {
+        LOG_ERROR("send email connection error: %s", smtp->status().text.c_str());
+        cleanup();
+        return false;
+    }
+
+    // internal/open relays often have no AUTH; empty login means skip it
+    if (!login.isEmpty()) {
+        smtp->authenticate(login, pass, readymail_auth_password);
+        if (!smtp->isAuthenticated()) {
+            LOG_ERROR("send email authentication error: %s", smtp->status().text.c_str());
+            cleanup();
+            return false;
+        }
+    }
     SMTPMessage & msg = smtp->getMessage();
     msg.headers.add(rfc822_subject, subject);
     msg.headers.add(rfc822_from, sender);
@@ -211,12 +242,6 @@ bool System::command_sendmail(const char * value, const int8_t) {
     // msg.headers.addCustom("Importance", PRIORITY);
     // msg.headers.addCustom("X-MSMail-Priority", PRIORITY);
     // msg.headers.addCustom("X-Priority", PRIORITY_NUM);
-    // run the body through the Shunting Yard calculator (entity substitution, expressions, optional {url} fetch)
-    // keep the original body if the calculator returns nothing
-    std::string computed_body = compute(body.c_str());
-    if (!computed_body.empty()) {
-        body = computed_body.c_str();
-    }
     msg.text.body(body);
 
     // bodyText.replace("\r\n", "<br>\r\n");
@@ -230,11 +255,11 @@ bool System::command_sendmail(const char * value, const int8_t) {
     msg.timestamp = time(nullptr);
 
     success = smtp->send(msg);
+    if (!success) {
+        LOG_ERROR("send email failed: %s", smtp->status().text.c_str());
+    }
 
-    delete smtp;
-    delete r_client;
-    delete ssl_client;
-    delete basic_client;
+    cleanup();
 #endif
     return success;
 }

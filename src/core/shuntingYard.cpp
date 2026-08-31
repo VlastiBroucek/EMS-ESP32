@@ -22,8 +22,7 @@
 
 #include "shuntingYard.h"
 
-#include <WiFiClient.h>
-#include <ESP_SSLClient.h>
+#include "httpClient.h"
 
 namespace emsesp {
 
@@ -336,7 +335,6 @@ bool isnum(const std::string & s) {
     return false;
 }
 
-
 // replace commands like "<device>/<hc>/<cmd>" with its value"
 std::string commands(std::string & expr, bool quotes) {
     auto expr_new = Helpers::toLower(expr);
@@ -481,14 +479,14 @@ std::string calculate(const std::string & expr) {
             const auto rhs = stack.back();
             stack.pop_back();
             if (token.str[0] == '!') {
-                if (to_logic(rhs) < 0) {
-                }
-                if (to_logic(rhs) >= 0) {
-                    stack.push_back(to_logic(rhs) == 0 ? "1" : "0");
+                const auto logic = to_logic(rhs);
+                if (logic >= 0) {
+                    stack.push_back(logic == 0 ? "1" : "0");
                 } else if (isnum(rhs)) {
                     stack.push_back(std::stod(rhs) == 0 ? "1" : "0");
                 } else {
-                    EMSESP::logger().warning("missing operator");
+                    // usually literal text that was left unquoted, so its '!' got read as a logical NOT
+                    EMSESP::logger().warning("'!' needs a boolean or numeric operand, got '%s'. Literal text must be quoted", rhs.c_str());
                     return "";
                 }
                 break;
@@ -691,98 +689,22 @@ std::string calculate(const std::string & expr) {
     return result;
 }
 
-// perform an HTTP/HTTPS request; returns the HTTP status code (0 on failure or unsupported scheme)
-// the response headers are always stripped, so `result` contains only the body
-int http_request(std::string url, const std::string & method, const std::string & value, JsonObjectConst headers, std::string & result) {
-    int        httpResult = 0;
-    const bool is_post    = value.length() || Helpers::toLower(method) == "post";
-    const auto lower_url  = Helpers::toLower(url.c_str());
-
-    const bool is_https = lower_url.starts_with("https://");
-    if (!is_https && !lower_url.starts_with("http://")) {
-        return 0; // unsupported scheme
+// find the next occurrence of c at or after `from` that is not inside a quoted string, so that
+// literal text like "too hot?" is not mistaken for a ternary. Always scans from the start of the
+// string because the quote state at `from` depends on everything before it.
+static size_t find_unquoted(const std::string & s, char c, size_t from = 0) {
+    bool in_single = false;
+    bool in_double = false;
+    for (size_t i = 0; i < s.length(); i++) {
+        if (!in_single && s[i] == '"') {
+            in_double = !in_double;
+        } else if (!in_double && s[i] == '\'') {
+            in_single = !in_single;
+        } else if (!in_single && !in_double && s[i] == c && i >= from) {
+            return i;
+        }
     }
-
-    WiFiClient *    basic_client = new WiFiClient;
-    ESP_SSLClient * ssl_client   = new ESP_SSLClient;
-    if (is_https) {
-        ssl_client->setInsecure(); // with root CA we should set here: ssl_client->setCACert(rootCACert);
-        // NOTE: 1 KB RX buffer is fine for small JSON-style endpoints used by the scheduler/shunting-yard,
-        // but it is NOT enough for servers that send full-size TLS records (>1 KB), e.g. GitHub release
-        // assets / large CDN responses. Such servers do not negotiate max_fragment_length, so the body
-        // can't be decoded and reads return 0. If this path is ever used to fetch large or CDN-hosted
-        // payloads, bump the RX buffer to 16384 (see uploadFirmwareURL in core/system.cpp for reference).
-        ssl_client->setBufferSizes(16384, 1024);
-        ssl_client->setSessionTimeout(120); // Set the timeout in seconds (>=120 seconds)
-    }
-    basic_client->setTimeout(5000);                // socket-level read timeout
-    ssl_client->setTimeout(5);                     // Stream::readBytes timeout used by Update
-    ssl_client->setClient(basic_client, is_https); // enableSSL = false for plain HTTP
-
-    url.replace(0, is_https ? 8 : 7, "");
-    std::string host  = url;
-    auto        index = url.find_first_of('/');
-    if (index != std::string::npos) {
-        host = url.substr(0, index);
-        url.replace(0, index, "");
-    } else {
-        url = "/";
-    }
-
-    const uint16_t port = is_https ? 443 : 80;
-    if (ssl_client->connect(host.c_str(), port)) {
-        bool content_set = false;
-        ssl_client->print(is_post ? "POST " : "GET ");
-        ssl_client->print(url.c_str());
-        ssl_client->println(" HTTP/1.1");
-        ssl_client->print("Host: ");
-        ssl_client->println(host.c_str());
-        for (JsonPairConst p : headers) {
-            content_set |= (Helpers::toLower(p.key().c_str()) == "content-type");
-            ssl_client->print(p.key().c_str());
-            ssl_client->print(": ");
-            ssl_client->println(p.value().as<std::string>().c_str());
-        }
-        if (is_post) {
-            if (!content_set) {
-                ssl_client->print("Content-Type: ");
-                ssl_client->println(value.starts_with('{') ? asyncsrv::T_application_json : asyncsrv::T_text_plain);
-            }
-            ssl_client->print("Content-Length: ");
-            ssl_client->println(value.length());
-            ssl_client->println("Connection: close");
-            ssl_client->print("\r\n");
-            ssl_client->print(value.c_str());
-        } else {
-            ssl_client->println("Connection: close");
-            ssl_client->print("\r\n"); // terminate headers - without this the server never responds
-        }
-
-        auto ms = millis();
-        while (ssl_client->connected() && !ssl_client->available() && millis() - ms < 3000) {
-            delay(1);
-        }
-
-        while (ssl_client->available()) {
-            result += (char)ssl_client->read();
-        }
-        ssl_client->stop();
-
-        index = result.find_first_of(' ');
-        if (index != std::string::npos) {
-            httpResult = stoi(result.substr(index + 1, 3));
-        }
-        index = result.find("\r\n\r\n");
-        if (index != std::string::npos) {
-            result.replace(0, index + 4, "");
-        }
-    } else {
-        EMSESP::logger().warning("%s connection failed", is_https ? "HTTPS" : "HTTP");
-    }
-    delete ssl_client;
-    delete basic_client;
-
-    return httpResult;
+    return std::string::npos;
 }
 
 // check for multiple instances of <cond> ? <expr1> : <expr2>
@@ -829,7 +751,7 @@ std::string compute(const std::string & expr) {
             std::string method = doc[method_s] | "GET";
             std::string result;
 
-            int httpResult = http_request(url, method, value, doc[header_s].as<JsonObjectConst>(), result);
+            int httpResult = HttpClient::request(url, method, value, doc[header_s].as<JsonObjectConst>(), result);
             if (httpResult == 200) {
                 std::string  key = doc[key_s] | "";
                 JsonDocument keys_doc; // JsonDocument to hold "keys" after doc is parsed with HTTP body
@@ -868,14 +790,14 @@ std::string compute(const std::string & expr) {
     }
 
     // positions: q-questionmark, c-colon
-    auto q = expr_new.find_first_of('?');
+    auto q = find_unquoted(expr_new, '?');
     while (q != std::string::npos) {
         // find corresponding colon
-        auto c1 = expr_new.find_first_of(':', q + 1);
-        auto q1 = expr_new.find_first_of('?', q + 1);
+        auto c1 = find_unquoted(expr_new, ':', q + 1);
+        auto q1 = find_unquoted(expr_new, '?', q + 1);
         while (q1 < c1 && q1 != std::string::npos && c1 != std::string::npos) {
-            q1 = expr_new.find_first_of('?', q1 + 1);
-            c1 = expr_new.find_first_of(':', c1 + 1);
+            q1 = find_unquoted(expr_new, '?', q1 + 1);
+            c1 = find_unquoted(expr_new, ':', c1 + 1);
         }
         if (c1 == std::string::npos) {
             return ""; // error: missing colon
@@ -906,7 +828,7 @@ std::string compute(const std::string & expr) {
         } else {
             return ""; // error
         }
-        q = expr_new.find_first_of('?'); // search next instance
+        q = find_unquoted(expr_new, '?'); // search next instance
     }
 
     return calculate(expr_new);

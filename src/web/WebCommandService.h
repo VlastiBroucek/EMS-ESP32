@@ -85,6 +85,7 @@ class WebCommandService : public StatefulService<WebCommands> {
 
     static bool isUrlCommand(const std::string & command);   // true if the command definition is a HTTP/URL command
     static bool valueContainsUrl(const std::string & value); // true if a value embeds a {"url":...} compute() will fetch
+    static bool computesOwnValue(const std::string & cmd);   // true if the command runs the shunting-yard itself
 
     const CommandItem * find(const char * name);
 

@@ -1,0 +1,41 @@
+/*
+ * EMS-ESP - https://github.com/emsesp/EMS-ESP
+ * Copyright 2020-2026  emsesp.org
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#ifndef EMSESP_HTTPCLIENT_H
+#define EMSESP_HTTPCLIENT_H
+
+#include <ArduinoJson.h>
+
+#include <string>
+
+namespace emsesp {
+
+class HttpClient {
+  public:
+    static int request(std::string url, const std::string & method, const std::string & value, JsonObjectConst headers, std::string & result);
+
+  private:
+    static constexpr uint32_t CONNECT_TIMEOUT_MS    = 5000;  // TCP connect, the core defaults to 3s
+    static constexpr uint32_t FIRST_BYTE_TIMEOUT_MS = 8000;  // how long the server may take to start replying
+    static constexpr uint32_t IDLE_TIMEOUT_MS       = 500;   // gap in the stream that marks the end of a response
+    static constexpr uint32_t TOTAL_TIMEOUT_MS      = 10000; // ceiling for the whole read
+};
+
+} // namespace emsesp
+
+#endif

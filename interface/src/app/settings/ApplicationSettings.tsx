@@ -177,7 +177,7 @@ const ApplicationSettings = () => {
     await sendAPI({
       device: 'system',
       cmd: 'sendmail',
-      data: 'Email notification test successful!',
+      data: '"Email notification test successful!"',
       id: 0
     })
       .then(() => {

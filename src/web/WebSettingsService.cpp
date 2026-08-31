@@ -316,8 +316,9 @@ StateUpdateResult WebSettings::update(JsonObject root, WebSettings & settings) {
     settings.weblog_level   = root["weblog_level"] | EMSESP_DEFAULT_WEBLOG_LEVEL;
     settings.weblog_compact = root["weblog_compact"] | EMSESP_DEFAULT_WEBLOG_COMPACT;
 
-    settings.email_enabled  = root["email_enabled"] | FACTORY_EMAIL_ENABLE;
-    settings.email_security = root["email_security"] | FACTORY_EMAIL_SECURITY;
+    settings.email_enabled = root["email_enabled"] | FACTORY_EMAIL_ENABLE;
+    // Off is 0, so `| FACTORY_EMAIL_SECURITY` would replace it with STARTTLS (2)
+    settings.email_security = root["email_security"].isNull() ? FACTORY_EMAIL_SECURITY : root["email_security"].as<uint8_t>();
     settings.email_server   = root["email_server"] | FACTORY_EMAIL_SERVER;
     settings.email_port     = root["email_port"] | FACTORY_EMAIL_PORT;
     settings.email_login    = root["email_login"] | FACTORY_EMAIL_LOGIN;

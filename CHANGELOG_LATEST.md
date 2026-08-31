@@ -16,6 +16,7 @@ This release is based on the latest Espressif/Arduino core version 3. It brings 
 ## Fixed
 
 - shunting yard show json
+- `system/sendmail` called from a Command or the Scheduler computed its value twice, which stripped the quotes from literal text and then failed on characters like `!`. Also shunting yard treated a `?` inside a quoted string as a ternary, so text like `"too hot?"` returned nothing
 - memory leak when using different timezones for ems-esp and thermostat[#3184](https://github.com/emsesp/EMS-ESP32/issues/3184)
 - LED stayed off on a healthy system when "Disable LED" was unchecked
 - Ethernet MAC address changed with the new SDK, breaking DHCP reservations (currently disabled)

@@ -347,7 +347,7 @@ const pl: BaseTranslation = {
   SYSTEM_NAME: 'Nazwa systemu',
   COMMANDS: 'Komendy',
   COMMANDS_HELP_1: 'Zdefiniuj niestandardowe komendy dla magistrali EMS',
-  COMMAND_SENT: 'Komenda wysłana',
+  COMMAND_EXECUTED: 'Komenda wykonana pomyślnie',
   RUN: 'Wykonaj',
   INTERNET_CONNECTION_CHECK: 'Sprawdzanie online dla dostępnych wersji'
 };

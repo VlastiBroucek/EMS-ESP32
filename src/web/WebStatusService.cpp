@@ -20,10 +20,8 @@
 
 #ifndef EMSESP_STANDALONE
 #include <esp_ota_ops.h>
-#include <WiFiClient.h>
-#include <ESP_SSLClient.h>
 #endif
-#include "shuntingYard.h"
+#include "httpClient.h"
 
 namespace emsesp {
 
@@ -427,9 +425,9 @@ bool WebStatusService::refresh_versions_cache() {
 #else
     std::string  result;
     JsonDocument doc;
-    auto         http_code = http_request(VERSIONS_URL, "GET", "", doc.as<JsonObjectConst>(), result);
+    auto         http_code = HttpClient::request(VERSIONS_URL, "GET", "", doc.as<JsonObjectConst>(), result);
     if (http_code != 200) {
-        EMSESP::logger().warning("refresh_versions_cache() HTTP error code %d", http_code);
+        EMSESP::logger().warning("Unable to retrieve online version information (HTTP error code %d)", http_code);
         return false;
     }
     DeserializationError err = deserializeJson(doc, result);

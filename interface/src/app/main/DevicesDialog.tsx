@@ -70,7 +70,7 @@ const DevicesDialog = ({
     { immediate: false }
   )
     .onSuccess(() => {
-      toast.success(LL.COMMAND_SENT());
+      toast.success(LL.COMMAND_EXECUTED());
     })
     .onError((error) => {
       toast.error(String(error.error?.message || 'An error occurred'));

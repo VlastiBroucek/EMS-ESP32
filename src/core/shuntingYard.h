@@ -84,8 +84,6 @@ std::string calculate(const std::string & expr);
 // check for multiple instances of <cond> ? <expr1> : <expr2>
 std::string compute(const std::string & expr);
 
-int http_request(std::string url, const std::string & method, const std::string & value, JsonObjectConst headers, std::string & result);
+} // namespace emsesp
 
 #endif
-
-} // namespace emsesp
