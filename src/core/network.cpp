@@ -500,8 +500,8 @@ void Network::startWiFiRadio() {
     // scan settings give connect issues since arduino 2.0.14 and arduino 3.x.x with some wifi systems
     WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN); // default is FAST_SCAN
     WiFi.setHostname(hostname_.c_str());       // updates shared default_hostname buffer
-    WiFi.enableSTA(true);                    // no-op if already STA; recreates netif after a full off
-    WiFi.STA.setHostname(hostname_.c_str()); // pushes to esp_netif_set_hostname
+    WiFi.enableSTA(true);                      // no-op if already STA; recreates netif after a full off
+    WiFi.STA.setHostname(hostname_.c_str());   // pushes to esp_netif_set_hostname
     WiFi.enableIPv6(true);
     if (staticIPConfig_) {
         WiFi.config(localIP_, gatewayIP_, subnetMask_, dnsIP1_, dnsIP2_); // configure for static IP
@@ -525,6 +525,7 @@ void Network::startWiFiRadio() {
 
 // Power down the WiFi radio completely (esp_wifi_stop), used when Ethernet is carrying the traffic.
 // An idle STA still keeps the receiver powered, which on an Ethernet gateway is a pure waste of heat.
+// also unloads the driver's DMA buffer pool of around 20KB
 void Network::stopWiFiRadio() {
 #ifndef EMSESP_STANDALONE
     if (wifi_radio_off_) {
@@ -533,7 +534,7 @@ void Network::stopWiFiRadio() {
     WiFi.mode(WIFI_OFF);
     wifi_radio_off_       = true;
     wifi_connect_pending_ = false;
-    LOG_INFO("Powering down WiFi radio, Ethernet is active");
+    LOG_DEBUG("Powering down WiFi radio, Ethernet is active");
 #endif
 }
 
