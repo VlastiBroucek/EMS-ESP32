@@ -129,6 +129,7 @@
         "eth_power": 15,
         "eth_phy_addr": 0,
         "eth_clock_mode": 1,
+        "eth_10mbit": false,
         "modbus_enabled": false,
         "modbus_port": 502,
         "modbus_max_clients": 10,

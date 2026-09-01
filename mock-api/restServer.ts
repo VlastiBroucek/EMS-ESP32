@@ -58,6 +58,7 @@ let settings = {
   eth_power: 15,
   eth_phy_addr: 0,
   eth_clock_mode: 1,
+  eth_10mbit: false,
   led_type: 0,
   platform: 'ESP32',
   modbus_enabled: false,

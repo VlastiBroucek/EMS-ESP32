@@ -28,4 +28,7 @@ void setup() {
 
 void loop() {
     application.loop();
+#ifndef EMSESP_STANDALONE
+    delay(1); // block for a tick so the idle task gets to run and the core can clock-gate
+#endif
 }

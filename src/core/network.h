@@ -186,6 +186,8 @@ class Network {
     void         startAP();
     void         startWIFI();
     void         startEthernet();
+    void         startWiFiRadio();
+    void         stopWiFiRadio();
     void         setWiFiPower(uint8_t tx_power);
     const char * disconnectReason(uint8_t code);
     void         stopAP();
@@ -216,6 +218,7 @@ class Network {
     bool ethernet_started_                = false; // ETH.begin() succeeded; the driver runs for the lifetime of the boot
     bool wifi_ever_connected_             = false; // set true once we've successfully obtained an IP
     bool ethernet_ever_connected_         = false; // set true once we've successfully obtained an IP
+    bool wifi_radio_off_                  = false; // STA powered down because Ethernet is carrying the traffic
 
     // Network and AP settings
     bool      enableMDNS_;
@@ -236,6 +239,7 @@ class Network {
     int8_t    eth_power_;
     uint8_t   eth_phy_addr_;
     uint8_t   eth_clock_mode_;
+    bool      eth_10mbit_;
 
     // AP settings
     uint8_t   ap_provisionMode_;

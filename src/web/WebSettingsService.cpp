@@ -79,6 +79,7 @@ void WebSettings::read(WebSettings & settings, JsonObject root) {
     root["eth_power"]             = settings.eth_power;
     root["eth_phy_addr"]          = settings.eth_phy_addr;
     root["eth_clock_mode"]        = settings.eth_clock_mode;
+    root["eth_10mbit"]            = settings.eth_10mbit;
     root["modbus_enabled"]        = settings.modbus_enabled;
     root["modbus_port"]           = settings.modbus_port;
     root["modbus_max_clients"]    = settings.modbus_max_clients;
@@ -120,6 +121,7 @@ StateUpdateResult WebSettings::update(JsonObject root, WebSettings & settings) {
     settings.eth_power      = root["eth_power"];
     settings.eth_phy_addr   = root["eth_phy_addr"];
     settings.eth_clock_mode = root["eth_clock_mode"];
+    settings.eth_10mbit     = root["eth_10mbit"];
     settings.led_type       = root["led_type"]; // 1 = RGB-LED
 
     reset_flags();
@@ -145,6 +147,7 @@ StateUpdateResult WebSettings::update(JsonObject root, WebSettings & settings) {
     if (settings.phy_type != PHY_type::PHY_TYPE_NONE) {
         check_flag(original_settings.eth_power, settings.eth_power, ChangeFlags::RESTART);
         check_flag(original_settings.eth_clock_mode, settings.eth_clock_mode, ChangeFlags::RESTART);
+        check_flag(original_settings.eth_10mbit, settings.eth_10mbit, ChangeFlags::RESTART);
         if (settings.eth_power != -1) { // Ethernet Power -1 means disabled
             EMSESP::system_.remove_gpio(settings.eth_power, true);
         }
