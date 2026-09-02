@@ -524,8 +524,7 @@ void Network::startWiFiRadio() {
 }
 
 // Power down the WiFi radio completely (esp_wifi_stop), used when Ethernet is carrying the traffic.
-// An idle STA still keeps the receiver powered, which on an Ethernet gateway is a pure waste of heat.
-// also unloads the driver's DMA buffer pool of around 20KB
+// An idle STA still keeps the receiver powered. It also unloads the driver's DMA buffer pool of around 20KB
 void Network::stopWiFiRadio() {
 #ifndef EMSESP_STANDALONE
     if (wifi_radio_off_) {
@@ -570,14 +569,7 @@ void Network::startWIFI() {
 }
 
 #if CONFIG_IDF_TARGET_ESP32 && !defined(EMSESP_STANDALONE)
-// Unlike WiFi, which stamps the hostname onto the STA netif as it is created, the Arduino ETH class
-// leaves it unset, so lwIP falls back to CONFIG_LWIP_LOCAL_HOSTNAME ("tasmota" in the SDK we build
-// against). esp_eth_start() polls the PHY synchronously, so on a warm reboot where the link never
-// dropped the DHCP DISCOVER can go out before ETH.begin() has even returned. This handler is
-// registered ahead of the esp_netif glue and therefore runs first, applying the hostname before the
-// netif is handed to lwIP.
 static char eth_hostname[33] = {0};
-
 static void ethApplyHostname(void * /*arg*/, esp_event_base_t /*base*/, int32_t /*event_id*/, void * /*event_data*/) {
     if (eth_hostname[0] != '\0' && ETH.netif() != nullptr) {
         esp_netif_set_hostname(ETH.netif(), eth_hostname);
@@ -596,11 +588,7 @@ void Network::startEthernet() {
         return;
     }
 
-    // The driver is installed once and then left alone. Re-running the bring-up on a live interface
-    // tears it down behind our back: pinMode() on the PHY power pin hands the pin from the Ethernet
-    // bus back to GPIO, which fires the peripheral manager's deinit callback and calls ETH.end(),
-    // destroying the netif, its event group and the event handlers from the main loop task while the
-    // arduino_events task may be dispatching a link-up on the other core.
+    // Ensure the Ethernet driver is installed once and then left alone
     if (ethernet_started_ || ethernet_connect_pending_ || ethernet_connected()) {
         return;
     }
@@ -651,11 +639,7 @@ void Network::startEthernet() {
         eth_hostname_handler_registered_ = true;
     }
 
-    // Forcing 10BASE-T roughly halves the PHY's power draw, which on these boards is usually the
-    // hottest component. All three must be set before ETH.begin(), and in this order - the speed
-    // and duplex setters are ignored while autonegotiation is still on. Half duplex is deliberate:
-    // a switch port that can't negotiate falls back to parallel detection, which is always half,
-    // so forcing full here would be a duplex mismatch. Opt-in only for that reason.
+    // Forcing 10BASE-T roughly halves the PHY's power draw
     if (eth_10mbit_) {
         ETH.setAutoNegotiation(false);
         ETH.setLinkSpeed(10);
@@ -792,9 +776,6 @@ void Network::findNetworks() {
         }
 
         // Ethernet is carrying the traffic so the STA is dead weight - shut the radio down.
-        // It is brought back by checkConnection() when the link drops, or by startWIFI() if we
-        // fall through to the WiFi phase. Do this before startmDNS() so we don't register on a
-        // netif we are about to destroy.
         if (network_iface_ == NetIface::ETHERNET) {
             stopWiFiRadio();
         }
