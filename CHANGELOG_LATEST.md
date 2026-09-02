@@ -37,8 +37,5 @@ This release is based on the latest Espressif/Arduino core version 3. It brings 
 - changes to the Dialogs in Dashboard page, removed the run icon in the Commands page. Renamed Execute to Run.
 - set `None` for undefined values in HA `val_tpl`
 - changes in WebUI - remove multiple calls systemInfo endpoint, Vewrsion pages checks for internet connection [#3195](https://github.com/emsesp/EMS-ESP32/pull/3195)
-- added yield to main loop, so core 1’s idle task is run [#3213](https://github.com/emsesp/EMS-ESP32/pull/3213)
-- power down WiFi when Ethernet is active, releasing DMA buffer pool of around 20KB [#3213](https://github.com/emsesp/EMS-ESP32/pull/3213)
-- WiFi nosleep takes effect on next reconnect [#3213](https://github.com/emsesp/EMS-ESP32/pull/3213)
-
+- multiple optimization in network, power down WiFi when Ethernet and WiFi nosleep is instant when selected [#3213](https://github.com/emsesp/EMS-ESP32/pull/3213)
 
