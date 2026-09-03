@@ -12,6 +12,7 @@ This release is based on the latest Espressif/Arduino core version 3. It brings 
 - Commands Service that can be called via MQTT or API or used in the Scheduler Service
 - option to disable factory reset [#3150](https://github.com/emsesp/EMS-ESP32/issues/3150)
 - TLS support with 4MB boards without PSRAM
+- added eth_10mbit to Network Settings, which forces 10BASE-T half-duplex & autonegotiation off, halving the PHY’s power draw. It’s off by default as it will cause issues on managed switches with a port forced to 100Mb [#3213](https://github.com/emsesp/EMS-ESP32/pull/3213)
 
 ## Fixed
 
@@ -36,4 +37,5 @@ This release is based on the latest Espressif/Arduino core version 3. It brings 
 - changes to the Dialogs in Dashboard page, removed the run icon in the Commands page. Renamed Execute to Run.
 - set `None` for undefined values in HA `val_tpl`
 - changes in WebUI - remove multiple calls systemInfo endpoint, Vewrsion pages checks for internet connection [#3195](https://github.com/emsesp/EMS-ESP32/pull/3195)
+- multiple optimization in network, power down WiFi when Ethernet and WiFi nosleep is instant when selected [#3213](https://github.com/emsesp/EMS-ESP32/pull/3213)
 

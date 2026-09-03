@@ -95,9 +95,9 @@ let system_status = {
   // network_status: 10, // ethernet connected
   // network_status: 6, // wifi disconnected
   wifi_rssi: -41,
-  esp_platform: 'ESP32S3',
+  esp_platform: 'ESP32',
   build_flags: 'DEMO',
-  cpu_type: 'ESP32-S3',
+  cpu_type: 'ESP32',
   cpu_rev: 0,
   cpu_cores: 2,
   cpu_freq_mhz: 240,
@@ -202,8 +202,8 @@ system_status.partitions[0].version = THIS_VERSION; // app0
 
 // set the ESP platform - using ESP32 will disable OTA and automatic version downloading
 let emulate_esp: string;
-emulate_esp = 'ESP32S3';
-// emulate_esp = 'ESP32';
+// emulate_esp = 'ESP32S3';
+emulate_esp = 'ESP32';
 
 switch (emulate_esp) {
   // ESP32 4MB
@@ -329,10 +329,10 @@ function updateMask(entity: any, de: any, dd: any) {
       const old_custom_name = dd.nodes[dd_objIndex].cn;
       console.log(
         'comparing names, old (' +
-          old_custom_name +
-          ') with new (' +
-          new_custom_name +
-          ')'
+        old_custom_name +
+        ') with new (' +
+        new_custom_name +
+        ')'
       );
       if (old_custom_name !== new_custom_name) {
         changed = true;
@@ -449,9 +449,9 @@ function upgradeImportantMessages(version: string) {
 
   console.log(
     'upgradeImportantMessageType: version=' +
-      version +
-      ' type=' +
-      upgradeImportantMessageType_n
+    version +
+    ' type=' +
+    upgradeImportantMessageType_n
   );
   return { upgradeImportantMessageType: upgradeImportantMessageType_n };
 }
@@ -502,17 +502,17 @@ function get_versions() {
 
   console.log(
     'getVersions: current=' +
-      THIS_VERSION +
-      ' stable=' +
-      LATEST_STABLE_VERSION +
-      ' (upgradeable=' +
-      (STABLE_VERSION_IS_UPGRADEABLE ? 'YES' : 'NO') +
-      ') dev=' +
-      LATEST_DEV_VERSION +
-      ' (upgradeable=' +
-      (DEV_VERSION_IS_UPGRADEABLE ? 'YES' : 'NO') +
-      ')' +
-      (MOCK_OFFLINE ? ' [offline]' : '')
+    THIS_VERSION +
+    ' stable=' +
+    LATEST_STABLE_VERSION +
+    ' (upgradeable=' +
+    (STABLE_VERSION_IS_UPGRADEABLE ? 'YES' : 'NO') +
+    ') dev=' +
+    LATEST_DEV_VERSION +
+    ' (upgradeable=' +
+    (DEV_VERSION_IS_UPGRADEABLE ? 'YES' : 'NO') +
+    ')' +
+    (MOCK_OFFLINE ? ' [offline]' : '')
   );
   return data;
 }
@@ -582,6 +582,7 @@ let network_settings = {
   enableMDNS: true,
   enableCORS: false,
   CORSOrigin: '*',
+  eth_10mbit: false,
   local_ip: '',
   gateway_ip: '',
   subnet_mask: '',

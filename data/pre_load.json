@@ -16,7 +16,8 @@
         "enableMDNS": true,
         "enableCORS": false,
         "CORSOrigin": "*",
-        "tx_power": 0
+        "tx_power": 0,
+        "eth_10mbit": false
       },
       "AP": {
         "provision_mode": 2,

@@ -49,9 +49,10 @@ void Network::begin() {
         nosleep_        = settings.nosleep;
         tx_power_       = settings.tx_power;
         bssid_          = settings.bssid;
+        eth_10mbit_     = settings.eth_10mbit;
     });
 
-    // read Ethernet settings
+    // read Ethernet hardware settings
     EMSESP::webSettingsService.read([&](WebSettings & settings) {
         phy_type_       = settings.phy_type;
         eth_power_      = settings.eth_power;
@@ -78,39 +79,16 @@ void Network::begin() {
 
     phase_ = initialPhase();
 
-    // Initialise WiFi once when the Network service starts.
-    // persistent(false) keeps credentials in RAM so we don't auto-join leftover NVS config.
-    WiFi.persistent(false);
-    WiFi.setAutoReconnect(false);
-    WiFi.mode(WIFI_STA);
+    startWiFiRadio();
 
-    // Keep the radio up. disconnect(wifioff=true) maps to STA.end() -> esp_wifi_stop()
-    if (WiFi.STA.started()) {
-        WiFi.disconnect(false, true); // drop leftover association, wipe RAM config
+#if CONFIG_IDF_TARGET_ESP32
+    // Ethernet is switched off but the board still has a PHY wired up. Hold its power/oscillator
+    // enable low so an unused LAN8720 isn't left clocked and burning current for the whole uptime.
+    if (phy_type_ == PHY_type::PHY_TYPE_NONE && eth_power_ != -1) {
+        pinMode(eth_power_, OUTPUT);
+        digitalWrite(eth_power_, LOW);
     }
-
-    WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN);
-    WiFi.setHostname(hostname_.c_str());     // updates shared default_hostname buffer
-    WiFi.enableSTA(true);                    // no-op if already STA; recreates netif after a full off
-    WiFi.STA.setHostname(hostname_.c_str()); // pushes to esp_netif_set_hostname
-    WiFi.enableIPv6(true);
-    if (staticIPConfig_) {
-        WiFi.config(localIP_, gatewayIP_, subnetMask_, dnsIP1_, dnsIP2_); // configure for static IP
-    }
-
-    // www.esp32.com/viewtopic.php?t=12055
-    if (bandwidth20_) {
-        esp_wifi_set_bandwidth(static_cast<wifi_interface_t>(ESP_IF_WIFI_STA), WIFI_BW_HT20);
-    } else {
-        esp_wifi_set_bandwidth(static_cast<wifi_interface_t>(ESP_IF_WIFI_STA), WIFI_BW_HT40);
-    }
-    if (nosleep_) {
-        WiFi.setSleep(false); // turn off sleep - WIFI_PS_NONE
-    }
-
-    // scan settings give connect issues since arduino 2.0.14 and arduino 3.x.x with some wifi systems
-    // WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN); // default is FAST_SCAN
-    // WiFi.setSortMethod(WIFI_CONNECT_AP_BY_SIGNAL); // is default, no need to set
+#endif
 
     // avoid duplicate registration, so register the lambdas only once across the lifetime of this Network instance
     if (!wifi_events_registered_) {
@@ -326,6 +304,10 @@ void Network::checkConnection() {
         network_iface_            = NetIface::NONE;
         if (lost_iface == NetIface::ETHERNET) {
             LOG_WARNING("Ethernet connection lost");
+            // restore the radio now so the WiFi and AP fallbacks have something to work with
+            if (wifi_radio_off_) {
+                startWiFiRadio();
+            }
             return;
         }
         begin();
@@ -502,12 +484,70 @@ const char * Network::disconnectReason([[maybe_unused]] uint8_t code) {
     return "";
 }
 
+// Bring up the STA interface and apply all the radio-level settings to it
+// Safe to call repeatedly - enableSTA() is a no-op when the STA is already running, and recreates the netif after stopWiFiRadio() has torn it down
+void Network::startWiFiRadio() {
+#ifndef EMSESP_STANDALONE
+    WiFi.persistent(false); // keep credentials in RAM so we don't auto-join leftover NVS config
+    WiFi.setAutoReconnect(false);
+    WiFi.mode(WIFI_STA);
+
+    // Keep the radio up. disconnect(wifioff=true) maps to STA.end() -> esp_wifi_stop()
+    if (WiFi.STA.started()) {
+        WiFi.disconnect(false, true); // drop leftover association, wipe RAM config
+    }
+
+    // scan settings give connect issues since arduino 2.0.14 and arduino 3.x.x with some wifi systems
+    WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN); // default is FAST_SCAN
+    WiFi.setHostname(hostname_.c_str());       // updates shared default_hostname buffer
+    WiFi.enableSTA(true);                      // no-op if already STA; recreates netif after a full off
+    WiFi.STA.setHostname(hostname_.c_str());   // pushes to esp_netif_set_hostname
+    WiFi.enableIPv6(true);
+    if (staticIPConfig_) {
+        WiFi.config(localIP_, gatewayIP_, subnetMask_, dnsIP1_, dnsIP2_); // configure for static IP
+    }
+
+    // www.esp32.com/viewtopic.php?t=12055
+    if (bandwidth20_) {
+        esp_wifi_set_bandwidth(static_cast<wifi_interface_t>(ESP_IF_WIFI_STA), WIFI_BW_HT20);
+    } else {
+        esp_wifi_set_bandwidth(static_cast<wifi_interface_t>(ESP_IF_WIFI_STA), WIFI_BW_HT40);
+    }
+    if (nosleep_) {
+        WiFi.setSleep(false); // turn off sleep - WIFI_PS_NONE
+    } else {
+        WiFi.setSleep(true); // WIFI_PS_MIN_MODEM
+    }
+
+    wifi_radio_off_ = false;
+#endif
+}
+
+// Power down the WiFi radio completely (esp_wifi_stop), used when Ethernet is carrying the traffic.
+// An idle STA still keeps the receiver powered. It also unloads the driver's DMA buffer pool of around 20KB
+void Network::stopWiFiRadio() {
+#ifndef EMSESP_STANDALONE
+    if (wifi_radio_off_) {
+        return;
+    }
+    WiFi.mode(WIFI_OFF);
+    wifi_radio_off_       = true;
+    wifi_connect_pending_ = false;
+    LOG_DEBUG("Powering down WiFi radio, Ethernet is active");
+#endif
+}
+
 // WiFi management
 void Network::startWIFI() {
 #ifndef EMSESP_STANDALONE
     // only run during the WIFI phase; ETHERNET phase keeps WiFi quiet, AP phase has its own bring-up
     if (phase_ != NetPhase::WIFI) {
         return;
+    }
+
+    // the radio was powered down while Ethernet was up, so bring it back before trying to associate
+    if (wifi_radio_off_) {
+        startWiFiRadio();
     }
 
     // exit if WiFi or Ethernet is already connected, or if we have no SSID or another Wifi.begin() is already in progress
@@ -529,14 +569,7 @@ void Network::startWIFI() {
 }
 
 #if CONFIG_IDF_TARGET_ESP32 && !defined(EMSESP_STANDALONE)
-// Unlike WiFi, which stamps the hostname onto the STA netif as it is created, the Arduino ETH class
-// leaves it unset, so lwIP falls back to CONFIG_LWIP_LOCAL_HOSTNAME ("tasmota" in the SDK we build
-// against). esp_eth_start() polls the PHY synchronously, so on a warm reboot where the link never
-// dropped the DHCP DISCOVER can go out before ETH.begin() has even returned. This handler is
-// registered ahead of the esp_netif glue and therefore runs first, applying the hostname before the
-// netif is handed to lwIP.
 static char eth_hostname[33] = {0};
-
 static void ethApplyHostname(void * /*arg*/, esp_event_base_t /*base*/, int32_t /*event_id*/, void * /*event_data*/) {
     if (eth_hostname[0] != '\0' && ETH.netif() != nullptr) {
         esp_netif_set_hostname(ETH.netif(), eth_hostname);
@@ -555,11 +588,7 @@ void Network::startEthernet() {
         return;
     }
 
-    // The driver is installed once and then left alone. Re-running the bring-up on a live interface
-    // tears it down behind our back: pinMode() on the PHY power pin hands the pin from the Ethernet
-    // bus back to GPIO, which fires the peripheral manager's deinit callback and calls ETH.end(),
-    // destroying the netif, its event group and the event handlers from the main loop task while the
-    // arduino_events task may be dispatching a link-up on the other core.
+    // Ensure the Ethernet driver is installed once and then left alone
     if (ethernet_started_ || ethernet_connect_pending_ || ethernet_connected()) {
         return;
     }
@@ -608,6 +637,13 @@ void Network::startEthernet() {
     strlcpy(eth_hostname, hostname_.c_str(), sizeof(eth_hostname));
     if (!eth_hostname_handler_registered_ && esp_event_handler_register(ETH_EVENT, ETHERNET_EVENT_START, ethApplyHostname, nullptr) == ESP_OK) {
         eth_hostname_handler_registered_ = true;
+    }
+
+    // Forcing 10BASE-T roughly halves the PHY's power draw
+    if (eth_10mbit_) {
+        ETH.setAutoNegotiation(false);
+        ETH.setLinkSpeed(10);
+        ETH.setFullDuplex(false);
     }
 
     if (ETH.begin(type, eth_phy_addr_, 23, 18, eth_power_, (eth_clock_mode_t)eth_clock_mode_)) {
@@ -739,6 +775,11 @@ void Network::findNetworks() {
             stopAP();
         }
 
+        // Ethernet is carrying the traffic so the STA is dead weight - shut the radio down.
+        if (network_iface_ == NetIface::ETHERNET) {
+            stopWiFiRadio();
+        }
+
         // count the number of restarts (for Wifi and Eth)
         if (juststopped_) {
             juststopped_ = false;
@@ -821,6 +862,11 @@ void Network::startAP() {
     // Captive-portal DNS is already bound to the softAP interface
     if (ap_dnsServer_) {
         return;
+    }
+
+    // the AP needs the radio, which may have been powered down while Ethernet was up
+    if (wifi_radio_off_) {
+        startWiFiRadio();
     }
 
     if (!WiFi.softAPConfig(ap_localIP_, ap_gatewayIP_, ap_subnetMask_)) {

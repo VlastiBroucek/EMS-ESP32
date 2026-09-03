@@ -39,6 +39,7 @@ class NetworkSettings {
     bool    enableMDNS     = true;
     bool    enableCORS     = false;
     String  CORSOrigin     = "*";
+    bool    eth_10mbit     = false; // force 10BASE-T half-duplex, no auto-negotiation
 
     // optional configuration for static IP address
     IPAddress localIP;

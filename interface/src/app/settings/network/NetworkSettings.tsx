@@ -22,6 +22,7 @@ import {
 
 import * as NetworkApi from 'api/network';
 import { API } from 'api/app';
+import { readSystemStatus } from 'api/system';
 
 import { updateState, useRequest } from 'alova/client';
 import type { APIcall } from 'app/main/types';
@@ -49,6 +50,8 @@ import { isNetworkOpen, networkSecurityMode } from './WiFiNetworkSelector';
 
 const NetworkSettings = () => {
   const { LL } = useI18nContext();
+
+  const { data: hardwareData } = useRequest(readSystemStatus);
 
   const { selectedNetwork, deselectNetwork } = useContext(WiFiConnectionContext);
 
@@ -92,7 +95,8 @@ const NetworkSettings = () => {
             nosleep: true,
             enableMDNS: true,
             enableCORS: false,
-            CORSOrigin: '*'
+            CORSOrigin: '*',
+            eth_10mbit: current_data ? current_data.eth_10mbit : false
           })
         );
       }
@@ -136,7 +140,7 @@ const NetworkSettings = () => {
   };
 
   const content = () => {
-    if (!data) {
+    if (!data || !hardwareData) {
       return <FormLoader onRetry={loadData} errorMessage={errorMessage || ''} />;
     }
 
@@ -246,6 +250,23 @@ const NetworkSettings = () => {
           }
           label={LL.NETWORK_LOW_BAND()}
         />
+        {hardwareData.esp_platform === 'ESP32' && (
+          <>
+            <Typography sx={{ pt: 2 }} variant="h6" color="primary">
+              Ethernet
+            </Typography>
+            <BlockFormControlLabel
+              control={
+                <Checkbox
+                  name="eth_10mbit"
+                  checked={data.eth_10mbit}
+                  onChange={updateFormValue}
+                />
+              }
+              label="Force 10Mbit half-duplex"
+            />
+          </>
+        )}
         <Typography sx={{ pt: 2 }} variant="h6" color="primary">
           {LL.GENERAL_OPTIONS()}
         </Typography>
