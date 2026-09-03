@@ -820,18 +820,6 @@ const ApplicationSettings = () => {
                 </Grid>
               </Grid>
             )}
-            {data.phy_type !== 0 && (
-              <BlockFormControlLabel
-                control={
-                  <Checkbox
-                    checked={data.eth_10mbit}
-                    onChange={updateFormValue}
-                    name="eth_10mbit"
-                  />
-                }
-                label="Force 10Mbit half-duplex"
-              />
-            )}
           </>
         )}
         <Grid container spacing={2} rowSpacing={0}>

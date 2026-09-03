@@ -119,7 +119,6 @@ class WebSettings {
     int8_t  eth_power; // -1 means disabled
     uint8_t eth_phy_addr;
     uint8_t eth_clock_mode;
-    bool    eth_10mbit; // force 10BASE-T half-duplex, no auto-negotiation
 
     bool developer_mode; // developer mode
     bool disable_reset;  // disable reset

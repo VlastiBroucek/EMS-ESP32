@@ -49,15 +49,15 @@ void Network::begin() {
         nosleep_        = settings.nosleep;
         tx_power_       = settings.tx_power;
         bssid_          = settings.bssid;
+        eth_10mbit_     = settings.eth_10mbit;
     });
 
-    // read Ethernet settings
+    // read Ethernet hardware settings
     EMSESP::webSettingsService.read([&](WebSettings & settings) {
         phy_type_       = settings.phy_type;
         eth_power_      = settings.eth_power;
         eth_phy_addr_   = settings.eth_phy_addr;
         eth_clock_mode_ = settings.eth_clock_mode;
-        eth_10mbit_     = settings.eth_10mbit;
     });
 
     // get Access Point settings

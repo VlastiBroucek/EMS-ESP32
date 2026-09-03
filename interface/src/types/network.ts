@@ -54,6 +54,7 @@ export interface NetworkSettingsType {
   enableMDNS: boolean;
   enableCORS: boolean;
   CORSOrigin: string;
+  eth_10mbit: boolean;
   [key: string]: unknown;
 }
 

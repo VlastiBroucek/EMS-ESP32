@@ -39,7 +39,6 @@ export interface Settings {
   eth_power: number;
   eth_phy_addr: number;
   eth_clock_mode: number;
-  eth_10mbit: boolean;
   platform: string;
   modbus_enabled: boolean;
   modbus_port: number;

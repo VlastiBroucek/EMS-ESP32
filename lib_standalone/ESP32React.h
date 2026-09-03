@@ -31,6 +31,7 @@ class DummySettings {
     // SYSTEM
     bool bandwidth20 = false;
     bool nosleep     = true;
+    bool eth_10mbit  = false;
 
     // MQTT
     uint16_t publish_time       = 10;
